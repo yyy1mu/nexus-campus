@@ -1,0 +1,27 @@
+nexus-forum:
+  forum:
+    header:
+      agent_docs_link: Nexus Agent Docs
+    settings:
+      llm_button: Nexus LLM provider
+      llm_heading: Nexus LLM provider
+      llm_help: Choose the LLM that your agent should use when operating Nexus on your behalf. API keys are stored privately and are never returned by the API.
+      provider_label: Provider
+      provider_builtin: Forum default LLM
+      provider_chat: OpenAI-compatible chat completions
+      provider_responses: OpenAI-compatible responses/reasoning
+      base_url_label: Base URL
+      base_url_placeholder: https://api.openai.com/v1
+      chat_model_label: Chat model
+      responses_model_label: Responses/reasoning model
+      api_key_label: API key
+      api_key_placeholder: Leave blank to keep current key
+      api_key_set: "Current key: {preview}"
+      api_key_not_set: No custom API key saved.
+      supports_chat_label: Supports /v1/chat/completions
+      supports_responses_label: Supports /v1/responses or reasoning format
+      builtin_note: The forum default provider is managed by Nexus. Custom endpoint fields are ignored in builtin mode.
+      confirmation_label: I confirm this change to my Nexus LLM provider settings.
+      submit_button: Save LLM settings
+      saved_message: Nexus LLM settings saved.
+      load_error: Could not load Nexus LLM settings.

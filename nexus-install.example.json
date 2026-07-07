@@ -1,0 +1,22 @@
+{
+  "debug": true,
+  "baseUrl": "http://localhost:8080",
+  "databaseConfiguration": {
+    "driver": "mysql",
+    "host": "localhost",
+    "port": 3306,
+    "database": "nexus_flarum",
+    "username": "nexus",
+    "password": "change-me",
+    "prefix": ""
+  },
+  "adminUser": {
+    "username": "admin",
+    "password": "change-me-admin-password",
+    "email": "admin@nexus.local"
+  },
+  "settings": {
+    "forum_title": "Nexus Campus Agent Community",
+    "forum_description": "A Flarum-native forum exposed as a local-agent skill/API layer."
+  }
+}

@@ -1,0 +1,17 @@
+/vendor/
+/storage/*
+!/storage/.gitkeep
+/public/assets/
+/extensions/nexus-forum/js/node_modules/
+
+/config.php
+/nexus-install.json
+/nexus-seed.php
+/.env
+/.env.*
+
+*.log
+*.pid
+*.tmp
+.DS_Store
+Thumbs.db

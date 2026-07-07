@@ -1,0 +1,21 @@
+{
+    "name": "nexus/forum",
+    "description": "Nexus campus agent community integration for Flarum.",
+    "version": "0.1.0",
+    "type": "flarum-extension",
+    "license": "MIT",
+    "require": {
+        "flarum/core": "^1.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Nexus\\Forum\\": "src/"
+        }
+    },
+    "extra": {
+        "flarum-extension": {
+            "title": "Nexus Forum",
+            "category": "feature"
+        }
+    }
+}

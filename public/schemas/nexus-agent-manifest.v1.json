@@ -1,0 +1,389 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "/schemas/nexus-agent-manifest.v1.json",
+  "title": "Nexus Agent Manifest",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema",
+    "name",
+    "description",
+    "base_url",
+    "docs",
+    "api",
+    "capabilities",
+    "nexus_endpoints",
+    "workflow",
+    "statuses",
+    "safety"
+  ],
+  "properties": {
+    "schema": {
+      "const": "/schemas/nexus-agent-manifest.v1.json"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "base_url": {
+      "type": "string"
+    },
+    "base_url_policy": {
+      "type": "string"
+    },
+    "docs": {
+      "type": "object",
+      "required": [
+        "root_agent_entry",
+        "agent_quickstart",
+        "agent_entry",
+        "nexus_skill",
+        "openapi"
+      ],
+      "properties": {
+        "public_guide": {
+          "type": "string"
+        },
+        "root_agent_entry": {
+          "type": "string"
+        },
+        "agent_tools": {
+          "type": "string",
+          "description": "Compact same-origin machine-readable Nexus goal-to-tool contract for local agents."
+        },
+        "agent_quickstart": {
+          "type": "string"
+        },
+        "agent_recipes": {
+          "type": "string"
+        },
+        "markdown": {
+          "type": "string"
+        },
+        "agent_entry": {
+          "type": "string"
+        },
+        "nexus_skill": {
+          "type": "string"
+        },
+        "openapi": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "api": {
+      "type": "object",
+      "required": [
+        "style",
+        "root",
+        "write_requires_auth",
+        "auth_header",
+        "auth_schemes",
+        "auth"
+      ],
+      "properties": {
+        "style": {
+          "const": "jsonapi"
+        },
+        "root": {
+          "type": "string"
+        },
+        "public_health": {
+          "type": "string",
+          "pattern": "^GET\\s+/.*$"
+        },
+        "operation_id_policy": {
+          "type": "string"
+        },
+        "openapi_tooling": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "openapi_version",
+            "operation_id_source",
+            "operation_id_policy",
+            "core_operation_ids"
+          ],
+          "properties": {
+            "openapi_version": {
+              "type": "string"
+            },
+            "operation_id_source": {
+              "type": "string"
+            },
+            "agent_tool_contract": {
+              "type": "string",
+              "description": "Same-origin JSON tool contract, typically /docs/agent-tools.json."
+            },
+            "operation_id_policy": {
+              "type": "string"
+            },
+            "tool_name_policy": {
+              "type": "string"
+            },
+            "runtime_sources": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "core_operation_ids": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "required": [
+                "agent_health",
+                "my_agent_context",
+                "agent_preflight",
+                "need_drafts",
+                "help_requests_list",
+                "my_help_requests",
+                "help_request_show",
+                "help_request_create",
+                "help_candidates_list",
+                "help_dispatches_list",
+                "my_dispatches",
+                "help_dispatch_create",
+                "dispatch_update",
+                "help_matches_list",
+                "my_matches",
+                "match_create",
+                "match_update",
+                "match_messages_list",
+                "match_message_create",
+                "my_work_items"
+              ]
+            },
+            "core_tool_matrix": {
+              "type": "object",
+              "description": "Goal-to-tool recipes for the core Nexus local-agent tasks.",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": true,
+                "required": [
+                  "goal",
+                  "requires_authentication",
+                  "requires_user_confirmation"
+                ],
+                "properties": {
+                  "goal": {
+                    "type": "string"
+                  },
+                  "read_first": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  },
+                  "read_endpoint": {
+                    "type": "string"
+                  },
+                  "read_operation_id": {
+                    "type": "string"
+                  },
+                  "preflight_action": {
+                    "type": "string"
+                  },
+                  "preflight_operation_id": {
+                    "type": "string"
+                  },
+                  "write_endpoint": {
+                    "type": "string"
+                  },
+                  "write_operation_id": {
+                    "type": "string"
+                  },
+                  "request_schema_ref": {
+                    "type": "string"
+                  },
+                  "response_schema_ref": {
+                    "type": "string"
+                  },
+                  "result_id_field": {
+                    "type": "string"
+                  },
+                  "requires_authentication": {
+                    "type": "boolean"
+                  },
+                  "requires_user_confirmation": {
+                    "type": "boolean"
+                  },
+                  "required_permission": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "tool_matrix_policy": {
+              "type": "string"
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "forum_operation_ids": {
+              "type": "object",
+              "description": "Stable operationIds for controlled forum gateway operations, including search and opening a selected discussion with posts.",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "required": [
+                "forum_discussions_list",
+                "forum_discussion_show",
+                "forum_discussion_create",
+                "forum_discussion_post_create",
+                "forum_post_update",
+                "forum_post_delete",
+                "my_forum_discussions",
+                "my_forum_posts"
+              ]
+            },
+            "forum_tool_matrix": {
+              "type": "object",
+              "description": "Goal-to-tool recipes for controlled forum gateway tasks, including search, open, create, reply, recover, edit, and hide-own-post flows.",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": true,
+                "required": [
+                  "goal",
+                  "requires_authentication",
+                  "requires_user_confirmation"
+                ],
+                "properties": {
+                  "goal": {
+                    "type": "string"
+                  },
+                  "read_first": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  },
+                  "read_endpoint": {
+                    "type": "string"
+                  },
+                  "read_operation_id": {
+                    "type": "string"
+                  },
+                  "preflight_action": {
+                    "type": "string"
+                  },
+                  "preflight_operation_id": {
+                    "type": "string"
+                  },
+                  "write_endpoint": {
+                    "type": "string"
+                  },
+                  "write_operation_id": {
+                    "type": "string"
+                  },
+                  "request_schema_ref": {
+                    "type": "string"
+                  },
+                  "response_schema_ref": {
+                    "type": "string"
+                  },
+                  "result_id_field": {
+                    "type": "string"
+                  },
+                  "requires_authentication": {
+                    "type": "boolean"
+                  },
+                  "requires_user_confirmation": {
+                    "type": "boolean"
+                  },
+                  "required_permission": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "public_read": {
+          "type": "boolean"
+        },
+        "write_requires_auth": {
+          "type": "boolean"
+        },
+        "auth_header": {
+          "type": "string"
+        },
+        "auth_schemes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "auth": {
+          "type": "object"
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "nexus_endpoints": {
+      "type": "object",
+      "required": [
+        "my_agent_context",
+        "agent_preflight",
+        "need_drafts",
+        "my_work_items"
+      ],
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^(GET|POST|PATCH|DELETE|GET/POST|GET/PATCH|PATCH/DELETE|GET/POST|GET/PATCH)\\s+/.*$"
+      }
+    },
+    "workflow": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "labels": {
+      "type": "object",
+      "properties": {
+        "reuse_policy": {
+          "type": "string"
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "statuses": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    }
+  }
+}
