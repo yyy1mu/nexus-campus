@@ -56,4 +56,41 @@ public class ForumController {
         return ApiResponse.ok(discussionRepo.findByUser_IdOrderByCreatedAtDesc(user.getId()).stream()
                 .map(d -> Map.<String,Object>of("id", d.getId(), "title", d.getTitle())).toList());
     }
+
+    @GetMapping("/me/posts")
+    public ApiResponse<List<Map<String, Object>>> myPosts(@AuthenticationPrincipal User user) {
+        return ApiResponse.ok(postRepo.findByUser_IdOrderByCreatedAtDesc(user.getId()).stream()
+                .map(p -> Map.<String,Object>of("id", p.getId(), "content",
+                        p.getContent() != null ? p.getContent().substring(0, Math.min(100, p.getContent().length())) : "",
+                        "createdAt", p.getCreatedAt())).toList());
+    }
+
+    @PostMapping("/forum/discussions/{id}/posts")
+    public ApiResponse<Map<String, Object>> reply(
+            @PathVariable Integer id, @AuthenticationPrincipal User user,
+            @RequestBody Map<String, Object> body, HttpServletRequest request) {
+        @SuppressWarnings("unchecked")
+        var attrs = (Map<String, Object>) ((Map<String, Object>) body.get("data")).get("attributes");
+        String content = (String) attrs.get("content");
+        var post = forumService.reply(id, user, content, request.getRemoteAddr());
+        return ApiResponse.ok(Map.of("id", post.getId(), "number", post.getNumber(), "content", post.getContent()));
+    }
+
+    @PatchMapping("/forum/posts/{id}")
+    public ApiResponse<Map<String, Object>> editPost(
+            @PathVariable Integer id, @AuthenticationPrincipal User user,
+            @RequestBody Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        var attrs = (Map<String, Object>) ((Map<String, Object>) body.get("data")).get("attributes");
+        String content = (String) attrs.get("content");
+        var post = forumService.editPost(id, user, content);
+        return ApiResponse.ok(Map.of("id", post.getId(), "content", post.getContent()));
+    }
+
+    @DeleteMapping("/forum/posts/{id}")
+    public ApiResponse<Void> deletePost(
+            @PathVariable Integer id, @AuthenticationPrincipal User user) {
+        forumService.hidePost(id, user);
+        return ApiResponse.ok(null);
+    }
 }

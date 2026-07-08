@@ -156,3 +156,8 @@ export async function createForumDiscussion(attrs: Record<string, unknown>) {
   const { data } = await api.post('/forum/discussions', attrs)
   return data.data
 }
+
+export async function replyForum(discussionId: string, content: string) {
+  const { data } = await api.post(`/forum/discussions/${discussionId}/posts`, { content, userConfirmed: true })
+  return data.data
+}

@@ -16,7 +16,15 @@ public class AgentPreflightController {
 
     @GetMapping("/agent-health")
     public ApiResponse<Map<String, Object>> health() {
-        return ApiResponse.ok(Map.of("status", "ok", "availableActions", catalog.actionNames()));
+        return ApiResponse.ok(Map.of(
+            "status", "ok",
+            "availableActions", catalog.actionNames(),
+            "docs", Map.of(
+                "openApi", "/docs/openapi.json",
+                "agentTools", "/docs/agent-tools.json",
+                "manifest", "/.well-known/nexus-agent.json"
+            )
+        ));
     }
 
     @PostMapping("/agent-preflight")

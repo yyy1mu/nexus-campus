@@ -12,4 +12,5 @@ public class DispatchResponse {
     private String status, message, rationale, responseMessage, meetingHint, meetingSafetyState;
     private LocalDateTime expiresAt, respondedAt, createdAt, updatedAt;
     private String viewerRole;
+    private List<Map<String, Object>> nextActions;
 }

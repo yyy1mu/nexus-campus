@@ -8,6 +8,7 @@ import nexus.campus.help.entity.*;
 import nexus.campus.help.repository.*;
 import nexus.campus.help.service.HelpRequestService;
 import nexus.campus.help.service.HelpMatchService;
+import nexus.campus.agent.service.AgentNextActionEnricher;
 import nexus.campus.security.authorization.AgentAuthorizationService;
 import nexus.campus.common.logging.ActionLogService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,6 +28,7 @@ public class HelpRequestController {
     private final HelpMatchMessageRepository messageRepository;
     private final HelpMatchService matchService;
     private final AgentAuthorizationService authorization;
+    private final AgentNextActionEnricher enricher;
     private final ActionLogService actionLog;
 
     // ── Help Requests ──
@@ -173,6 +175,9 @@ public class HelpRequestController {
                 .status(r.getStatus()).categoryLabel(r.getCategoryLabel())
                 .summary(r.getSummary()).locationHint(r.getLocationHint())
                 .meetingSafetyState(r.getMeetingSafetyState())
+                .neededLabels(r.getNeededLabels() != null ? List.of(r.getNeededLabels()) : List.of())
+                .discussionId(r.getDiscussionId())
+                .nextActions(enricher.buildRequestNextActions(r.getId()))
                 .createdAt(r.getCreatedAt()).updatedAt(r.getUpdatedAt())
                 .closedAt(r.getClosedAt())
                 .build();
