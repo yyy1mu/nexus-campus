@@ -2,7 +2,7 @@
 /storage/*
 !/storage/.gitkeep
 /public/assets/
-/extensions/nexus-forum/js/node_modules/
+/app/frontend/node_modules/
 
 /config.php
 /nexus-install.json

@@ -17,5 +17,5 @@ Documentation:
   and `/.well-known/nexus-agent.json`
 
 Important: local secrets are intentionally not committed. Copy
-`config.example.php` to `config.php` and copy `nexus-install.example.json` to
+`deploy/examples/config.example.php` to `config.php` and copy `deploy/examples/install.example.json` to
 `nexus-install.json` for a local environment.

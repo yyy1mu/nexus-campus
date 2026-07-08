@@ -1,0 +1,80 @@
+package nexus.campus.agent.controller;
+
+import lombok.RequiredArgsConstructor;
+import nexus.campus.agent.entity.UserCapability;
+import nexus.campus.agent.repository.UserCapabilityRepository;
+import nexus.campus.common.entity.User;
+import nexus.campus.common.response.ApiResponse;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
+
+@RestController
+@RequestMapping("/api/nexus")
+@RequiredArgsConstructor
+public class CapabilityController {
+
+    private final UserCapabilityRepository repo;
+
+    @GetMapping("/capabilities")
+    public ApiResponse<List<Map<String, Object>>> list(
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(required = false) String label) {
+        var caps = label != null ? repo.findByLabelAndIsActiveTrue(label) : repo.findByIsActiveTrue();
+        return ApiResponse.ok(caps.stream().skip(offset).limit(limit).map(c -> Map.<String,Object>of(
+                "id", c.getId(), "userId", c.getUser().getId(), "label", c.getLabel(),
+                "name", c.getName(), "summary", c.getSummary())).toList());
+    }
+
+    @GetMapping("/capability-labels")
+    public ApiResponse<List<Map<String, Object>>> labels(@RequestParam(defaultValue = "20") int limit) {
+        var caps = repo.findByIsActiveTrue();
+        Map<String, Map<String, Object>> labels = new LinkedHashMap<>();
+        for (var c : caps) {
+            labels.computeIfAbsent(c.getLabel(), k -> new LinkedHashMap<>(Map.of(
+                    "label", k, "name", c.getName(), "helperCount", 0, "capabilityCount", 0)));
+            labels.get(c.getLabel()).put("capabilityCount",
+                    (Integer) labels.get(c.getLabel()).get("capabilityCount") + 1);
+        }
+        for (var e : labels.entrySet()) {
+            long count = caps.stream().filter(c -> c.getLabel().equals(e.getKey()))
+                    .map(c -> c.getUser().getId()).distinct().count();
+            e.getValue().put("helperCount", (int) count);
+        }
+        return ApiResponse.ok(new ArrayList<>(labels.values()).stream().limit(limit).toList());
+    }
+
+    @GetMapping("/me/capabilities")
+    public ApiResponse<List<Map<String, Object>>> my(@AuthenticationPrincipal User user) {
+        return ApiResponse.ok(repo.findByUser_IdAndIsActiveTrue(user.getId()).stream()
+                .map(c -> Map.<String,Object>of("label", c.getLabel(), "name", c.getName(),
+                        "isActive", c.isActive())).toList());
+    }
+
+    @PatchMapping("/me/capabilities")
+    public ApiResponse<List<Map<String, Object>>> update(
+            @AuthenticationPrincipal User user, @RequestBody Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        var attrs = (Map<String, Object>) ((Map<String, Object>) body.get("data")).get("attributes");
+        @SuppressWarnings("unchecked")
+        var items = (List<Map<String, Object>>) attrs.get("capabilities");
+        if (items == null) throw nexus.campus.common.exception.ApiException.badRequest("capabilities", "required");
+        Set<String> seen = new LinkedHashSet<>();
+        for (var item : items) {
+            String lbl = ((String) item.getOrDefault("label", "")).trim().toLowerCase();
+            if (lbl.isEmpty()) continue; seen.add(lbl);
+            var cap = repo.findByUser_IdAndLabel(user.getId(), lbl).orElseGet(() -> {
+                var c = new UserCapability(); c.setUser(user); c.setLabel(lbl); return c;
+            });
+            cap.setName((String) item.getOrDefault("name", lbl));
+            cap.setActive(!item.containsKey("isActive") || Boolean.TRUE.equals(item.get("isActive")));
+            repo.save(cap);
+        }
+        repo.findByUser_IdAndIsActiveTrue(user.getId()).stream()
+                .filter(c -> !seen.contains(c.getLabel()))
+                .forEach(c -> { c.setActive(false); repo.save(c); });
+        return my(user);
+    }
+}

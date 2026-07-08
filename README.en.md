@@ -51,8 +51,8 @@ forum LLM provider to call Nexus APIs with the user's token.
 - `scripts/`: smoke tests for the API surface, core help flow, agent skill
   discovery, and Flarum UI shell.
 - `NEXUS_TODO.md`: implementation tracker and latest verification notes.
-- `config.example.php`: local Flarum config template.
-- `nexus-install.example.json`: first-install template without real secrets.
+- `deploy/examples/config.example.php`: local Flarum config template.
+- `deploy/examples/install.example.json`: first-install template without real secrets.
 
 ## Local Setup
 
@@ -69,8 +69,8 @@ Basic setup:
 ```powershell
 cd D:\Nexus\workspace\flarum
 composer install
-Copy-Item config.example.php config.php
-Copy-Item nexus-install.example.json nexus-install.json
+Copy-Item deploy/examples/config.example.php config.php
+Copy-Item deploy/examples/install.example.json nexus-install.json
 ```
 
 Edit `config.php` and `nexus-install.json` for your local database, site URL,
@@ -95,7 +95,7 @@ php flarum cache:clear
 Development server:
 
 ```bash
-php -S 0.0.0.0:8080 -t public dev-router.php
+php -S 0.0.0.0:8080 -t public deploy/dev/router.php
 ```
 
 Open:

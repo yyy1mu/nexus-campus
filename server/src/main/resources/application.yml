@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: nexus-campus
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+server:
+  port: ${SERVER_PORT:8081}
+
+logging:
+  level:
+    nexus.campus: DEBUG
+    org.springframework.security: INFO
+
+---
+# ── Development: H2 in-memory (no Docker needed) ──
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:h2:mem:nexus_campus;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+  flyway:
+    enabled: false
+  security:
+    debug: true
+
+---
+# ── Docker MySQL ──
+spring:
+  config:
+    activate:
+      on-profile: mysql
+  datasource:
+    url: jdbc:mysql://localhost:3307/nexus_flarum?characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+    username: nexus
+    password: nexus_pwd
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    database-platform: org.hibernate.dialect.MySQLDialect
+  flyway:
+    enabled: false
+
+---
+# ── Production MySQL (env vars) ──
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:nexus_flarum}?characterEncoding=utf8mb4&useSSL=true
+    username: ${DB_USERNAME:nexus}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: false

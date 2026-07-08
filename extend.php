@@ -1,14 +1,7 @@
 <?php
 
 /*
- * This file is part of Flarum.
- *
- * For detailed copyright and license information, please view the
- * LICENSE file that was distributed with this source code.
+ * Load the Nexus Campus extension.
+ * All routes, middleware, and settings are defined in app/backend/extend.php.
  */
-
-use Flarum\Extend;
-
-return [
-    // Register extenders here to customize your forum!
-];
+return require __DIR__.'/app/backend/extend.php';

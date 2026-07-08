@@ -1,0 +1,186 @@
+package nexus.campus.agent.service;
+
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+
+@Service
+public class AgentPreflightCatalog {
+
+    public static final String PUBLIC_FOOTER = "Posted by Nexus Agent after explicit user confirmation.";
+    public static final String HELP_FOOTER = "Drafted by Nexus Agent after explicit user confirmation. Offline coordination should prefer public, safe, easy-to-leave places.";
+    public static final String MATCH_OFFER_FOOTER = "Offered through Nexus Agent after explicit user confirmation. Offline coordination should prefer public, safe, easy-to-leave places.";
+    public static final String DISPATCH_ACCEPT_FOOTER = "Accepted through Nexus Agent after explicit user confirmation. Offline coordination should prefer public, safe, easy-to-leave places.";
+
+    private static final Map<String, String> PERMISSION_COLUMNS = Map.of(
+        "allowAgentPosting", "allow_agent_posting",
+        "allowAgentReplying", "allow_agent_replying",
+        "allowAgentMatching", "allow_agent_matching",
+        "allowLocationMatching", "allow_location_matching"
+    );
+
+    private final Map<String, Map<String, Object>> catalog;
+
+    public AgentPreflightCatalog() {
+        catalog = buildCatalog();
+    }
+
+    public Set<String> actionNames() { return catalog.keySet(); }
+    public boolean hasAction(String action) { return catalog.containsKey(action); }
+    public Map<String, Object> definition(String action) { return catalog.get(action); }
+    public static String permissionColumn(String perm) { return PERMISSION_COLUMNS.get(perm); }
+
+    private Map<String, Map<String, Object>> buildCatalog() {
+        var c = new LinkedHashMap<String, Map<String, Object>>();
+
+        c.put("need_draft", Map.of(
+            "endpoint", "POST /api/nexus/need-drafts",
+            "requiresConfirmation", false,
+            "permissions", List.of(),
+            "purpose", "Classify a raw natural-language user need, return a draft and read-only discoveryPlan, and avoid publishing or writing database state.",
+            "proposedFields", List.of("rawUserNeed", "intent", "locationHint"),
+            "sideEffects", Map.of(
+                "writesDatabase", false,
+                "createsPublicContent", false,
+                "createsActionLog", false,
+                "visibility", "private_to_calling_agent_response"
+            )
+        ));
+
+        c.put("forum_discussion.create", Map.of(
+            "endpoint", "POST /api/nexus/forum/discussions",
+            "requiresConfirmation", true,
+            "permissions", List.of("allowAgentPosting"),
+            "purpose", "Create a general forum discussion through the Nexus gateway after the user confirms the exact public title, body, and tags.",
+            "proposedFields", List.of("title", "content", "tagIds", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", true,
+                "createsPublicDiscussion", true,
+                "visibility", "public_forum",
+                "serverAppendedFooter", PUBLIC_FOOTER
+            )
+        ));
+
+        c.put("forum_post.reply", Map.of(
+            "endpoint", "POST /api/nexus/forum/discussions/{id}/posts",
+            "requiresConfirmation", true,
+            "permissions", List.of("allowAgentReplying"),
+            "purpose", "Reply to an existing forum discussion through the Nexus gateway after the user confirms the exact public reply.",
+            "proposedFields", List.of("content", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", true,
+                "createsPublicReply", true,
+                "visibility", "public_forum",
+                "serverAppendedFooter", PUBLIC_FOOTER
+            )
+        ));
+
+        c.put("agent_profile.update", Map.of(
+            "endpoint", "PATCH /api/nexus/me/agent-profile",
+            "requiresConfirmation", true,
+            "permissions", List.of(),
+            "purpose", "Update the current user's private Agent Profile, soul.md metadata, preferences, or authorization switches after explicit confirmation.",
+            "proposedFields", List.of("agentName", "soulMd", "interestTags", "skillTags", "helpTags",
+                    "matchPreferences", "permissions", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", false,
+                "visibility", "private_to_user"
+            )
+        ));
+
+        c.put("capabilities.update", Map.of(
+            "endpoint", "PATCH /api/nexus/me/capabilities",
+            "requiresConfirmation", true,
+            "permissions", List.of(),
+            "purpose", "Update the current user's public capability labels after explicit confirmation.",
+            "proposedFields", List.of("capabilities", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", true,
+                "visibility", "public_capability_catalog"
+            )
+        ));
+
+        c.put("help_request.create", Map.of(
+            "endpoint", "POST /api/nexus/help-requests",
+            "requiresConfirmation", true,
+            "permissions", List.of("allowAgentMatching"),
+            "purpose", "Create a public help request after the user explicitly confirms the exact title, summary, labels, visibility, and safety notes.",
+            "proposedFields", List.of("title", "summary", "content", "neededLabels", "categoryLabel",
+                    "urgency", "locationHint", "meetingSafetyState", "agentContext", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", true,
+                "createsPublicDiscussionAndHelpRequest", true,
+                "visibility", "public_help_board",
+                "serverAppendedFooter", HELP_FOOTER
+            )
+        ));
+
+        c.put("dispatch.create", Map.of(
+            "endpoint", "POST /api/nexus/help-requests/{id}/dispatches",
+            "requiresConfirmation", true,
+            "permissions", List.of("allowAgentMatching"),
+            "purpose", "Dispatch a help request to a specific helper after the requester confirms.",
+            "proposedFields", List.of("helperUserId", "message", "rationale", "meetingHint",
+                    "meetingSafetyState", "expiresAt", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", false,
+                "sendsNotification", true,
+                "visibility", "requester_and_helper_only"
+            )
+        ));
+
+        c.put("match.create", Map.of(
+            "endpoint", "POST /api/nexus/help-requests/{id}/matches",
+            "requiresConfirmation", true,
+            "permissions", List.of("allowAgentMatching"),
+            "purpose", "Offer help on a help request after the helper explicitly confirms.",
+            "proposedFields", List.of("message", "meetingHint", "meetingSafetyState", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", true,
+                "postsInDiscussion", true,
+                "visibility", "requester_and_helper_with_public_post",
+                "serverAppendedFooter", MATCH_OFFER_FOOTER
+            )
+        ));
+
+        c.put("match_message.create", Map.of(
+            "endpoint", "POST /api/nexus/matches/{id}/messages",
+            "requiresConfirmation", true,
+            "permissions", List.of("allowAgentMatching"),
+            "purpose", "Send a private coordination message within an accepted match after explicit confirmation.",
+            "proposedFields", List.of("content", "agentContext", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", false,
+                "visibility", "match_participants_only"
+            )
+        ));
+
+        c.put("device_signal.create", Map.of(
+            "endpoint", "POST /api/nexus/device-signals",
+            "requiresConfirmation", true,
+            "permissions", List.of(),
+            "purpose", "Send device signals (geohash, sensors) after explicit user confirmation.",
+            "proposedFields", List.of("purpose", "coarseGeohash", "accuracyM", "bluetoothSeen",
+                    "shakeDetected", "gyroAvailable", "payload", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", false,
+                "visibility", "private_to_user"
+            )
+        ));
+
+        c.put("llm_settings.update", Map.of(
+            "endpoint", "PATCH /api/nexus/llm-settings",
+            "requiresConfirmation", true,
+            "permissions", List.of(),
+            "purpose", "Update the current user's optional forum-side LLM provider metadata after confirmation.",
+            "proposedFields", List.of("provider", "baseUrl", "apiKey", "chatModel", "responsesModel",
+                    "supportsChatCompletions", "supportsResponses", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", false,
+                "visibility", "private_to_user"
+            )
+        ));
+
+        return c;
+    }
+}
