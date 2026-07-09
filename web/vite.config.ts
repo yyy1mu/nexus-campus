@@ -16,6 +16,22 @@ export default defineConfig({
         target: 'http://127.0.0.1:8081',
         changeOrigin: true,
       },
+      '^/docs/(openapi\\.json|agent-tools\\.json|agent-quickstart\\.md|agent-recipes\\.md|llms\\.txt|nexus-skill\\.md|index\\.md)$': {
+        target: 'http://127.0.0.1:8081',
+        changeOrigin: true,
+      },
+      '/llms.txt': {
+        target: 'http://127.0.0.1:8081',
+        changeOrigin: true,
+      },
+      '/.well-known': {
+        target: 'http://127.0.0.1:8081',
+        changeOrigin: true,
+      },
+      '/schemas': {
+        target: 'http://127.0.0.1:8081',
+        changeOrigin: true,
+      },
     },
   },
   build: {
