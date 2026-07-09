@@ -12,5 +12,6 @@ public class HelpRequestUpdateRequest {
     private String locationHint;
     private String summary;
     private List<String> neededLabels;
+    private String agentContext;
     private Boolean userConfirmed;
 }

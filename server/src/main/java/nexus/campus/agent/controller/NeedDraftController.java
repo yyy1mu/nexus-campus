@@ -16,11 +16,8 @@ public class NeedDraftController {
 
     @PostMapping("/need-drafts")
     public ApiResponse<Map<String, Object>> draft(@RequestBody Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        var attrs = (Map<String, Object>) ((Map<String, Object>) body.get("data"))
-                .getOrDefault("attributes", body);
-        String rawNeed = (String) attrs.getOrDefault("rawUserNeed", "");
-        String intent = (String) attrs.getOrDefault("intent", "physical_help_request");
+        String rawNeed = (String) body.getOrDefault("rawUserNeed", "");
+        String intent = (String) body.getOrDefault("intent", "physical_help_request");
 
         var keywords = extractKeywords(rawNeed);
         var suggestedLabels = suggestLabels(rawNeed);

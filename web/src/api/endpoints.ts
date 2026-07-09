@@ -64,7 +64,7 @@ export async function updateMyCapabilities(caps: any[]) {
 }
 
 export async function preflight(action: string) {
-  const { data } = await api.post('/agent-preflight', { data: { type: 'nexus-agent-preflights', attributes: { action } } })
+  const { data } = await api.post('/agent-preflight', { action })
   return data.data
 }
 

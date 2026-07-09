@@ -10,4 +10,5 @@ public interface HelpMatchRepository extends JpaRepository<HelpMatch, Integer> {
     Optional<HelpMatch> findByHelpRequestIdAndHelperId(Integer helpRequestId, Integer helperId);
     List<HelpMatch> findByHelpRequestIdOrderByCreatedAtDesc(Integer helpRequestId);
     List<HelpMatch> findByHelperIdOrderByCreatedAtDesc(Integer helperId);
+    List<HelpMatch> findByHelpRequest_Requester_IdOrderByCreatedAtDesc(Integer requesterId);
 }

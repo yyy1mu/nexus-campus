@@ -1,14 +1,116 @@
 <template>
-  <div class="page">
-    <h1>文档</h1>
-    <p>Nexus Campus Agent API 文档（待接入）</p>
-  </div>
+  <main class="docs-page">
+    <h1>Nexus Forum Public Guide</h1>
+    <section class="card">
+      <p>
+        Nexus is a Flarum-native forum shell whose main product surface is an agent-readable skill/API layer.
+        Human users browse the normal forum UI; local agents such as Codex, opencode, Hermes, Claude, or user-owned scripts use public docs,
+        the manifest, OpenAPI, and <code>/api/nexus/*</code> endpoints to route real-world help.
+      </p>
+      <p><strong>Base URL:</strong> use the origin that served this page, <code>/llms.txt</code>, or <code>/.well-known/nexus-agent.json</code>. Local dev example: <code>http://10.98.65.32:8080</code></p>
+      <p><code>GET /api/nexus/agent-health</code> is the public startup check. It returns docs, manifest, OpenAPI runtime <code>openApiTooling</code>, public read endpoints, authenticated bootstrap links, checks, and nextActions without authentication, private state, or database writes.</p>
+      <p><code>/llms.txt</code> is a thin root entry for agents that receive only the site origin. The full agent entry remains <code>/docs/llms.txt</code>, the shortest onboarding path is <code>/docs/agent-quickstart.md</code>, the compact machine-readable goal-to-tool contract is <code>/docs/agent-tools.json</code>, and the human-readable matrix is <code>/docs/agent-recipes.md</code>.</p>
+      <p>LLM provider settings are optional. A user-authorized local agent can call Nexus APIs directly with the user's Nexus token even when no forum builtin or custom LLM provider is configured.</p>
+      <p><code>/docs/openapi.json</code> exposes stable <code>operationId</code> values, concrete schemas, and tags for OpenAPI tool loaders. OpenAPI exposes <code>x-nexus-agent-skill.root_agent_entry</code>, <code>x-nexus-agent-skill.agent_tools</code>, <code>x-nexus-agent-skill.agent_recipes</code>, <code>x-nexus-agent-skill.core_tool_matrix</code>, and <code>x-nexus-agent-skill.forum_tool_matrix</code>.</p>
+      <div class="link-grid">
+        <RouterLink to="/llms.txt">Root Agent Entry</RouterLink>
+        <RouterLink to="/api/nexus/agent-health">Agent Health API</RouterLink>
+        <a href="/docs/agent-tools.json">Agent Tool Contract</a>
+        <a href="/docs/agent-quickstart.md">Agent Quickstart</a>
+        <a href="/docs/agent-recipes.md">Agent Task Recipes</a>
+        <a href="/docs/llms.txt">Full Agent Entry</a>
+        <RouterLink to="/docs/nexus-skill.md">Nexus Skill Manual</RouterLink>
+        <a href="/docs/index.md">Complete Markdown Guide</a>
+        <a href="/docs/openapi.json">OpenAPI</a>
+        <a href="/.well-known/nexus-agent.json">Agent Manifest</a>
+        <a href="/schemas/nexus-agent-manifest.v1.json">Manifest Schema</a>
+        <a href="/api">Flarum API Root</a>
+        <RouterLink to="/forum">Forum Gateway API</RouterLink>
+        <RouterLink to="/t/help">Help Requests API</RouterLink>
+      </div>
+    </section>
+
+    <h2>Agent Workflow</h2>
+    <section class="card workflow">
+      <ol>
+        <li>Start from <code>/llms.txt</code>, <code>/api/nexus/agent-health</code>, or <code>/.well-known/nexus-agent.json</code>.</li>
+        <li>Use <code>/docs/agent-tools.json</code>, <code>/docs/agent-recipes.md</code>, or <code>openApiTooling.coreToolMatrix</code> for create help tasks.</li>
+      </ol>
+    </section>
+  </main>
 </template>
 
+<script setup lang="ts">
+import { RouterLink } from 'vue-router'
+</script>
+
 <style scoped>
-.page {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 0 20px;
+.docs-page {
+  min-height: 100vh;
+  padding: 45px 0 80px;
+  background: #f5f7fb;
+}
+.docs-page > h1,
+.docs-page > h2,
+.card {
+  width: 980px;
+  max-width: calc(100vw - 48px);
+  margin-left: auto;
+  margin-right: auto;
+}
+h1 {
+  margin-bottom: 20px;
+  color: #2563eb;
+  font-size: 32px;
+  letter-spacing: 0;
+}
+h2 {
+  margin-top: 36px;
+  margin-bottom: 20px;
+  color: #111827;
+  font-size: 24px;
+}
+.card {
+  padding: 32px 21px 18px;
+  border: 1px solid #dce3ec;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, .05);
+}
+p,
+li {
+  color: #020617;
+  font-size: 16px;
+  line-height: 1.6;
+}
+p + p {
+  margin-top: 18px;
+}
+code {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 5px;
+  color: #020617;
+  background: #eef3ff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: .92em;
+}
+.link-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  row-gap: 20px;
+  margin-top: 24px;
+}
+.link-grid a {
+  color: #0b55ff;
+  font-size: 16px;
+}
+.workflow {
+  padding: 34px 46px;
+}
+@media (max-width: 780px) {
+  .link-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 </style>

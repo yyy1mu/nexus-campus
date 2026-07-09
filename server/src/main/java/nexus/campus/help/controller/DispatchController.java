@@ -1,6 +1,8 @@
 package nexus.campus.help.controller;
 
 import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import nexus.campus.common.entity.User;
 import nexus.campus.common.exception.ApiException;
 import nexus.campus.common.response.ApiResponse;
@@ -11,6 +13,7 @@ import nexus.campus.help.service.HelpMatchService;
 import nexus.campus.agent.repository.UserCapabilityRepository;
 import nexus.campus.agent.repository.AgentActionLogRepository;
 import nexus.campus.security.authorization.AgentAuthorizationService;
+import nexus.campus.security.authorization.AgentWriteGuard;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,19 +30,19 @@ public class DispatchController {
     private final AgentActionLogRepository logRepo;
     private final HelpMatchService matchService;
     private final AgentAuthorizationService auth;
+    private final AgentWriteGuard guard;
+    private final ObjectMapper objectMapper;
 
     @PostMapping("/help-requests/{id}/dispatches")
     public ApiResponse<DispatchResponse> create(
             @PathVariable Integer id, @AuthenticationPrincipal User user,
             @RequestBody Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        var attrs = (Map<String, Object>) ((Map<String, Object>) body.get("data"))
-                .getOrDefault("attributes", body);
-        if (!Boolean.TRUE.equals(attrs.get("userConfirmed")))
-            throw ApiException.badRequest("userConfirmed", "Confirmation required.");
-        auth.assertMatchingAllowed(user.getId(), "dispatch help requests");
+        guard.requireMatching(user, body, "dispatch help requests");
+        if (!(body.get("helperUserId") instanceof Number helperUserId)) {
+            throw ApiException.badRequest("helperUserId", "helperUserId is required.");
+        }
         var d = matchService.createDispatch(id, user.getId(),
-                ((Number) attrs.get("helperUserId")).intValue(), attrs);
+                helperUserId.intValue(), body);
         return ApiResponse.ok(toResponse(d));
     }
 
@@ -47,21 +50,8 @@ public class DispatchController {
     public ApiResponse<DispatchResponse> update(
             @PathVariable Integer id, @AuthenticationPrincipal User user,
             @RequestBody Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        var attrs = (Map<String, Object>) ((Map<String, Object>) body.get("data"))
-                .getOrDefault("attributes", body);
-        if (!Boolean.TRUE.equals(attrs.get("userConfirmed")))
-            throw ApiException.badRequest("userConfirmed", "Confirmation required.");
-        auth.assertMatchingAllowed(user.getId(), "respond to dispatch");
-
-        var d = dispatchRepo.findById(id).orElseThrow();
-        boolean isHelper = d.getHelper().getId().equals(user.getId());
-        if (!isHelper) throw ApiException.forbidden();
-
-        if (attrs.containsKey("status")) d.setStatus((String) attrs.get("status"));
-        if (attrs.containsKey("responseMessage")) d.setResponseMessage((String) attrs.get("responseMessage"));
-        if (attrs.containsKey("meetingSafetyState")) d.setMeetingSafetyState((String) attrs.get("meetingSafetyState"));
-        d = dispatchRepo.save(d);
+        guard.requireMatching(user, body, "respond to dispatch");
+        var d = matchService.respondToDispatch(id, user.getId(), body);
         return ApiResponse.ok(toResponse(d));
     }
 
@@ -71,10 +61,18 @@ public class DispatchController {
         var caps = capRepo.findByIsActiveTrue();
         var candidates = new ArrayList<Map<String, Object>>();
         for (var c : caps) {
-            candidates.add(Map.of(
-                    "userId", c.getUser().getId(),
-                    "label", c.getLabel(), "name", c.getName(),
-                    "summary", c.getSummary()));
+            var item = new LinkedHashMap<String, Object>();
+            item.put("userId", c.getUser().getId());
+            item.put("label", c.getLabel());
+            item.put("name", c.getName());
+            item.put("summary", c.getSummary());
+            item.put("availability", c.getAvailability());
+            item.put("serviceRadiusM", c.getServiceRadiusM());
+            item.put("matchedLabels", List.of(c.getLabel()));
+            item.put("neededLabels", parseLabels(req.getNeededLabels()));
+            item.put("recommendation", "verify_then_dispatch");
+            item.put("dispatchRationaleTemplate", "Helper has active capability label " + c.getLabel() + ".");
+            candidates.add(item);
         }
         return ApiResponse.ok(candidates);
     }
@@ -90,5 +88,14 @@ public class DispatchController {
                 .expiresAt(d.getExpiresAt()).respondedAt(d.getRespondedAt())
                 .createdAt(d.getCreatedAt()).updatedAt(d.getUpdatedAt())
                 .build();
+    }
+
+    private List<String> parseLabels(String value) {
+        if (value == null || value.isBlank()) return List.of();
+        try {
+            return objectMapper.readValue(value, new TypeReference<List<String>>() {});
+        } catch (Exception ignored) {
+            return List.of(value);
+        }
     }
 }

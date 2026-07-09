@@ -1,7 +1,10 @@
 package nexus.campus.help.controller;
 
 import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import nexus.campus.common.entity.User;
+import nexus.campus.common.exception.ApiException;
 import nexus.campus.common.response.ApiResponse;
 import nexus.campus.help.dto.*;
 import nexus.campus.help.entity.*;
@@ -11,6 +14,7 @@ import nexus.campus.help.service.HelpMatchService;
 import nexus.campus.agent.service.AgentNextActionEnricher;
 import nexus.campus.security.authorization.AgentAuthorizationService;
 import nexus.campus.common.logging.ActionLogService;
+import nexus.campus.security.authorization.AgentWriteGuard;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,8 +32,10 @@ public class HelpRequestController {
     private final HelpMatchMessageRepository messageRepository;
     private final HelpMatchService matchService;
     private final AgentAuthorizationService authorization;
+    private final AgentWriteGuard guard;
     private final AgentNextActionEnricher enricher;
     private final ActionLogService actionLog;
+    private final ObjectMapper objectMapper;
 
     // ── Help Requests ──
 
@@ -55,15 +61,21 @@ public class HelpRequestController {
     @PostMapping("/help-requests")
     public ApiResponse<HelpRequestResponse> create(
             @AuthenticationPrincipal User user, @RequestBody HelpRequestCreateRequest req) {
+        guard.requireUser(user);
         if (!Boolean.TRUE.equals(req.getUserConfirmed()))
-            throw nexus.campus.common.exception.ApiException.badRequest("userConfirmed", "Confirmation required.");
+            throw ApiException.badRequest("userConfirmed", "Confirmation required.");
         authorization.assertMatchingAllowed(user.getId(), "create help requests");
 
-        var attrs = Map.<String, Object>of(
-            "title", req.getTitle(), "summary", req.getSummary(),
-            "categoryLabel", Objects.requireNonNullElse(req.getCategoryLabel(), ""),
-            "urgency", Objects.toString(req.getUrgency(), "normal")
-        );
+        var attrs = new LinkedHashMap<String, Object>();
+        attrs.put("title", req.getTitle());
+        attrs.put("summary", req.getSummary());
+        attrs.put("content", req.getContent());
+        attrs.put("categoryLabel", req.getCategoryLabel());
+        attrs.put("neededLabels", req.getNeededLabels());
+        attrs.put("urgency", req.getUrgency() != null ? req.getUrgency().name() : "normal");
+        attrs.put("locationHint", req.getLocationHint());
+        attrs.put("meetingSafetyState", req.getMeetingSafetyState() != null ? req.getMeetingSafetyState().name() : "not_arranged");
+        attrs.put("agentContext", req.getAgentContext());
         var hreq = helpRequestService.create(user.getId(), null, attrs);
         return ApiResponse.ok(toResponse(hreq));
     }
@@ -73,15 +85,20 @@ public class HelpRequestController {
             @PathVariable Integer id, @AuthenticationPrincipal User user,
             @RequestBody HelpRequestUpdateRequest req) {
         var hreq = helpRequestRepository.findById(id).orElseThrow();
+        guard.requireUser(user);
         if (!hreq.getRequester().getId().equals(user.getId()))
-            throw nexus.campus.common.exception.ApiException.forbidden();
+            throw ApiException.forbidden();
         if (!Boolean.TRUE.equals(req.getUserConfirmed()))
-            throw nexus.campus.common.exception.ApiException.badRequest("userConfirmed", "Confirmation required.");
+            throw ApiException.badRequest("userConfirmed", "Confirmation required.");
         authorization.assertMatchingAllowed(user.getId(), "update help requests");
 
         var attrs = new HashMap<String, Object>();
         if (req.getStatus() != null) attrs.put("status", req.getStatus().name());
         if (req.getSummary() != null) attrs.put("summary", req.getSummary());
+        if (req.getNeededLabels() != null) attrs.put("neededLabels", req.getNeededLabels());
+        if (req.getLocationHint() != null) attrs.put("locationHint", req.getLocationHint());
+        if (req.getMeetingSafetyState() != null) attrs.put("meetingSafetyState", req.getMeetingSafetyState().name());
+        if (req.getAgentContext() != null) attrs.put("agentContext", req.getAgentContext());
         attrs.put("userConfirmed", req.getUserConfirmed());
         var updated = helpRequestService.update(id, user.getId(), attrs);
         return ApiResponse.ok(toResponse(updated));
@@ -90,32 +107,38 @@ public class HelpRequestController {
     // ── Dispatches ──
 
     @GetMapping("/help-requests/{id}/dispatches")
-    public ApiResponse<List<DispatchResponse>> dispatches(@PathVariable Integer id) {
+    public ApiResponse<List<DispatchResponse>> dispatches(@PathVariable Integer id,
+                                                           @AuthenticationPrincipal User user) {
+        guard.requireUser(user);
+        var req = helpRequestRepository.findById(id).orElseThrow();
         return ApiResponse.ok(dispatchRepository.findByHelpRequestIdOrderByCreatedAtDesc(id)
-                .stream().map(this::toDispatchResponse).toList());
+                .stream()
+                .filter(d -> req.getRequester().getId().equals(user.getId()) || d.getHelper().getId().equals(user.getId()))
+                .map(this::toDispatchResponse).toList());
     }
 
     // ── Matches ──
 
     @GetMapping("/help-requests/{id}/matches")
-    public ApiResponse<List<MatchResponse>> matches(@PathVariable Integer id) {
+    public ApiResponse<List<MatchResponse>> matches(@PathVariable Integer id,
+                                                     @AuthenticationPrincipal User user) {
+        guard.requireUser(user);
+        var req = helpRequestRepository.findById(id).orElseThrow();
         return ApiResponse.ok(matchRepository.findByHelpRequestIdOrderByCreatedAtDesc(id)
-                .stream().map(this::toMatchResponse).toList());
+                .stream()
+                .filter(m -> req.getRequester().getId().equals(user.getId()) || m.getHelper().getId().equals(user.getId()))
+                .map(this::toMatchResponse).toList());
     }
 
     @PostMapping("/help-requests/{id}/matches")
     public ApiResponse<MatchResponse> offerMatch(
             @PathVariable Integer id, @AuthenticationPrincipal User user,
             @RequestBody Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        var attrs = (Map<String, Object>) ((Map<String, Object>) body.get("data")).getOrDefault("attributes", body);
-        if (!Boolean.TRUE.equals(attrs.get("userConfirmed")))
-            throw nexus.campus.common.exception.ApiException.badRequest("userConfirmed", "Confirmation required.");
-        authorization.assertMatchingAllowed(user.getId(), "offer help");
+        guard.requireMatching(user, body, "offer help");
 
-        String msg = (String) attrs.get("message");
-        String hint = (String) attrs.get("meetingHint");
-        String safety = (String) attrs.getOrDefault("meetingSafetyState", "not_arranged");
+        String msg = (String) body.get("message");
+        String hint = (String) body.get("meetingHint");
+        String safety = (String) body.getOrDefault("meetingSafetyState", "not_arranged");
         var match = matchService.offer(id, user.getId(), msg, hint, safety);
         return ApiResponse.ok(toMatchResponse(match));
     }
@@ -124,15 +147,11 @@ public class HelpRequestController {
     public ApiResponse<MatchResponse> updateMatch(
             @PathVariable Integer id, @AuthenticationPrincipal User user,
             @RequestBody Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        var attrs = (Map<String, Object>) ((Map<String, Object>) body.get("data")).getOrDefault("attributes", body);
-        if (!Boolean.TRUE.equals(attrs.get("userConfirmed")))
-            throw nexus.campus.common.exception.ApiException.badRequest("userConfirmed", "Confirmation required.");
-        authorization.assertMatchingAllowed(user.getId(), "update match");
+        guard.requireMatching(user, body, "update match");
 
-        String newStatus = (String) attrs.get("status");
-        String hint = (String) attrs.get("meetingHint");
-        String safety = (String) attrs.get("meetingSafetyState");
+        String newStatus = (String) body.get("status");
+        String hint = (String) body.get("meetingHint");
+        String safety = (String) body.get("meetingSafetyState");
         var match = matchService.updateStatus(id, user.getId(), newStatus, hint, safety);
         return ApiResponse.ok(toMatchResponse(match));
     }
@@ -140,7 +159,11 @@ public class HelpRequestController {
     // ── Messages ──
 
     @GetMapping("/matches/{id}/messages")
-    public ApiResponse<List<MatchMessageResponse>> messages(@PathVariable Integer id) {
+    public ApiResponse<List<MatchMessageResponse>> messages(@PathVariable Integer id,
+                                                             @AuthenticationPrincipal User user) {
+        guard.requireUser(user);
+        var match = matchRepository.findById(id).orElseThrow();
+        assertMatchParticipant(match, user.getId());
         return ApiResponse.ok(messageRepository.findByMatchIdOrderByCreatedAtAsc(id)
                 .stream().map(m -> MatchMessageResponse.builder()
                     .id(m.getId()).matchId(m.getMatch().getId())
@@ -153,14 +176,10 @@ public class HelpRequestController {
     public ApiResponse<MatchMessageResponse> sendMessage(
             @PathVariable Integer id, @AuthenticationPrincipal User user,
             @RequestBody Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        var attrs = (Map<String, Object>) ((Map<String, Object>) body.get("data")).getOrDefault("attributes", body);
-        if (!Boolean.TRUE.equals(attrs.get("userConfirmed")))
-            throw nexus.campus.common.exception.ApiException.badRequest("userConfirmed", "Confirmation required.");
-        authorization.assertMatchingAllowed(user.getId(), "send message");
+        guard.requireMatching(user, body, "send message");
 
-        String content = (String) attrs.get("content");
-        var msg = matchService.sendMessage(id, user.getId(), content, null);
+        String content = (String) body.get("content");
+        var msg = matchService.sendMessage(id, user.getId(), content, (String) body.get("agentContext"));
         return ApiResponse.ok(MatchMessageResponse.builder()
                 .id(msg.getId()).matchId(msg.getMatch().getId())
                 .userId(msg.getUser().getId()).content(msg.getContent())
@@ -175,12 +194,36 @@ public class HelpRequestController {
                 .status(r.getStatus()).categoryLabel(r.getCategoryLabel())
                 .summary(r.getSummary()).locationHint(r.getLocationHint())
                 .meetingSafetyState(r.getMeetingSafetyState())
-                .neededLabels(r.getNeededLabels() != null ? List.of(r.getNeededLabels()) : List.of())
+                .neededLabels(parseLabels(r.getNeededLabels()))
                 .discussionId(r.getDiscussionId())
                 .nextActions(enricher.buildRequestNextActions(r.getId()))
                 .createdAt(r.getCreatedAt()).updatedAt(r.getUpdatedAt())
                 .closedAt(r.getClosedAt())
                 .build();
+    }
+
+    private List<String> parseLabels(String value) {
+        if (value == null || value.isBlank()) return List.of();
+        try {
+            return objectMapper.readValue(value, new TypeReference<List<String>>() {});
+        } catch (Exception ignored) {
+            String trimmed = value.trim();
+            if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+                trimmed = trimmed.substring(1, trimmed.length() - 1);
+            }
+            if (trimmed.isBlank()) return List.of();
+            return Arrays.stream(trimmed.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isBlank())
+                    .toList();
+        }
+    }
+
+    private void assertMatchParticipant(HelpMatch match, Integer userId) {
+        var req = helpRequestRepository.findById(match.getHelpRequest().getId()).orElseThrow();
+        boolean isRequester = req.getRequester().getId().equals(userId);
+        boolean isHelper = match.getHelper().getId().equals(userId);
+        if (!isRequester && !isHelper) throw ApiException.forbidden();
     }
 
     private DispatchResponse toDispatchResponse(HelpDispatch d) {

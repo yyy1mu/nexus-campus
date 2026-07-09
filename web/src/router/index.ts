@@ -5,6 +5,9 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', name: 'home', component: HomeView },
+    { path: '/tags', name: 'tags', component: HomeView },
+    { path: '/t/:slug', name: 'tag', component: () => import('@/views/ForumView.vue') },
+    { path: '/d/:id/:slug?', name: 'discussion', component: () => import('@/views/DiscussionView.vue') },
     { path: '/help-requests', name: 'help-requests',
       component: () => import('@/views/HelpRequestsView.vue') },
     { path: '/agent-profile', name: 'agent-profile',
@@ -13,6 +16,9 @@ const router = createRouter({
       component: () => import('@/views/ForumView.vue') },
     { path: '/docs', name: 'docs',
       component: () => import('@/views/DocsView.vue') },
+    { path: '/docs/nexus-skill.md', name: 'nexus-skill', component: () => import('@/views/TextDocView.vue') },
+    { path: '/llms.txt', name: 'llms', component: () => import('@/views/TextDocView.vue') },
+    { path: '/api/nexus/agent-health', name: 'agent-health', component: () => import('@/views/TextDocView.vue') },
   ],
 })
 

@@ -8,6 +8,7 @@ import nexus.campus.forum.repository.DiscussionRepository;
 import nexus.campus.forum.repository.PostRepository;
 import nexus.campus.forum.repository.TagRepository;
 import nexus.campus.common.entity.User;
+import nexus.campus.common.exception.ApiException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,8 @@ public class ForumService {
 
     @Transactional
     public Discussion createDiscussion(User actor, String title, String content, List<Integer> tagIds, String ipAddress) {
+        if (title == null || title.isBlank()) throw ApiException.badRequest("title", "title is required.");
+        if (content == null || content.isBlank()) throw ApiException.badRequest("content", "content is required.");
         var disc = new Discussion();
         disc.setTitle(title);
         disc.setUser(actor);
@@ -54,6 +57,7 @@ public class ForumService {
 
     @Transactional
     public Post reply(Integer discussionId, User actor, String content, String ipAddress) {
+        if (content == null || content.isBlank()) throw ApiException.badRequest("content", "content is required.");
         var disc = discussionRepository.findById(discussionId).orElseThrow();
 
         int nextNumber = disc.getPosts() != null
@@ -81,8 +85,9 @@ public class ForumService {
     public Post editPost(Integer postId, User actor, String content) {
         var post = postRepository.findById(postId).orElseThrow();
         if (!post.getUser().getId().equals(actor.getId())) {
-            throw new RuntimeException("Permission denied");
+            throw ApiException.forbidden();
         }
+        if (content == null || content.isBlank()) throw ApiException.badRequest("content", "content is required.");
         post.setContent(content + "\n\nEdited by Nexus Agent after explicit user confirmation.");
         post.setEditedAt(java.time.LocalDateTime.now());
         return postRepository.save(post);
@@ -92,7 +97,7 @@ public class ForumService {
     public void hidePost(Integer postId, User actor) {
         var post = postRepository.findById(postId).orElseThrow();
         if (!post.getUser().getId().equals(actor.getId())) {
-            throw new RuntimeException("Permission denied");
+            throw ApiException.forbidden();
         }
         post.setHiddenAt(java.time.LocalDateTime.now());
         postRepository.save(post);

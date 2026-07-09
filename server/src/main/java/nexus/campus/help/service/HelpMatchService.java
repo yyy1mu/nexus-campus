@@ -29,7 +29,7 @@ public class HelpMatchService {
     public HelpMatch offer(Integer helpRequestId, Integer helperId, String message, String meetingHint, String meetingSafetyState) {
         var req = helpRequestRepository.findById(helpRequestId).orElseThrow();
         if (req.getRequester().getId().equals(helperId)) {
-            throw new RuntimeException("Cannot offer help to own request.");
+            throw ApiException.badRequest("helperUserId", "Cannot offer help to own request.");
         }
 
         var existing = matchRepository.findByHelpRequestIdAndHelperId(helpRequestId, helperId);
@@ -70,6 +70,9 @@ public class HelpMatchService {
         boolean isHelper = match.getHelper().getId().equals(actorId);
 
         String prevStatus = match.getStatus();
+        if (newStatus == null || newStatus.isBlank()) {
+            throw ApiException.badRequest("status", "status is required.");
+        }
 
         // Validate transition
         if (java.util.Set.of("declined", "cancelled", "completed").contains(prevStatus)
@@ -92,10 +95,10 @@ public class HelpMatchService {
 
         // Role-based restrictions
         if (java.util.Set.of("accepted", "declined").contains(newStatus) && !isRequester) {
-            throw new RuntimeException("Permission denied");
+            throw ApiException.forbidden();
         }
         if ("cancelled".equals(newStatus) && !isHelper && !isRequester) {
-            throw new RuntimeException("Permission denied");
+            throw ApiException.forbidden();
         }
 
         match.setStatus(newStatus);
@@ -123,7 +126,7 @@ public class HelpMatchService {
                                         Integer helperUserId, Map<String, Object> attrs) {
         var req = helpRequestRepository.findById(helpRequestId).orElseThrow();
         if (!req.getRequester().getId().equals(requesterId)) {
-            throw new RuntimeException("Permission denied");
+            throw ApiException.forbidden();
         }
 
         var existing = dispatchRepository.findByHelpRequestIdAndHelperId(helpRequestId, helperUserId);
@@ -161,6 +164,66 @@ public class HelpMatchService {
     }
 
     @Transactional
+    public HelpDispatch respondToDispatch(Integer dispatchId, Integer actorId, Map<String, Object> attrs) {
+        var dispatch = dispatchRepository.findById(dispatchId).orElseThrow();
+        var req = dispatch.getHelpRequest();
+        boolean isRequester = dispatch.getRequester().getId().equals(actorId);
+        boolean isHelper = dispatch.getHelper().getId().equals(actorId);
+        if (!isRequester && !isHelper) throw ApiException.forbidden();
+
+        String status = (String) attrs.get("status");
+        if (status == null || status.isBlank()) {
+            throw ApiException.badRequest("status", "status is required.");
+        }
+
+        var allowed = isHelper
+                ? java.util.Set.of("accepted", "declined")
+                : java.util.Set.of("cancelled");
+        if (!allowed.contains(status)) {
+            throw ApiException.badRequest("status", "This user cannot set dispatch status to " + status + ".");
+        }
+        if (!"pending".equals(dispatch.getStatus()) && !status.equals(dispatch.getStatus())) {
+            throw ApiException.badRequest("status", "This dispatch has already been resolved.");
+        }
+
+        dispatch.setStatus(status);
+        if (attrs.containsKey("responseMessage")) {
+            dispatch.setResponseMessage(v.string(attrs, "responseMessage", 2000, false));
+        }
+        if (attrs.containsKey("meetingHint")) {
+            dispatch.setMeetingHint(v.string(attrs, "meetingHint", 255, false));
+        }
+        if (attrs.containsKey("meetingSafetyState")) {
+            dispatch.setMeetingSafetyState(v.oneOf(attrs, "meetingSafetyState",
+                    java.util.Set.of("not_arranged", "public_place_suggested", "public_place_confirmed"),
+                    dispatch.getMeetingSafetyState()));
+        }
+        dispatch.setRespondedAt(LocalDateTime.now());
+
+        if ("accepted".equals(status)) {
+            var existing = matchRepository.findByHelpRequestIdAndHelperId(req.getId(), dispatch.getHelper().getId());
+            HelpMatch match = existing.orElseGet(() -> {
+                var m = new HelpMatch();
+                m.setHelpRequest(req);
+                m.setHelper(dispatch.getHelper());
+                m.setMessage(dispatch.getResponseMessage());
+                return m;
+            });
+            match.setStatus("accepted");
+            match.setMeetingHint(dispatch.getMeetingHint());
+            match.setMeetingSafetyState(dispatch.getMeetingSafetyState());
+            if (match.getAcceptedAt() == null) match.setAcceptedAt(LocalDateTime.now());
+            match = matchRepository.save(match);
+            dispatch.setMatch(match);
+            req.setStatus("matched");
+            req.setMeetingSafetyState(match.getMeetingSafetyState());
+            helpRequestRepository.save(req);
+        }
+
+        return dispatchRepository.save(dispatch);
+    }
+
+    @Transactional
     public HelpMatchMessage sendMessage(Integer matchId, Integer userId, String content, String agentContext) {
         var match = matchRepository.findById(matchId).orElseThrow();
         var req = match.getHelpRequest();
@@ -168,7 +231,7 @@ public class HelpMatchService {
         boolean isHelper = match.getHelper().getId().equals(userId);
 
         if (!isRequester && !isHelper) {
-            throw new RuntimeException("Permission denied");
+            throw ApiException.forbidden();
         }
         if (!"accepted".equals(match.getStatus())) {
             throw ApiException.badRequest("status",

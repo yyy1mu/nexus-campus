@@ -1,6 +1,8 @@
 package nexus.campus.help.service;
 
 import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import nexus.campus.help.entity.HelpRequest;
 import nexus.campus.help.repository.HelpRequestRepository;
 import nexus.campus.common.validation.PayloadValidator;
@@ -17,6 +19,7 @@ public class HelpRequestService {
 
     private final HelpRequestRepository helpRequestRepository;
     private final PayloadValidator v;
+    private final ObjectMapper objectMapper;
 
     @Transactional
     public HelpRequest create(Integer requesterId, Integer discussionId, Map<String, Object> attributes) {
@@ -64,6 +67,9 @@ public class HelpRequestService {
         if (attributes.containsKey("neededLabels")) {
             req.setNeededLabels(encodeStringList(attributes, "neededLabels"));
         }
+        if (attributes.containsKey("agentContext")) {
+            req.setAgentContext(v.string(attributes, "agentContext", 4000, false));
+        }
 
         if (java.util.Set.of("closed", "cancelled").contains(req.getStatus()) && req.getClosedAt() == null) {
             req.setClosedAt(LocalDateTime.now());
@@ -76,6 +82,11 @@ public class HelpRequestService {
 
     private String encodeStringList(Map<String, Object> attrs, String key) {
         var list = v.stringList(attrs, key, 12);
-        return list.isEmpty() ? null : list.toString();
+        if (list.isEmpty()) return null;
+        try {
+            return objectMapper.writeValueAsString(list);
+        } catch (JsonProcessingException e) {
+            return null;
+        }
     }
 }

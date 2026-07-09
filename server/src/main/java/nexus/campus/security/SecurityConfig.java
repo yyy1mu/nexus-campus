@@ -52,12 +52,14 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/register", "/api/login").permitAll()
+                .requestMatchers("/llms.txt", "/docs/**", "/.well-known/**", "/schemas/**").permitAll()
                 .requestMatchers("/api/nexus/agent-health").permitAll()
-                .requestMatchers("/api/nexus/capabilities").permitAll()
-                .requestMatchers("/api/nexus/capability-labels").permitAll()
-                .requestMatchers("/api/nexus/help-requests").permitAll()
-                .requestMatchers("/api/nexus/forum/discussions").permitAll()
-                .requestMatchers("/api/nexus/forum/discussions/*").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/nexus/capabilities").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/nexus/capability-labels").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/nexus/help-requests").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/nexus/help-requests/*").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/nexus/forum/discussions").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/nexus/forum/discussions/*").permitAll()
                 .anyRequest().authenticated()
             );
         return http.build();

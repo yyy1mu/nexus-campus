@@ -5,7 +5,7 @@ import {
   fetchDispatches, createDispatch, updateDispatch,
   fetchMatches, createMatch, updateMatch,
   fetchMessages, sendMessage,
-  fetchWorkItems, type
+  fetchWorkItems
 } from '@/api/endpoints'
 
 export const useHelpStore = defineStore('help', () => {

@@ -41,6 +41,56 @@ public class AgentContextController {
         attrs.put("capabilityCount", (int) caps.stream().count());
         attrs.put("workQueueItemCount", items.size());
         attrs.put("availableActions", catalog.actionNames());
+        attrs.put("docs", Map.of(
+                "rootAgentEntry", "/llms.txt",
+                "manifest", "/.well-known/nexus-agent.json",
+                "openApi", "/docs/openapi.json",
+                "agentTools", "/docs/agent-tools.json",
+                "quickstart", "/docs/agent-quickstart.md",
+                "recipes", "/docs/agent-recipes.md"
+        ));
+        attrs.put("openApiTooling", Map.of(
+                "operationIdPolicy", "stable-operation-id-per-rest-endpoint",
+                "contract", "/docs/openapi.json",
+                "coreActions", catalog.actionNames()
+        ));
+        attrs.put("profile", profile.map(p -> Map.of(
+                "allowAgentPosting", p.isAllowAgentPosting(),
+                "allowAgentReplying", p.isAllowAgentReplying(),
+                "allowAgentMatching", p.isAllowAgentMatching(),
+                "allowLocationMatching", p.isAllowLocationMatching(),
+                "locationVisibility", p.getLocationVisibility()
+        )).orElse(Map.of(
+                "allowAgentPosting", false,
+                "allowAgentReplying", false,
+                "allowAgentMatching", false,
+                "allowLocationMatching", false,
+                "locationVisibility", "off"
+        )));
+        attrs.put("agentReadiness", Map.of(
+                "physicalHelpReady", matching,
+                "forumPostingReady", posting,
+                "capabilityPublished", !caps.isEmpty(),
+                "setupGaps", setupGaps(matching, posting, caps.isEmpty())
+        ));
+        attrs.put("agentPreflight", Map.of(
+                "endpoint", "/api/nexus/agent-preflight",
+                "actions", catalog.actionNames().stream()
+                        .collect(java.util.stream.Collectors.toMap(a -> a, catalog::definition, (a, b) -> a, LinkedHashMap::new))
+        ));
+        attrs.put("skillInstructions", Map.of(
+                "requestBodyStyle", "REST JSON. Send flat JSON objects, not JSON:API data.attributes.",
+                "confirmationRule", "For write actions include userConfirmed: true after explicit user approval.",
+                "safeMeetingRule", "Offline coordination should prefer public, safe, easy-to-leave places."
+        ));
+        attrs.put("workItems", items.stream().map(w -> Map.of(
+                "kind", w.kind(),
+                "role", w.role(),
+                "id", w.id(),
+                "status", w.status(),
+                "title", w.title(),
+                "nextAction", w.actionRef()
+        )).toList());
         attrs.put("endpoints", Map.of(
                 "helpRequests", "/api/nexus/help-requests",
                 "workItems", "/api/nexus/me/work-items",
@@ -50,5 +100,13 @@ public class AgentContextController {
         ));
 
         return ApiResponse.ok(attrs);
+    }
+
+    private List<String> setupGaps(boolean matching, boolean posting, boolean noCapabilities) {
+        var gaps = new ArrayList<String>();
+        if (!matching) gaps.add("Enable allowAgentMatching before physical help coordination writes.");
+        if (!posting) gaps.add("Enable allowAgentPosting before agent-created forum discussions.");
+        if (noCapabilities) gaps.add("Publish at least one capability label to appear as a helper candidate.");
+        return gaps;
     }
 }

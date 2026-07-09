@@ -28,5 +28,6 @@ public class HelpRequestCreateRequest {
     private String locationHint;
 
     private MeetingSafetyState meetingSafetyState = MeetingSafetyState.not_arranged;
+    private String agentContext;
     private Boolean userConfirmed;
 }
