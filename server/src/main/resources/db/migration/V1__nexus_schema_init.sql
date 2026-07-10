@@ -1,6 +1,7 @@
 -- ============================================================
--- Nexus Campus — Schema Init (Nexus tables only)
--- Generated from Nexus migrations.
+-- Nexus Campus - optional schema notes.
+-- The Spring Boot profiles currently let Hibernate manage the local schema.
+-- Keep future hand-written SQL migrations in this directory if Flyway is enabled.
 -- ============================================================
 
 SET NAMES utf8mb4;

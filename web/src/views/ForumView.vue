@@ -66,7 +66,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
-import { discussionsByTag, tagBySlug, tags } from '@/data/flarumSeed'
+import { discussionsByTag, tagBySlug, tags } from '@/data/nexusSeed'
 
 const route = useRoute()
 const activeSlug = computed(() => String(route.params.slug || ''))

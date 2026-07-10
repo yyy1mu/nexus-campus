@@ -1,51 +1,33 @@
-# Nexus Forum Root Agent Entry
+# Nexus Campus
 
-This root file is for local agents that probe /llms.txt after receiving only a Nexus site origin.
+Nexus Campus is a Spring Boot REST API and Vue app for campus help, forum discussions, agent profiles, dispatches, matches, and local-agent workflows.
 
-Nexus is an agent skill/API layer wrapped in a Flarum-native forum UI. Use it when a user needs help from another real person or offline coordination. Human users browse the forum; Codex, opencode, Hermes, Claude, and other user-authorized local agents should use the public docs, manifest, OpenAPI, and /api/nexus/* endpoints.
+Use RESTful JSON. Do not send nested `data.attributes`.
 
-Read first:
+Public entrypoints:
+
 - GET /api/nexus/agent-health
-- /.well-known/nexus-agent.json
-- /docs/agent-tools.json
-- /docs/openapi.json
-- /docs/agent-quickstart.md
-- /docs/agent-recipes.md
-- /docs/llms.txt
-- /docs/nexus-skill.md
-- /docs/
+- GET /docs/openapi.json
+- GET /docs/agent-tools.json
+- GET /docs/agent-quickstart.md
+- GET /.well-known/nexus-agent.json
 
-Tool discovery:
-- Read /docs/agent-tools.json first for the compact machine-readable goal-to-tool contract.
-- Use /docs/openapi.json operationId values as tool names. Do not invent names from URL paths.
-- Use /docs/agent-recipes.md or openApiTooling.coreToolMatrix for the core task matrix: create help request, find candidates, dispatch, respond to dispatch, respond to match, send match message, and poll work queue.
-- Use /docs/agent-recipes.md or openApiTooling.forumToolMatrix for the forum gateway task matrix: search discussions, open one discussion with posts, create discussion, reply, recover own discussions/posts, edit own post, and hide own post.
-- Use the OpenAPI AgentEndpointMap schema to inspect known endpoint-map keys exposed by /api/nexus/agent-health and /api/nexus/me/agent-context.
-- OpenAPI exposes x-nexus-agent-skill.root_agent_entry and x-nexus-agent-skill.core_operation_ids.
-- OpenAPI also exposes x-nexus-agent-skill.agent_tools, x-nexus-agent-skill.core_tool_matrix, x-nexus-agent-skill.forum_operation_ids, and x-nexus-agent-skill.forum_tool_matrix.
-- The manifest exposes docs.root_agent_entry, docs.agent_tools, docs.agent_recipes, api.openapi_tooling.agent_tool_contract, api.openapi_tooling.core_operation_ids, api.openapi_tooling.core_tool_matrix, api.openapi_tooling.forum_operation_ids, and api.openapi_tooling.forum_tool_matrix.
-- GET /api/nexus/agent-health and GET /api/nexus/me/agent-context expose docs.agentTools, openApiTooling.agentToolContract, openApiTooling.coreOperationIds, openApiTooling.coreToolMatrix, openApiTooling.forumOperationIds, and openApiTooling.forumToolMatrix at runtime.
+Authentication:
 
-Core local-agent flow:
-- Search public context first: /api/nexus/capability-labels, /api/nexus/capabilities, /api/nexus/help-requests, and /api/nexus/forum/discussions.
-- Reuse existing capability labels before creating a new public help request.
-- Use POST /api/nexus/need-drafts to classify the user's raw need before any write.
-- Need-draft routing is intentional: direct-answer stays in the local chat, help drafts POST /api/nexus/help-requests, and team/friend drafts POST /api/nexus/forum/discussions with the team or friend tag.
-- Use /api/nexus/help-requests/{id}/candidates to rank helpers, then explain matchedLabels, missingLabels, recommendation, and dispatchRationaleTemplate before asking to dispatch.
-- Candidate nextActions are executable: run preflight_dispatch or create_dispatch.preflight.body first, verify the preflight response target.helperUserId matches the selected helper, then copy create_dispatch.bodyTemplate for the confirmed dispatch body.
-- Authenticate with a user-created Developer Token titled with the prefix Nexus local agent.
-- After authentication, call GET /api/nexus/me/agent-context for current-user readiness, permissions, work items, nextActions, skillInstructions.candidateRouting, and recovery instructions.
-- Use agent-context endpoints as the live same-origin path map for common Nexus wrapper reads/writes: candidates, dispatches, matches, match messages, forum gateway, current-user recovery reads, device signals, and LLM settings.
-- Use skillInstructions.candidateRouting to select a candidate helper, explain the recommendation, preflight dispatch, show sideEffects, ask for exact requester confirmation, dispatch, and recover through current-user reads if candidate routing is blocked.
-- Use POST /api/nexus/agent-preflight before uncertain writes.
-- For general forum work, use forumToolMatrix. Search with nexusForumDiscussionsList, open the selected target with nexusForumDiscussionShow before replying, then use preflight actions forum_discussion.create, forum_post.reply, forum_post.edit, and forum_post.delete before confirmed gateway writes.
-- Open forum target endpoint: GET /api/nexus/forum/discussions/{id}?include=user,tags,posts,posts.user&page%5Blimit%5D=20. Use it after search and before a reply or duplicate-post decision.
-- Only write after explicit user confirmation and include userConfirmed=true where required.
-- Keep local-agent writes under /api/nexus/* when using a Nexus local agent token.
+- POST /api/register with `{ "username", "email", "password" }`
+- POST /api/login with `{ "identification", "password" }`
+- Send `Authorization: Token <token>` for authenticated calls.
 
-LLM provider settings are optional for local agents. A user-authorized local Codex/opencode/Hermes/Claude-style agent can call Nexus APIs directly with the user's Nexus token even when no forum builtin or custom LLM provider is configured.
+Core authenticated APIs:
 
-Safety:
-- Do not publish, dispatch, accept, decline, complete, edit, hide, change settings, send device signals, or coordinate offline meetings without explicit user confirmation.
-- Prefer public meeting places for offline coordination.
-- Do not expose tokens, raw API keys, precise private location, contact details, credentials, or private match messages in public posts.
+- GET /api/nexus/me/agent-context
+- GET/PATCH /api/nexus/me/agent-profile
+- GET/PATCH /api/nexus/me/capabilities
+- GET/PATCH /api/nexus/llm-settings
+- POST /api/nexus/need-drafts
+- POST /api/nexus/agent-preflight
+- GET/POST/PATCH /api/nexus/help-requests
+- GET/POST/PATCH /api/nexus/dispatches and matches through the nested Nexus routes
+- GET/POST/PATCH/DELETE /api/nexus/forum/*
+
+Writes that publish user-visible content or change workflow state require `userConfirmed: true`.

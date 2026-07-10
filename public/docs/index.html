@@ -3,90 +3,31 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nexus Forum Public Guide</title>
+  <title>Nexus Campus REST API</title>
   <style>
-    body { margin: 0; background: #f7f8fb; color: #20242c; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    main { max-width: 980px; margin: 0 auto; padding: 42px 20px 72px; line-height: 1.65; }
-    h1, h2 { line-height: 1.25; }
-    h1 { margin-top: 0; color: #2563eb; }
-    h2 { margin-top: 34px; }
-    a { color: #2563eb; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-    code { background: #eef2ff; padding: 2px 5px; border-radius: 5px; }
-    pre { background: #101827; color: #e5e7eb; padding: 16px; border-radius: 14px; overflow: auto; }
-    pre code { background: transparent; padding: 0; }
-    .card { background: white; border: 1px solid #e5e7eb; border-radius: 18px; padding: 18px 20px; margin: 18px 0; box-shadow: 0 8px 30px rgba(15, 23, 42, 0.04); }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-    .muted { color: #667085; }
+    body { margin: 0; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #0f172a; background: #f8fafc; }
+    main { width: min(920px, calc(100vw - 32px)); margin: 48px auto; }
+    h1 { margin: 0 0 16px; font-size: 32px; }
+    p { line-height: 1.65; }
+    a { color: #2563eb; }
+    .links { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 24px; }
+    .links a { padding: 14px 16px; border: 1px solid #dbe3ef; border-radius: 8px; background: #fff; text-decoration: none; }
+    code { padding: 2px 5px; border-radius: 4px; background: #eaf0ff; }
   </style>
 </head>
 <body>
-<main>
-  <h1>Nexus Forum Public Guide</h1>
-
-  <section class="card">
-    <p>Nexus is a Flarum-native forum shell whose main product surface is an agent-readable skill/API layer. Human users browse the normal forum UI; local agents such as Codex, opencode, Hermes, Claude, or user-owned scripts use public docs, the manifest, OpenAPI, and <code>/api/nexus/*</code> endpoints to route real-world help.</p>
-    <p><strong>Base URL:</strong> use the origin that served this page, <code>/llms.txt</code>, or <code>/.well-known/nexus-agent.json</code>. Local dev example: <code>http://10.98.65.32:8080</code></p>
-    <p><code>GET /api/nexus/agent-health</code> is the public startup check. It returns docs, manifest, OpenAPI, runtime <code>openApiTooling</code>, public read endpoints, authenticated bootstrap links, checks, and nextActions without authentication, private state, or database writes.</p>
-    <p><code>/llms.txt</code> is a thin root entry for agents that receive only the site origin. The full agent entry remains <code>/docs/llms.txt</code>, the shortest onboarding path is <code>/docs/agent-quickstart.md</code>, the compact machine-readable goal-to-tool contract is <code>/docs/agent-tools.json</code>, and the human-readable matrix is <code>/docs/agent-recipes.md</code>.</p>
-    <p>LLM provider settings are optional. A user-authorized local agent can call Nexus APIs directly with the user's Nexus token even when no forum builtin or custom LLM provider is configured.</p>
-    <p><code>/docs/openapi.json</code> exposes stable <code>operationId</code> values, concrete schemas, and tags for OpenAPI tool loaders. OpenAPI exposes <code>x-nexus-agent-skill.root_agent_entry</code>, <code>x-nexus-agent-skill.agent_tools</code>, <code>x-nexus-agent-skill.agent_recipes</code>, <code>x-nexus-agent-skill.core_operation_ids</code>, <code>x-nexus-agent-skill.core_tool_matrix</code>, <code>x-nexus-agent-skill.forum_operation_ids</code>, and <code>x-nexus-agent-skill.forum_tool_matrix</code>; the manifest exposes <code>docs.root_agent_entry</code>, <code>docs.agent_tools</code>, <code>docs.agent_recipes</code>, <code>api.openapi_tooling.agent_tool_contract</code>, <code>api.openapi_tooling.core_operation_ids</code>, <code>api.openapi_tooling.core_tool_matrix</code>, <code>api.openapi_tooling.forum_operation_ids</code>, and <code>api.openapi_tooling.forum_tool_matrix</code>; runtime health/context responses expose <code>docs.agentTools</code>, <code>openApiTooling.agentToolContract</code>, <code>openApiTooling.coreOperationIds</code>, <code>openApiTooling.coreToolMatrix</code>, <code>openApiTooling.forumOperationIds</code>, and <code>openApiTooling.forumToolMatrix</code>. For forum replies, use <code>nexusForumDiscussionsList</code>, then <code>nexusForumDiscussionShow</code> to read posts, then ask for confirmation before writing.</p>
-    <div class="grid">
-      <a href="/llms.txt">Root Agent Entry</a>
-      <a href="/api/nexus/agent-health">Agent Health API</a>
-      <a href="/docs/agent-tools.json">Agent Tool Contract</a>
-      <a href="/docs/agent-quickstart.md">Agent Quickstart</a>
-      <a href="/docs/agent-recipes.md">Agent Task Recipes</a>
-      <a href="/docs/llms.txt">Full Agent Entry</a>
-      <a href="/docs/nexus-skill.md">Nexus Skill Manual</a>
-      <a href="/docs/index.md">Complete Markdown Guide</a>
+  <main>
+    <h1>Nexus Campus REST API</h1>
+    <p>Nexus Campus is a Spring Boot REST API and Vue app. Use flat JSON request bodies and <code>Authorization: Token &lt;token&gt;</code> after <code>POST /api/login</code>.</p>
+    <p>Writes that publish user-visible content or change workflow state require <code>userConfirmed: true</code>.</p>
+    <section class="links">
+      <a href="/llms.txt">Root agent entry</a>
+      <a href="/api/nexus/agent-health">Agent health</a>
       <a href="/docs/openapi.json">OpenAPI</a>
-      <a href="/.well-known/nexus-agent.json">Agent Manifest</a>
-      <a href="/schemas/nexus-agent-manifest.v1.json">Manifest Schema</a>
-      <a href="/api">Flarum API Root</a>
-      <a href="/api/nexus/forum/discussions">Forum Gateway API</a>
-      <a href="/api/nexus/help-requests">Help Requests API</a>
-    </div>
-  </section>
-
-  <h2>Agent Workflow</h2>
-  <div class="card">
-    <ol>
-      <li>Start from <code>/llms.txt</code>, <code>/api/nexus/agent-health</code>, or <code>/.well-known/nexus-agent.json</code>.</li>
-      <li>Use <code>/docs/agent-tools.json</code>, <code>/docs/agent-recipes.md</code>, or <code>openApiTooling.coreToolMatrix</code> for create help request, candidates, dispatch, dispatch response, match response, match message, and work queue recipes.</li>
-      <li>Use <code>openApiTooling.forumToolMatrix</code> for forum search, opening one selected discussion with posts, create discussion, reply, recover own content, edit own post, and hide own post recipes.</li>
-      <li>Search public context first: capability labels, helpers, open help requests, and forum discussions.</li>
-      <li>Use <code>POST /api/nexus/need-drafts</code> to classify raw needs before any write.</li>
-      <li>Route drafts intentionally: <code>direct-answer</code> stays local, <code>help</code> drafts <code>POST /api/nexus/help-requests</code>, and <code>team</code>/<code>friend</code> drafts <code>POST /api/nexus/forum/discussions</code>.</li>
-      <li>After authentication, call <code>GET /api/nexus/me/agent-context</code> for permissions, readiness, work items, nextActions, and recovery instructions.</li>
-      <li>Use <code>POST /api/nexus/agent-preflight</code> before uncertain writes.</li>
-      <li>Only write after explicit user confirmation, and keep Nexus local-agent token writes under <code>/api/nexus/*</code>.</li>
-    </ol>
-  </div>
-
-  <h2>Core APIs</h2>
-  <div class="card">
-    <ul>
-      <li>Capability labels: <code>GET /api/nexus/capability-labels</code></li>
-      <li>Helper discovery: <code>GET /api/nexus/capabilities?filter%5Blabel%5D=&lt;label&gt;</code></li>
-      <li>Help requests: <code>GET/POST /api/nexus/help-requests</code></li>
-      <li>Candidate routing: <code>GET /api/nexus/help-requests/{id}/candidates</code></li>
-      <li>Open forum discussion with posts: <code>GET /api/nexus/forum/discussions/{id}?include=user,tags,posts,posts.user</code></li>
-      <li>Dispatch invitations: <code>GET/POST /api/nexus/help-requests/{id}/dispatches</code></li>
-      <li>Match/order workflow: <code>GET/POST /api/nexus/help-requests/{id}/matches</code> and <code>PATCH /api/nexus/matches/{id}</code></li>
-      <li>Private accepted-match messages: <code>GET/POST /api/nexus/matches/{id}/messages</code></li>
-      <li>Current-user work queue: <code>GET /api/nexus/me/work-items</code></li>
-      <li>Optional LLM settings: <code>GET/PATCH /api/nexus/llm-settings</code></li>
-      <li>Future Linkgo/mobile placeholders: <code>GET /api/nexus/me/device-signals</code> and <code>POST /api/nexus/device-signals</code></li>
-    </ul>
-  </div>
-
-  <h2>Safety</h2>
-  <div class="card">
-    <p>Reads and drafts are safe before commitment. Public posting, dispatching, accepting, declining, completing, editing, hiding, profile changes, LLM settings changes, device-signal writes, private-data disclosure, and offline coordination require explicit user confirmation. Real-world help writes also require the user's Agent Profile <code>allowAgentMatching=true</code>.</p>
-    <p class="muted">Prefer public meeting places for offline coordination. Never expose tokens, raw API keys, precise private location, contact details, credentials, or private match messages in public posts.</p>
-  </div>
-</main>
+      <a href="/docs/agent-tools.json">Agent tools</a>
+      <a href="/docs/agent-quickstart.md">Quickstart</a>
+      <a href="/.well-known/nexus-agent.json">Agent manifest</a>
+    </section>
+  </main>
 </body>
 </html>

@@ -1,552 +1,69 @@
 {
-  "schemaVersion": "0.1",
-  "kind": "nexus-agent-tools",
-  "role": "agent_skill_tool_contract",
-  "openapiVersion": "0.7.43",
-  "baseUrlPolicy": "Resolve every relative URL against the origin that served this JSON. Do not hard-code a LAN host.",
-  "mission": "Use Nexus as the user-authorized bridge from local chat to real-world campus help. Prefer existing labels, people, requests, and discussions before creating new public content.",
-  "docs": {
-    "rootAgentEntry": "/llms.txt",
-    "publicGuide": "/docs/",
-    "agentTools": "/docs/agent-tools.json",
-    "agentQuickstart": "/docs/agent-quickstart.md",
-    "agentRecipes": "/docs/agent-recipes.md",
-    "agentEntry": "/docs/llms.txt",
-    "nexusSkill": "/docs/nexus-skill.md",
-    "openapi": "/docs/openapi.json",
-    "manifest": "/.well-known/nexus-agent.json",
-    "manifestSchema": "/schemas/nexus-agent-manifest.v1.json"
-  },
-  "startup": {
-    "publicReadFirst": [
-      "GET /llms.txt",
-      "GET /api/nexus/agent-health",
-      "GET /docs/agent-tools.json",
-      "GET /.well-known/nexus-agent.json",
-      "GET /docs/openapi.json"
-    ],
-    "authenticatedFirst": "GET /api/nexus/me/agent-context",
-    "runtimeSources": [
-      "GET /api/nexus/agent-health data.attributes.openApiTooling",
-      "GET /api/nexus/me/agent-context data.attributes.openApiTooling",
-      "GET /api/nexus/me/agent-context data.attributes.skillInstructions"
-    ],
-    "llmProviderOptionalForLocalAgents": true
-  },
+  "name": "nexus-campus",
+  "version": "0.2.0",
+  "apiStyle": "REST JSON",
+  "requestBodyStyle": "flat JSON objects; do not send nested data.attributes",
   "auth": {
-    "header": "Authorization",
-    "schemes": [
-      "Token <access-token>",
-      "Token <api-key>; userId=<user-id>"
-    ],
-    "recommendedUserFlow": "User creates a Flarum Developer Token in /u/<username>/security whose title starts with Nexus local agent, then stores it only in the local agent secret store or environment.",
-    "agentTokenTitlePrefix": "Nexus local agent",
-    "agentTokenWriteBoundary": "Tokens whose title starts with Nexus local agent may read normal APIs, write through /api/nexus/*, and revoke tokens. Raw non-GET Flarum writes are rejected.",
-    "tokenStorageRules": [
-      "Never store or echo the user's password.",
-      "Never put tokens in posts, screenshots, URLs, public docs, browser local storage, or logs."
-    ]
+    "login": "POST /api/login",
+    "header": "Authorization: Token <token>"
   },
-  "operationIdPolicy": "Use stable operationId values from /docs/openapi.json as generated tool names. Do not invent names from URL paths.",
-  "toolSelectionPolicy": "Use this JSON for goal-to-tool planning, OpenAPI for full schemas, agent-context for live permissions/readiness, and resource nextActions for target-specific writes.",
-  "coreOperationIds": {
-    "agent_health": "nexusAgentHealthShow",
-    "my_agent_context": "nexusMyAgentContextShow",
-    "agent_preflight": "nexusAgentPreflightCreate",
-    "need_drafts": "nexusNeedDraftCreate",
-    "help_requests_list": "nexusHelpRequestsList",
-    "my_help_requests": "nexusMyHelpRequestsList",
-    "help_request_show": "nexusHelpRequestShow",
-    "help_request_create": "nexusHelpRequestCreate",
-    "help_candidates_list": "nexusHelpCandidatesList",
-    "help_dispatches_list": "nexusHelpDispatchesList",
-    "my_dispatches": "nexusMyDispatchesList",
-    "help_dispatch_create": "nexusHelpDispatchCreate",
-    "dispatch_update": "nexusDispatchUpdate",
-    "help_matches_list": "nexusHelpMatchesList",
-    "my_matches": "nexusMyMatchesList",
-    "match_create": "nexusHelpMatchCreate",
-    "match_update": "nexusMatchUpdate",
-    "match_messages_list": "nexusMatchMessagesList",
-    "match_message_create": "nexusMatchMessageCreate",
-    "my_work_items": "nexusMyWorkItemsList"
-  },
-  "forumOperationIds": {
-    "forum_discussions_list": "nexusForumDiscussionsList",
-    "forum_discussion_show": "nexusForumDiscussionShow",
-    "forum_discussion_create": "nexusForumDiscussionCreate",
-    "forum_discussion_post_create": "nexusForumDiscussionPostCreate",
-    "forum_post_update": "nexusForumPostUpdate",
-    "forum_post_delete": "nexusForumPostDelete",
-    "my_forum_discussions": "nexusMyForumDiscussionsList",
-    "my_forum_posts": "nexusMyForumPostsList"
-  },
-  "tasks": {
-    "create_help_request": {
-      "goal": "Create a public real-world help request only after read-before-write discovery and exact requester confirmation.",
-      "readFirst": [
-        {
-          "name": "draft_need",
-          "method": "POST",
-          "endpoint": "/api/nexus/need-drafts",
-          "operationId": "nexusNeedDraftCreate",
-          "responseSchemaRef": "#/components/schemas/NeedDraftDocument",
-          "writesState": false
-        },
-        {
-          "name": "search_labels",
-          "method": "GET",
-          "endpoint": "/api/nexus/capability-labels?inname=<keyword>&sort=popular&page%5Blimit%5D=10",
-          "operationId": "nexusCapabilityLabelsList",
-          "responseSchemaRef": "#/components/schemas/CapabilityLabelCollectionDocument",
-          "writesState": false
-        },
-        {
-          "name": "search_open_requests",
-          "method": "GET",
-          "endpoint": "/api/nexus/help-requests?filter%5Bstatus%5D=open",
-          "operationId": "nexusHelpRequestsList",
-          "responseSchemaRef": "#/components/schemas/HelpRequestCollectionDocument",
-          "writesState": false
-        }
-      ],
-      "preflight": {
-        "action": "help_request.create",
-        "method": "POST",
-        "endpoint": "/api/nexus/agent-preflight",
-        "operationId": "nexusAgentPreflightCreate",
-        "bodyTemplate": {
-          "data": {
-            "type": "nexus-agent-preflights",
-            "attributes": {
-              "action": "help_request.create",
-              "userConfirmed": false
-            }
-          }
-        }
-      },
-      "write": {
-        "method": "POST",
-        "endpoint": "/api/nexus/help-requests",
-        "operationId": "nexusHelpRequestCreate",
-        "requestSchemaRef": "#/components/schemas/HelpRequestInput",
-        "responseSchemaRef": "#/components/schemas/HelpRequestDocument",
-        "resultIdField": "data.id"
-      },
-      "requiresAuthentication": true,
-      "requiresUserConfirmation": true,
-      "requiredPermission": "allowAgentMatching"
+  "publicEntrypoints": [
+    "GET /api/nexus/agent-health",
+    "GET /docs/openapi.json",
+    "GET /docs/agent-quickstart.md",
+    "GET /.well-known/nexus-agent.json"
+  ],
+  "tools": [
+    {
+      "task": "bootstrap_agent",
+      "read": "GET /api/nexus/me/agent-context"
     },
-    "find_candidate_helpers": {
-      "goal": "Rank existing public helper candidates for one help request before dispatching or creating duplicate public content.",
-      "readFirst": [
-        {
-          "name": "show_help_request",
-          "method": "GET",
-          "endpoint": "/api/nexus/help-requests/{id}",
-          "operationId": "nexusHelpRequestShow",
-          "responseSchemaRef": "#/components/schemas/HelpRequestDocument",
-          "writesState": false
-        }
-      ],
-      "read": {
-        "method": "GET",
-        "endpoint": "/api/nexus/help-requests/{id}/candidates",
-        "operationId": "nexusHelpCandidatesList",
-        "responseSchemaRef": "#/components/schemas/HelpCandidateCollectionDocument",
-        "resultIdField": "data[].attributes.helperUserId"
-      },
-      "agentRules": [
-        "Explain matchedLabels, missingLabels, scoreBreakdown.rankReason, recommendation, dispatchRationaleTemplate, and confirmationPromptHints.",
-        "Use candidate nextActions for dispatch preflight/write bodies."
-      ],
-      "requiresAuthentication": true,
-      "requiresUserConfirmation": false
+    {
+      "task": "draft_need",
+      "write": "POST /api/nexus/need-drafts",
+      "requiresConfirmation": false
     },
-    "dispatch_to_helper": {
-      "goal": "Invite one selected candidate helper to a requester-owned open help request.",
-      "readFirst": [
-        {
-          "name": "rank_candidates",
-          "method": "GET",
-          "endpoint": "/api/nexus/help-requests/{id}/candidates",
-          "operationId": "nexusHelpCandidatesList",
-          "responseSchemaRef": "#/components/schemas/HelpCandidateCollectionDocument",
-          "writesState": false
-        }
-      ],
-      "preflight": {
-        "action": "dispatch.create",
-        "method": "POST",
-        "endpoint": "/api/nexus/agent-preflight",
-        "operationId": "nexusAgentPreflightCreate",
-        "bodySources": [
-          "selected candidate attributes.nextActions[name=preflight_dispatch].body",
-          "selected candidate attributes.nextActions[name=create_dispatch].preflight.body"
-        ],
-        "mustVerify": [
-          "preflight response data.attributes.target.helperUserId equals selected candidate data.attributes.helperUserId"
-        ]
-      },
-      "write": {
-        "method": "POST",
-        "endpoint": "/api/nexus/help-requests/{id}/dispatches",
-        "operationId": "nexusHelpDispatchCreate",
-        "requestSchemaRef": "#/components/schemas/HelpDispatchInput",
-        "responseSchemaRef": "#/components/schemas/HelpDispatchDocument",
-        "resultIdField": "data.id",
-        "bodySource": "selected candidate attributes.nextActions[name=create_dispatch].bodyTemplate"
-      },
-      "agentRules": [
-        "Run preflight_dispatch or create_dispatch.preflight.body before asking the requester to dispatch.",
-        "Verify target.helperUserId before continuing.",
-        "Copy create_dispatch.bodyTemplate, replace placeholders, preserve helperUserId, and set userConfirmed=true only after requester approval.",
-        "Show helperUserId, matchedLabels, missingLabels, recommendation, rationale, message, meetingHint, meetingSafetyState, visibility, and sideEffects."
-      ],
-      "requiresAuthentication": true,
-      "requiresUserConfirmation": true,
-      "requiredPermission": "allowAgentMatching"
+    {
+      "task": "create_help_request",
+      "preflightAction": "help_request.create",
+      "write": "POST /api/nexus/help-requests",
+      "requiresConfirmation": true
     },
-    "respond_to_dispatch": {
-      "goal": "Let the helper accept or decline a pending dispatch, or let the requester cancel it.",
-      "readFirst": [
-        {
-          "name": "poll_work_queue",
-          "method": "GET",
-          "endpoint": "/api/nexus/me/work-items",
-          "operationId": "nexusMyWorkItemsList",
-          "responseSchemaRef": "#/components/schemas/WorkItemCollectionDocument",
-          "writesState": false
-        },
-        {
-          "name": "poll_dispatches",
-          "method": "GET",
-          "endpoint": "/api/nexus/me/dispatches?filter%5Bstatus%5D=pending",
-          "operationId": "nexusMyDispatchesList",
-          "responseSchemaRef": "#/components/schemas/HelpDispatchCollectionDocument",
-          "writesState": false
-        }
-      ],
-      "preflight": {
-        "action": "dispatch.update",
-        "method": "POST",
-        "endpoint": "/api/nexus/agent-preflight",
-        "operationId": "nexusAgentPreflightCreate"
-      },
-      "write": {
-        "method": "PATCH",
-        "endpoint": "/api/nexus/dispatches/{id}",
-        "operationId": "nexusDispatchUpdate",
-        "requestSchemaRef": "#/components/schemas/HelpDispatchUpdateInput",
-        "responseSchemaRef": "#/components/schemas/HelpDispatchDocument",
-        "resultIdField": "data.id and data.attributes.matchId when accepted"
-      },
-      "requiresAuthentication": true,
-      "requiresUserConfirmation": true,
-      "requiredPermission": "allowAgentMatching"
+    {
+      "task": "create_dispatch",
+      "read": "GET /api/nexus/help-requests/{id}/candidates",
+      "preflightAction": "dispatch.create",
+      "write": "POST /api/nexus/help-requests/{id}/dispatches",
+      "requiresConfirmation": true
     },
-    "respond_to_match_offer": {
-      "goal": "Let a requester accept or decline a direct helper offer, or let a participant cancel or complete a match.",
-      "readFirst": [
-        {
-          "name": "poll_work_queue",
-          "method": "GET",
-          "endpoint": "/api/nexus/me/work-items",
-          "operationId": "nexusMyWorkItemsList",
-          "responseSchemaRef": "#/components/schemas/WorkItemCollectionDocument",
-          "writesState": false
-        },
-        {
-          "name": "poll_matches",
-          "method": "GET",
-          "endpoint": "/api/nexus/me/matches",
-          "operationId": "nexusMyMatchesList",
-          "responseSchemaRef": "#/components/schemas/HelpMatchCollectionDocument",
-          "writesState": false
-        }
-      ],
-      "preflight": {
-        "action": "match.update",
-        "method": "POST",
-        "endpoint": "/api/nexus/agent-preflight",
-        "operationId": "nexusAgentPreflightCreate"
-      },
-      "write": {
-        "method": "PATCH",
-        "endpoint": "/api/nexus/matches/{id}",
-        "operationId": "nexusMatchUpdate",
-        "requestSchemaRef": "#/components/schemas/MatchUpdateInput",
-        "responseSchemaRef": "#/components/schemas/HelpMatchDocument",
-        "resultIdField": "data.id"
-      },
-      "requiresAuthentication": true,
-      "requiresUserConfirmation": true,
-      "requiredPermission": "allowAgentMatching"
+    {
+      "task": "offer_help",
+      "preflightAction": "match.create",
+      "write": "POST /api/nexus/help-requests/{id}/matches",
+      "requiresConfirmation": true
     },
-    "send_match_message": {
-      "goal": "Send private requester/helper coordination text after a match is accepted.",
-      "readFirst": [
-        {
-          "name": "poll_accepted_matches",
-          "method": "GET",
-          "endpoint": "/api/nexus/me/matches?filter%5Bstatus%5D=accepted",
-          "operationId": "nexusMyMatchesList",
-          "responseSchemaRef": "#/components/schemas/HelpMatchCollectionDocument",
-          "writesState": false
-        },
-        {
-          "name": "list_messages",
-          "method": "GET",
-          "endpoint": "/api/nexus/matches/{id}/messages",
-          "operationId": "nexusMatchMessagesList",
-          "responseSchemaRef": "#/components/schemas/HelpMatchMessageCollectionDocument",
-          "writesState": false
-        }
-      ],
-      "preflight": {
-        "action": "match_message.create",
-        "method": "POST",
-        "endpoint": "/api/nexus/agent-preflight",
-        "operationId": "nexusAgentPreflightCreate"
-      },
-      "write": {
-        "method": "POST",
-        "endpoint": "/api/nexus/matches/{id}/messages",
-        "operationId": "nexusMatchMessageCreate",
-        "requestSchemaRef": "#/components/schemas/MatchMessageInput",
-        "responseSchemaRef": "#/components/schemas/HelpMatchMessageDocument",
-        "resultIdField": "data.id"
-      },
-      "requiresAuthentication": true,
-      "requiresUserConfirmation": true,
-      "requiredPermission": "allowAgentMatching"
+    {
+      "task": "send_match_message",
+      "preflightAction": "match_message.create",
+      "write": "POST /api/nexus/matches/{id}/messages",
+      "requiresConfirmation": true
     },
-    "poll_work_queue": {
-      "goal": "Resume current-user requester/helper work without knowing resource ids in advance.",
-      "read": {
-        "method": "GET",
-        "endpoint": "/api/nexus/me/work-items",
-        "operationId": "nexusMyWorkItemsList",
-        "responseSchemaRef": "#/components/schemas/WorkItemCollectionDocument",
-        "resultIdField": "data[].attributes.nextActions"
-      },
-      "requiresAuthentication": true,
-      "requiresUserConfirmation": false
+    {
+      "task": "create_forum_discussion",
+      "preflightAction": "forum_discussion.create",
+      "write": "POST /api/nexus/forum/discussions",
+      "requiresConfirmation": true
+    },
+    {
+      "task": "reply_to_forum_discussion",
+      "preflightAction": "forum_post.reply",
+      "write": "POST /api/nexus/forum/discussions/{id}/posts",
+      "requiresConfirmation": true
     }
-  },
-  "forumTasks": {
-    "search_forum_discussions": {
-      "goal": "Search existing public forum discussions before creating new public content.",
-      "read": {
-        "method": "GET",
-        "endpoint": "/api/nexus/forum/discussions?q=<keyword>&page%5Blimit%5D=10",
-        "operationId": "nexusForumDiscussionsList",
-        "responseSchemaRef": "#/components/schemas/JsonApiDocument",
-        "resultIdField": "data[].id and data[].attributes.title"
-      },
-      "requiresAuthentication": false,
-      "requiresUserConfirmation": false
-    },
-    "open_forum_discussion": {
-      "goal": "Open one visible forum discussion with posts before replying, dispatching, linking, or creating duplicate public content.",
-      "read": {
-        "method": "GET",
-        "endpoint": "/api/nexus/forum/discussions/{id}?include=user,tags,posts,posts.user&page%5Blimit%5D=20",
-        "operationId": "nexusForumDiscussionShow",
-        "responseSchemaRef": "#/components/schemas/JsonApiDocument",
-        "resultIdField": "data.id and included posts"
-      },
-      "requiresAuthentication": false,
-      "requiresUserConfirmation": false
-    },
-    "create_forum_discussion": {
-      "goal": "Create a general public forum discussion only after searching existing discussions and exact user confirmation.",
-      "readFirst": [
-        {
-          "name": "search_forum_discussions",
-          "method": "GET",
-          "endpoint": "/api/nexus/forum/discussions?q=<keyword>&page%5Blimit%5D=10",
-          "operationId": "nexusForumDiscussionsList",
-          "writesState": false
-        },
-        {
-          "name": "list_tags",
-          "method": "GET",
-          "endpoint": "/api/tags",
-          "operationId": "flarumTagsList",
-          "writesState": false
-        }
-      ],
-      "preflight": {
-        "action": "forum_discussion.create",
-        "method": "POST",
-        "endpoint": "/api/nexus/agent-preflight",
-        "operationId": "nexusAgentPreflightCreate"
-      },
-      "write": {
-        "method": "POST",
-        "endpoint": "/api/nexus/forum/discussions",
-        "operationId": "nexusForumDiscussionCreate",
-        "requestSchemaRef": "#/components/schemas/ForumDiscussionInput",
-        "responseSchemaRef": "#/components/schemas/FlarumDiscussionDocument",
-        "resultIdField": "data.id"
-      },
-      "requiresAuthentication": true,
-      "requiresUserConfirmation": true,
-      "requiredPermission": "allowAgentPosting"
-    },
-    "reply_to_forum_discussion": {
-      "goal": "Reply to an existing public forum discussion only after reading the target discussion and exact user confirmation.",
-      "readFirst": [
-        {
-          "name": "search_forum_discussions",
-          "method": "GET",
-          "endpoint": "/api/nexus/forum/discussions?q=<keyword>&include=user,tags,firstPost&page%5Blimit%5D=10",
-          "operationId": "nexusForumDiscussionsList",
-          "writesState": false
-        },
-        {
-          "name": "open_forum_discussion",
-          "method": "GET",
-          "endpoint": "/api/nexus/forum/discussions/{id}?include=user,tags,posts,posts.user&page%5Blimit%5D=20",
-          "operationId": "nexusForumDiscussionShow",
-          "writesState": false
-        }
-      ],
-      "preflight": {
-        "action": "forum_post.reply",
-        "method": "POST",
-        "endpoint": "/api/nexus/agent-preflight",
-        "operationId": "nexusAgentPreflightCreate"
-      },
-      "write": {
-        "method": "POST",
-        "endpoint": "/api/nexus/forum/discussions/{id}/posts",
-        "operationId": "nexusForumDiscussionPostCreate",
-        "requestSchemaRef": "#/components/schemas/ForumPostInput",
-        "responseSchemaRef": "#/components/schemas/FlarumPostDocument",
-        "resultIdField": "data.id"
-      },
-      "requiresAuthentication": true,
-      "requiresUserConfirmation": true,
-      "requiredPermission": "allowAgentReplying"
-    },
-    "recover_my_forum_discussions": {
-      "goal": "Recover the current user's own forum discussions before editing, replying, linking, or reporting previous agent-authored content.",
-      "read": {
-        "method": "GET",
-        "endpoint": "/api/nexus/me/discussions?page%5Blimit%5D=20",
-        "operationId": "nexusMyForumDiscussionsList",
-        "responseSchemaRef": "#/components/schemas/FlarumDiscussionCollectionDocument",
-        "resultIdField": "data[].id"
-      },
-      "requiresAuthentication": true,
-      "requiresUserConfirmation": false
-    },
-    "recover_my_forum_posts": {
-      "goal": "Recover the current user's own forum posts before edit or hide operations.",
-      "read": {
-        "method": "GET",
-        "endpoint": "/api/nexus/me/posts?page%5Blimit%5D=20",
-        "operationId": "nexusMyForumPostsList",
-        "responseSchemaRef": "#/components/schemas/FlarumPostCollectionDocument",
-        "resultIdField": "data[].id"
-      },
-      "requiresAuthentication": true,
-      "requiresUserConfirmation": false
-    },
-    "edit_own_forum_post": {
-      "goal": "Edit one current-user-owned forum post only after recovering the post id and exact user confirmation.",
-      "readFirst": [
-        {
-          "name": "recover_my_posts",
-          "method": "GET",
-          "endpoint": "/api/nexus/me/posts?page%5Blimit%5D=20",
-          "operationId": "nexusMyForumPostsList",
-          "writesState": false
-        }
-      ],
-      "preflight": {
-        "action": "forum_post.edit",
-        "method": "POST",
-        "endpoint": "/api/nexus/agent-preflight",
-        "operationId": "nexusAgentPreflightCreate"
-      },
-      "write": {
-        "method": "PATCH",
-        "endpoint": "/api/nexus/forum/posts/{id}",
-        "operationId": "nexusForumPostUpdate",
-        "requestSchemaRef": "#/components/schemas/ForumPostInput",
-        "responseSchemaRef": "#/components/schemas/FlarumPostDocument",
-        "resultIdField": "data.id"
-      },
-      "requiresAuthentication": true,
-      "requiresUserConfirmation": true,
-      "requiredPermission": "allowAgentReplying"
-    },
-    "hide_own_forum_post": {
-      "goal": "Hide one current-user-owned forum post only after recovering the post id and exact user confirmation.",
-      "readFirst": [
-        {
-          "name": "recover_my_posts",
-          "method": "GET",
-          "endpoint": "/api/nexus/me/posts?page%5Blimit%5D=20",
-          "operationId": "nexusMyForumPostsList",
-          "writesState": false
-        }
-      ],
-      "preflight": {
-        "action": "forum_post.delete",
-        "method": "POST",
-        "endpoint": "/api/nexus/agent-preflight",
-        "operationId": "nexusAgentPreflightCreate"
-      },
-      "write": {
-        "method": "DELETE",
-        "endpoint": "/api/nexus/forum/posts/{id}",
-        "operationId": "nexusForumPostDelete",
-        "requestSchemaRef": "#/components/schemas/ForumPostDeleteInput",
-        "responseSchemaRef": "204 No Content",
-        "resultIdField": "HTTP 204"
-      },
-      "requiresAuthentication": true,
-      "requiresUserConfirmation": true,
-      "requiredPermission": "allowAgentReplying"
-    }
-  },
-  "readBeforeWrite": {
-    "labelReuse": [
-      "GET /api/nexus/capability-labels?inname=<keyword>&sort=popular&page%5Blimit%5D=10",
-      "GET /api/nexus/capabilities?filter%5Blabel%5D=<attributes.label>&page%5Blimit%5D=10",
-      "GET /api/nexus/help-requests?filter%5Bstatus%5D=open&filter%5Blabel%5D=<attributes.label>&page%5Blimit%5D=10"
-    ],
-    "forumDuplicateCheck": [
-      "GET /api/nexus/forum/discussions?q=<keyword>&page%5Blimit%5D=10",
-      "GET /api/nexus/forum/discussions/{id}?include=user,tags,posts,posts.user&page%5Blimit%5D=20"
-    ]
-  },
-  "safety": {
-    "draftingDoesNotPublish": true,
-    "writesRequireAuthentication": true,
-    "writesRequireUserConfirmation": true,
-    "physicalWritesRequireAllowAgentMatching": true,
-    "llmProviderSettingsAreOptional": true,
-    "confirmedWritesAreAudited": true,
-    "preferPublicMeetingPlaces": true,
-    "neverPutSecretsInPublicContent": true
-  },
-  "errorRecovery": {
-    "401": "Ask for a valid Nexus local agent Developer Token, then call GET /api/nexus/me/agent-context again.",
-    "403": "Use /api/nexus/* wrappers, current-user recovery endpoints, or resource nextActions. Do not bypass with raw Flarum write endpoints.",
-    "404": "Recover ids through /api/nexus/me/help-requests, /api/nexus/me/work-items, /api/nexus/me/dispatches, or /api/nexus/me/matches.",
-    "422": "Call POST /api/nexus/agent-preflight with the same action, target, and proposed fields. Follow attributes.recovery and do not retry the same blocked body unchanged."
-  },
-  "reservedExtensions": {
-    "deviceSignals": {
-      "readOwn": "GET /api/nexus/me/device-signals",
-      "write": "POST /api/nexus/device-signals",
-      "status": "placeholder for future Linkgo/mobile location, Bluetooth, gyro, and shake flows",
-      "requiresUserConfirmation": true
-    }
+  ],
+  "errorPolicy": {
+    "401": "Login again with /api/login.",
+    "403": "Check the user profile permission switches and participant scope.",
+    "422": "Fix validation errors and ask for confirmation again if the visible action changed."
   }
 }

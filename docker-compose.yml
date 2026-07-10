@@ -1,7 +1,5 @@
-# Nexus Campus — Docker Compose
-# Start with: docker compose up -d
-# MySQL uses port 3307 to avoid clashing with local installs.
-version: "3.9"
+# Nexus Campus - local services
+# Start MySQL with: docker compose up -d mysql
 
 services:
   mysql:
@@ -12,12 +10,11 @@ services:
       - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: nexus_root_pwd
-      MYSQL_DATABASE: nexus_flarum
+      MYSQL_DATABASE: nexus_campus
       MYSQL_USER: nexus
       MYSQL_PASSWORD: nexus_pwd
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./server/src/main/resources/db/migration/V1__nexus_schema_init.sql:/docker-entrypoint-initdb.d/01-schema.sql
 
 volumes:
   mysql_data:

@@ -1,4 +1,0 @@
--- V2__nexus_campus_future.sql
--- Placeholder for future schema changes.
--- V1 contains the full baseline (Flarum + Nexus tables).
--- Add new migrations as V3, V4, ... below.

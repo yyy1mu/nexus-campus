@@ -59,7 +59,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
-import { discussions } from '@/data/flarumSeed'
+import { discussions } from '@/data/nexusSeed'
 
 const route = useRoute()
 const discussion = computed(() => discussions.find((item) => String(item.id) === String(route.params.id)) || discussions[2])

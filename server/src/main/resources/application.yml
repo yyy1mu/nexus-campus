@@ -40,13 +40,13 @@ spring:
     activate:
       on-profile: mysql
   datasource:
-    url: jdbc:mysql://localhost:3307/nexus_flarum?characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3307/nexus_campus?characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
     username: nexus
     password: nexus_pwd
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     open-in-view: false
     database-platform: org.hibernate.dialect.MySQLDialect
   flyway:
@@ -59,7 +59,7 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:nexus_flarum}?characterEncoding=utf8mb4&useSSL=true
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:nexus_campus}?characterEncoding=utf8mb4&useSSL=true
     username: ${DB_USERNAME:nexus}
     password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver

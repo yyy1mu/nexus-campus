@@ -59,13 +59,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- JSON:API (optional, for compatibility with existing clients) -->
-        <dependency>
-            <groupId>com.github.jasminb</groupId>
-            <artifactId>jsonapi-converter</artifactId>
-            <version>0.14</version>
-        </dependency>
-
         <!-- Devtools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

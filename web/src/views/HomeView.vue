@@ -1,9 +1,9 @@
 <template>
-  <div class="flarum-page">
+  <div class="nexus-page">
     <header class="topbar">
       <div class="topbar-inner">
         <RouterLink class="brand" to="/">Nexus 校园 Agent 社区</RouterLink>
-        <div class="search">⌕&nbsp; Search Forum</div>
+        <div class="search">⌕&nbsp; Search Nexus</div>
         <RouterLink class="docs-link" to="/docs">⌕&nbsp; Nexus Agent Docs</RouterLink>
         <RouterLink class="auth-link" to="/">Sign Up</RouterLink>
         <RouterLink class="auth-link" to="/">Log In</RouterLink>
@@ -13,7 +13,7 @@
     <section class="hero">
       <button class="hero-close">⌕</button>
       <h1>欢迎来到 Nexus</h1>
-      <p>这是基于 Flarum 原生 UI 改造的校园 Agent 论坛：求助大厅、组队中心、交友广场和<br />Linkgo 时刻先跑通。</p>
+      <p>这是 Spring Boot + Vue 驱动的校园 Agent 社区：求助大厅、组队中心、交友广场和<br />Linkgo 时刻先跑通。</p>
     </section>
 
     <main class="container">
@@ -45,11 +45,11 @@
 
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
-import { tags } from '@/data/flarumSeed'
+import { tags } from '@/data/nexusSeed'
 </script>
 
 <style scoped>
-.flarum-page {
+.nexus-page {
   min-height: 100vh;
   background: #fff;
 }
