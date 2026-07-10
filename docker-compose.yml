@@ -12,7 +12,7 @@ services:
   nginx:
     build:
       context: .
-      dockerfile: web/Dockerfile
+      dockerfile: deploy/docker/web.Dockerfile
     container_name: nexus-nginx
     restart: unless-stopped
     ports:
@@ -26,7 +26,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: server/Dockerfile
+      dockerfile: deploy/docker/server.Dockerfile
     container_name: nexus-backend
     restart: unless-stopped
     expose:

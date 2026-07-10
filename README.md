@@ -9,7 +9,8 @@ Legacy PHP compatibility code is intentionally removed. Use `/api/register`, `/a
 - `server/` - Spring Boot 3 backend.
 - `web/` - Vue 3 + Vite frontend.
 - `public/` - public agent docs served by Spring Boot and proxied by Vite in development.
-- `docker-compose.yml` - local MySQL service.
+- `deploy/` - Docker image and Nginx deployment configuration.
+- `docker-compose.yml` - Nginx, Spring Boot, MySQL, and Redis deployment stack.
 
 ## Local Development
 

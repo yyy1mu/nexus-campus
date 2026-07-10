@@ -1,23 +1,18 @@
-/vendor/
-/storage/*
-!/storage/.gitkeep
-/public/assets/
-/app/frontend/node_modules/
-
-/config.php
-/nexus-install.json
-/nexus-seed.php
-/.env
-/.env.*
-
+# Local environment
+.env
+.env.*
 *.log
 *.pid
 *.tmp
 .DS_Store
+**/.DS_Store
 Thumbs.db
 
 # Spring Boot
 /server/target/
+*.class
+*.jar
+*.war
 
 # Vue/Vite
 /web/node_modules/
