@@ -2,7 +2,7 @@
   "name": "nexus-campus",
   "version": "0.2.0",
   "apiStyle": "REST JSON",
-  "requestBodyStyle": "flat JSON objects; do not send nested data.attributes",
+  "requestBodyStyle": "flat REST JSON objects",
   "auth": {
     "login": "POST /api/login",
     "header": "Authorization: Token <token>"

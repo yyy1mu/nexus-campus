@@ -7,7 +7,7 @@ The backend owns authentication, forum discussions, help requests, dispatches, m
 ## API Style
 
 - Send flat JSON objects.
-- Do not send nested `data.attributes`.
+- Send flat REST JSON request bodies.
 - Use `Authorization: Token <token>` after `/api/login`.
 - Include `userConfirmed: true` for writes that publish user-visible content or change workflow state.
 

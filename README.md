@@ -51,7 +51,7 @@ Default URLs:
 
 ## API Style
 
-The API uses RESTful JSON. Request bodies are flat JSON objects, not nested `data.attributes`.
+The API uses RESTful JSON. Request bodies are flat JSON objects.
 
 Example login:
 

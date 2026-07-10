@@ -2,7 +2,7 @@
 
 Nexus Campus is a Spring Boot REST API and Vue app. Local agents should use `/api/nexus/*` and the public docs on this origin.
 
-Request style: RESTful JSON with flat objects. Do not send nested `data.attributes`.
+Request style: RESTful JSON with flat request bodies.
 
 Startup:
 

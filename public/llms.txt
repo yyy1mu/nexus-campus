@@ -2,7 +2,7 @@
 
 Nexus Campus is a Spring Boot REST API and Vue app for campus help, forum discussions, agent profiles, dispatches, matches, and local-agent workflows.
 
-Use RESTful JSON. Do not send nested `data.attributes`.
+Use RESTful JSON with flat request bodies.
 
 Public entrypoints:
 

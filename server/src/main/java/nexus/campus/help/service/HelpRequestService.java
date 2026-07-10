@@ -22,53 +22,53 @@ public class HelpRequestService {
     private final ObjectMapper objectMapper;
 
     @Transactional
-    public HelpRequest create(Integer requesterId, Integer discussionId, Map<String, Object> attributes) {
+    public HelpRequest create(Integer requesterId, Integer discussionId, Map<String, Object> payload) {
         var req = new HelpRequest();
         req.setRequester(new nexus.campus.common.entity.User());
         req.getRequester().setId(requesterId);
 
         req.setDiscussionId(discussionId);
-        req.setCategoryLabel(v.string(attributes, "categoryLabel", 80, false));
-        req.setNeededLabels(encodeStringList(attributes, "neededLabels"));
-        req.setSummary(v.string(attributes, "summary", 2000, true));
-        req.setUrgency(v.oneOf(attributes, "urgency",
+        req.setCategoryLabel(v.string(payload, "categoryLabel", 80, false));
+        req.setNeededLabels(encodeStringList(payload, "neededLabels"));
+        req.setSummary(v.string(payload, "summary", 2000, true));
+        req.setUrgency(v.oneOf(payload, "urgency",
                 java.util.Set.of("normal", "urgent", "relaxed"), "normal"));
-        req.setLocationHint(v.string(attributes, "locationHint", 255, false));
-        req.setMeetingSafetyState(v.oneOf(attributes, "meetingSafetyState",
+        req.setLocationHint(v.string(payload, "locationHint", 255, false));
+        req.setMeetingSafetyState(v.oneOf(payload, "meetingSafetyState",
                 java.util.Set.of("not_arranged", "public_place_suggested", "public_place_confirmed"),
                 "not_arranged"));
-        req.setAgentContext(v.string(attributes, "agentContext", 4000, false));
+        req.setAgentContext(v.string(payload, "agentContext", 4000, false));
         req.setStatus("open");
 
         return helpRequestRepository.save(req);
     }
 
     @Transactional
-    public HelpRequest update(Integer id, Integer actorId, Map<String, Object> attributes) {
+    public HelpRequest update(Integer id, Integer actorId, Map<String, Object> payload) {
         var req = helpRequestRepository.findById(id).orElseThrow();
         // Authorization checked by controller
 
-        if (attributes.containsKey("status")) {
-            req.setStatus(v.oneOf(attributes, "status",
+        if (payload.containsKey("status")) {
+            req.setStatus(v.oneOf(payload, "status",
                     java.util.Set.of("open", "matching", "matched", "closed", "cancelled"),
                     req.getStatus()));
         }
-        if (attributes.containsKey("meetingSafetyState")) {
-            req.setMeetingSafetyState(v.oneOf(attributes, "meetingSafetyState",
+        if (payload.containsKey("meetingSafetyState")) {
+            req.setMeetingSafetyState(v.oneOf(payload, "meetingSafetyState",
                     java.util.Set.of("not_arranged", "public_place_suggested", "public_place_confirmed"),
                     req.getMeetingSafetyState()));
         }
-        if (attributes.containsKey("locationHint")) {
-            req.setLocationHint(v.string(attributes, "locationHint", 255, false));
+        if (payload.containsKey("locationHint")) {
+            req.setLocationHint(v.string(payload, "locationHint", 255, false));
         }
-        if (attributes.containsKey("summary")) {
-            req.setSummary(v.string(attributes, "summary", 2000, true));
+        if (payload.containsKey("summary")) {
+            req.setSummary(v.string(payload, "summary", 2000, true));
         }
-        if (attributes.containsKey("neededLabels")) {
-            req.setNeededLabels(encodeStringList(attributes, "neededLabels"));
+        if (payload.containsKey("neededLabels")) {
+            req.setNeededLabels(encodeStringList(payload, "neededLabels"));
         }
-        if (attributes.containsKey("agentContext")) {
-            req.setAgentContext(v.string(attributes, "agentContext", 4000, false));
+        if (payload.containsKey("agentContext")) {
+            req.setAgentContext(v.string(payload, "agentContext", 4000, false));
         }
 
         if (java.util.Set.of("closed", "cancelled").contains(req.getStatus()) && req.getClosedAt() == null) {

@@ -3,7 +3,7 @@
   "info": {
     "title": "Nexus Campus REST API",
     "version": "0.2.0",
-    "description": "Spring Boot REST API for the Nexus Campus Vue application and local-agent workflows. Request bodies are flat JSON objects, not nested data.attributes."
+    "description": "Spring Boot REST API for the Nexus Campus Vue application and local-agent workflows. Request bodies are flat REST JSON objects."
   },
   "servers": [
     {

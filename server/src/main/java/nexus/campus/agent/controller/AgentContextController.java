@@ -79,7 +79,7 @@ public class AgentContextController {
                         .collect(java.util.stream.Collectors.toMap(a -> a, catalog::definition, (a, b) -> a, LinkedHashMap::new))
         ));
         attrs.put("skillInstructions", Map.of(
-                "requestBodyStyle", "REST JSON. Send flat JSON objects, not nested data.attributes.",
+                "requestBodyStyle", "REST JSON. Send flat request bodies.",
                 "confirmationRule", "For write actions include userConfirmed: true after explicit user approval.",
                 "safeMeetingRule", "Offline coordination should prefer public, safe, easy-to-leave places."
         ));

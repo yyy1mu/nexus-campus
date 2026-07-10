@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 @Component
 public class PayloadValidator {
 
-    public String string(Map<String, Object> attributes, String key, int max, boolean required) {
-        Object value = attributes.get(key);
+    public String string(Map<String, Object> payload, String key, int max, boolean required) {
+        Object value = payload.get(key);
         if (value == null || value.toString().trim().isEmpty()) {
             if (required) throw ApiException.badRequest(key, key + " is required.");
             return null;
@@ -20,17 +20,17 @@ public class PayloadValidator {
         return str;
     }
 
-    public String oneOf(Map<String, Object> attributes, String key, Set<String> allowed, String defaultValue) {
-        String value = attributes.containsKey(key)
-                ? Objects.toString(attributes.get(key), defaultValue) : defaultValue;
+    public String oneOf(Map<String, Object> payload, String key, Set<String> allowed, String defaultValue) {
+        String value = payload.containsKey(key)
+                ? Objects.toString(payload.get(key), defaultValue) : defaultValue;
         if (!allowed.contains(value))
             throw ApiException.badRequest(key, key + " must be one of: " + String.join(", ", allowed) + ".");
         return value;
     }
 
     @SuppressWarnings("unchecked")
-    public List<String> stringList(Map<String, Object> attributes, String key, int maxItems) {
-        Object value = attributes.get(key);
+    public List<String> stringList(Map<String, Object> payload, String key, int maxItems) {
+        Object value = payload.get(key);
         if (value == null || (value instanceof String s && s.isEmpty())) return List.of();
         List<String> raw;
         if (value instanceof String s) raw = Arrays.asList(s.split("[,，\\s]+"));

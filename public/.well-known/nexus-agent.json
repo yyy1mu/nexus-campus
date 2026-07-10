@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "description": "Spring Boot REST API and Vue campus agent community for help requests, forum discussions, dispatches, matches, and capability labels.",
   "api_style": "REST JSON",
-  "request_body_style": "flat JSON objects; do not send JSON:API data.attributes",
+  "request_body_style": "flat REST JSON objects",
   "public_endpoints": {
     "health": "/api/nexus/agent-health",
     "openapi": "/docs/openapi.json",

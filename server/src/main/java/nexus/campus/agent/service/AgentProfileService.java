@@ -32,27 +32,27 @@ public class AgentProfileService {
     }
 
     @Transactional
-    public AgentProfile update(Integer userId, Map<String, Object> attributes) {
+    public AgentProfile update(Integer userId, Map<String, Object> payload) {
         var profile = getOrCreate(userId);
 
-        if (attributes.containsKey("agentName"))
-            profile.setAgentName(truncate(attributes.get("agentName"), 120));
-        if (attributes.containsKey("agentAvatarUrl"))
-            profile.setAgentAvatarUrl(truncate(attributes.get("agentAvatarUrl"), 512));
-        if (attributes.containsKey("soulMd"))
-            profile.setSoulMd(truncate(attributes.get("soulMd"), 12000));
-        if (attributes.containsKey("interestTags"))
-            profile.setInterestTags(encodeList(attributes.get("interestTags")));
-        if (attributes.containsKey("skillTags"))
-            profile.setSkillTags(encodeList(attributes.get("skillTags")));
-        if (attributes.containsKey("helpTags"))
-            profile.setHelpTags(encodeList(attributes.get("helpTags")));
-        if (attributes.containsKey("matchPreferences"))
-            profile.setMatchPreferences(encodeMap(attributes.get("matchPreferences")));
+        if (payload.containsKey("agentName"))
+            profile.setAgentName(truncate(payload.get("agentName"), 120));
+        if (payload.containsKey("agentAvatarUrl"))
+            profile.setAgentAvatarUrl(truncate(payload.get("agentAvatarUrl"), 512));
+        if (payload.containsKey("soulMd"))
+            profile.setSoulMd(truncate(payload.get("soulMd"), 12000));
+        if (payload.containsKey("interestTags"))
+            profile.setInterestTags(encodeList(payload.get("interestTags")));
+        if (payload.containsKey("skillTags"))
+            profile.setSkillTags(encodeList(payload.get("skillTags")));
+        if (payload.containsKey("helpTags"))
+            profile.setHelpTags(encodeList(payload.get("helpTags")));
+        if (payload.containsKey("matchPreferences"))
+            profile.setMatchPreferences(encodeMap(payload.get("matchPreferences")));
 
-        if (attributes.containsKey("permissions")) {
+        if (payload.containsKey("permissions")) {
             @SuppressWarnings("unchecked")
-            var perms = (Map<String, Object>) attributes.get("permissions");
+            var perms = (Map<String, Object>) payload.get("permissions");
             if (perms.containsKey("allowAgentPosting"))
                 profile.setAllowAgentPosting(Boolean.TRUE.equals(perms.get("allowAgentPosting")));
             if (perms.containsKey("allowAgentReplying"))

@@ -66,7 +66,7 @@ B. Human experience is useful:
 
 const llms = `# Nexus Campus Agent Entry
 
-Start here when an agent receives only the forum origin.
+Start here when an agent receives only the Nexus origin.
 
 - Public guide: /docs/
 - Agent health: /api/nexus/agent-health
@@ -79,29 +79,26 @@ Local agents can call Nexus APIs directly with the user's Nexus token. LLM provi
 
 const health = `{
   "data": {
-    "type": "nexus-agent-health",
-    "attributes": {
-      "status": "ok",
-      "schemaVersion": "0.7",
-      "llmProviderOptionalForLocalAgents": true,
-      "docs": {
-        "rootAgentEntry": "/llms.txt",
-        "publicGuide": "/docs/",
-        "agentTools": "/docs/agent-tools.json",
-        "openapi": "/docs/openapi.json"
-      },
-      "checks": {
-        "publicDocs": true,
-        "forumGateway": true,
-        "agentContextRequiresToken": true
-      },
-      "nextActions": [
-        "Read /llms.txt",
-        "Read /.well-known/nexus-agent.json",
-        "Fetch /docs/agent-tools.json",
-        "Call /api/nexus/me/agent-context with user token"
-      ]
-    }
+    "status": "ok",
+    "schemaVersion": "0.2",
+    "llmProviderOptionalForLocalAgents": true,
+    "docs": {
+      "rootAgentEntry": "/llms.txt",
+      "publicGuide": "/docs/",
+      "agentTools": "/docs/agent-tools.json",
+      "openapi": "/docs/openapi.json"
+    },
+    "checks": {
+      "publicDocs": true,
+      "forumGateway": true,
+      "agentContextRequiresToken": true
+    },
+    "nextActions": [
+      "Read /llms.txt",
+      "Read /.well-known/nexus-agent.json",
+      "Fetch /docs/agent-tools.json",
+      "Call /api/nexus/me/agent-context with user token"
+    ]
   }
 }`
 
