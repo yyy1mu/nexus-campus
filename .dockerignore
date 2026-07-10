@@ -1,5 +1,11 @@
 .git
-.DS_Store
+.gitignore
+.gitattributes
+.github
+.idea
+.vscode
+**/.DS_Store
+screenshots
 server/target
 web/node_modules
 web/dist

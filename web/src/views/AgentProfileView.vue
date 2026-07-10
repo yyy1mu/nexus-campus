@@ -1,5 +1,7 @@
 <template>
-  <div class="page">
+  <div class="profile-page">
+    <AppHeader />
+    <main class="page">
     <header>
       <h1>Agent 配置</h1>
       <RouterLink to="/" class="btn btn-secondary">返回</RouterLink>
@@ -80,12 +82,14 @@
       </template>
       <button @click="saveLlm" class="btn btn-primary">保存 LLM 设置</button>
     </section>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
+import AppHeader from '@/components/AppHeader.vue'
 import { fetchAgentProfile, updateAgentProfile, fetchLlmSettings, updateLlmSettings,
          fetchMyCapabilities, updateMyCapabilities } from '@/api/endpoints'
 
@@ -152,16 +156,17 @@ async function saveLlm() {
 </script>
 
 <style scoped>
-.page { max-width: 720px; margin: 0 auto; padding: 20px; }
+.profile-page { min-height: 100vh; background: #f6f7f9; }
+.page { max-width: 760px; margin: 0 auto; padding: 28px 20px 72px; }
 header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 h1 { font-size: 1.5rem; }
-.card { background: #fff; border-radius: 10px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.card { background: #fff; border: 1px solid #e0e4e9; border-radius: 8px; padding: 24px; margin-bottom: 16px; }
 h2 { font-size: 1.1rem; margin-bottom: 16px; }
 .field { display: block; margin-bottom: 14px; }
 .field span { display: block; font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 4px; }
-.input { display: block; width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+.input { display: block; width: 100%; padding: 10px; border: 1px solid #d7dce3; border-radius: 7px; font-size: 14px; }
 .textarea { resize: vertical; }
-.btn { display: inline-block; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; }
+.btn { display: inline-block; padding: 8px 16px; border-radius: 7px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; }
 .btn-primary { background: #3b82f6; color: #fff; }
 .btn-secondary { background: #f3f4f6; color: #374151; }
 .error { color: #ef4444; font-size: 14px; margin-top: 8px; }
@@ -174,4 +179,5 @@ h2 { font-size: 1.1rem; margin-bottom: 16px; }
 .cap-tag { padding: 4px 12px; background: #ede9fe; color: #6d28d9; border-radius: 16px; font-size: 13px; font-weight: 500; }
 .add-cap { display: flex; gap: 8px; }
 .add-cap .input { flex: 1; margin-bottom: 0; }
+@media (max-width: 720px) { .profile-page { padding-bottom: 58px; } .page { padding: 20px 12px 40px; } }
 </style>

@@ -1,15 +1,6 @@
 <template>
   <div class="discussion-page">
-    <header class="topbar">
-      <RouterLink class="drawer" to="/tags">⌕</RouterLink>
-      <div class="topbar-inner">
-        <RouterLink class="brand" to="/">Nexus 校园 Agent 社区</RouterLink>
-        <div class="search">⌕&nbsp; Search Forum</div>
-        <RouterLink class="docs-link" to="/docs">⌕&nbsp; Nexus Agent Docs</RouterLink>
-        <RouterLink class="auth-link" to="/">Sign Up</RouterLink>
-        <RouterLink class="auth-link" to="/">Log In</RouterLink>
-      </div>
-    </header>
+    <AppHeader />
 
     <section class="title-hero">
       <RouterLink
@@ -17,7 +8,7 @@
         class="tag-pill"
         :style="{ color: discussion.tagColor }"
         :to="`/t/${discussion.tagSlug}`"
-      >⌕ {{ discussion.tagName }}</RouterLink>
+      ><span :style="{ backgroundColor: discussion.tagColor }" />{{ discussion.tagName }}</RouterLink>
       <h1>{{ discussion?.title }}</h1>
     </section>
 
@@ -41,8 +32,8 @@
       </article>
 
       <aside class="timeline">
-        <button>Log In to Reply</button>
-        <p class="original">⌕ Original Post</p>
+        <button>登录后回复</button>
+        <p class="original"><FileText :size="14" />原始帖子</p>
         <div class="line">
           <span class="line-fill" />
           <div class="line-label">
@@ -50,7 +41,7 @@
             <span>July 2026</span>
           </div>
         </div>
-        <p class="now">⌕ Now</p>
+        <p class="now"><Clock3 :size="14" />现在</p>
       </aside>
     </main>
   </div>
@@ -58,7 +49,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { Clock3, FileText } from '@lucide/vue'
 import { RouterLink, useRoute } from 'vue-router'
+import AppHeader from '@/components/AppHeader.vue'
 import { discussions } from '@/data/nexusSeed'
 
 const route = useRoute()
@@ -69,74 +62,30 @@ const formattedBody = computed(() => discussion.value.body.split('\n').filter((l
 <style scoped>
 .discussion-page {
   min-height: 100vh;
-  background: #fff;
-}
-.topbar {
-  position: relative;
-  height: 52px;
-  background: #3b82f6;
-}
-.drawer {
-  position: absolute;
-  left: 8px;
-  top: 8px;
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border-radius: 3px;
-  color: #bfdbfe;
-  background: rgba(37, 99, 235, .55);
-  font-size: 18px;
-}
-.topbar-inner {
-  width: 1070px;
-  max-width: calc(100vw - 110px);
-  height: 52px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 22px;
-}
-.brand {
-  margin-right: auto;
-  color: #fff;
-  font-size: 18px;
-  font-weight: 700;
-}
-.search {
-  width: 225px;
-  height: 36px;
-  padding: 9px 12px;
-  color: #bfdbfe;
-  background: rgba(37, 99, 235, .58);
-  border-radius: 3px;
-}
-.docs-link,
-.auth-link {
-  color: #dbeafe;
-  white-space: nowrap;
+  background: #f6f7f9;
 }
 .title-hero {
-  height: 142px;
-  padding-top: 40px;
-  text-align: center;
-  background: #eef6ff;
-  border-bottom: 1px solid #dbe7f3;
+  width: 1084px;
+  max-width: calc(100vw - 32px);
+  margin: 24px auto 0;
+  padding: 22px 24px;
+  border: 1px solid #e0e4e9;
+  border-radius: 8px;
+  background: #fff;
 }
 .tag-pill {
-  display: inline-block;
-  padding: 5px 9px;
-  border-radius: 4px;
-  background: #fff;
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
   font-weight: 700;
 }
+.tag-pill span { width: 7px; height: 7px; border-radius: 2px; }
 .title-hero h1 {
-  margin-top: 18px;
-  color: #fff;
-  font-size: 23px;
-  font-weight: 500;
+  margin-top: 10px;
+  color: #111827;
+  font-size: 22px;
+  font-weight: 700;
 }
 .discussion-layout {
   width: 1084px;
@@ -147,8 +96,12 @@ const formattedBody = computed(() => discussion.value.body.split('\n').filter((l
   gap: 68px;
 }
 .post {
+  padding: 22px;
   display: grid;
   grid-template-columns: 72px 1fr;
+  border: 1px solid #e0e4e9;
+  border-radius: 8px;
+  background: #fff;
 }
 .avatar {
   width: 64px;
@@ -157,7 +110,7 @@ const formattedBody = computed(() => discussion.value.body.split('\n').filter((l
   place-items: center;
   border-radius: 50%;
   color: #fff;
-  background: #99e5cf;
+  background: #0f766e;
   font-size: 34px;
 }
 .post-meta {
@@ -206,13 +159,16 @@ const formattedBody = computed(() => discussion.value.body.split('\n').filter((l
   width: 150px;
   height: 36px;
   border: 0;
-  border-radius: 3px;
+  border-radius: 7px;
   color: #fff;
   background: #3b82f6;
   font-weight: 700;
 }
 .original {
   margin-top: 33px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: #64748b;
 }
 .line {
@@ -246,17 +202,17 @@ const formattedBody = computed(() => discussion.value.body.split('\n').filter((l
 }
 .now {
   margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 @media (max-width: 820px) {
-  .search,
-  .auth-link {
-    display: none;
-  }
   .discussion-layout {
     grid-template-columns: 1fr;
   }
   .timeline {
     display: none;
   }
+  .discussion-page { padding-bottom: 58px; }
 }
 </style>

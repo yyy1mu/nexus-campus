@@ -107,3 +107,5 @@ Useful overrides:
 NGINX_HTTP_PORT=8080 docker compose up -d --build
 MYSQL_ROOT_PASSWORD=change_me MYSQL_PASSWORD=change_me docker compose up -d --build
 ```
+
+For a persistent local configuration, create `.env` from `.env.example` and change both MySQL passwords before deployment. Compose keeps MySQL and Redis on an internal-only data network; only Nginx publishes a host port. The backend and Nginx images include health checks, and Nginx starts after the backend reports healthy.

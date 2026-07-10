@@ -1,5 +1,7 @@
 <template>
-  <div class="page">
+  <div class="help-page">
+    <AppHeader />
+    <main class="page">
     <header>
       <h1>求助广场</h1>
       <button v-if="auth.isLoggedIn" @click="showForm = !showForm" class="btn btn-primary">
@@ -117,11 +119,13 @@
         </div>
       </div>
     </div>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import AppHeader from '@/components/AppHeader.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useHelpStore, useDispatchStore } from '@/stores/help'
 
@@ -231,20 +235,21 @@ function formatDate(d: string) {
 </script>
 
 <style scoped>
-.page { max-width: 800px; margin: 0 auto; padding: 20px; }
+.help-page { min-height: 100vh; background: #f6f7f9; }
+.page { max-width: 900px; margin: 0 auto; padding: 28px 20px 72px; }
 header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-h1 { font-size: 1.5rem; }
-.card { background: #fff; border-radius: 10px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); cursor: pointer; transition: box-shadow .2s; }
-.card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+h1 { color: #111827; font-size: 1.5rem; }
+.card { background: #fff; border: 1px solid #e0e4e9; border-radius: 8px; padding: 20px; margin-bottom: 12px; cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+.card:hover { border-color: #c9d2df; box-shadow: 0 4px 14px rgba(16,24,40,.05); }
 .request-card h3 { font-size: 1rem; margin: 8px 0 4px; }
 .detail { color: #6b7280; font-size: 14px; margin: 0 0 8px; }
 .meta { font-size: 12px; color: #9ca3af; display: flex; gap: 12px; }
-.input { display: block; width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; font-size: 14px; }
+.input { display: block; width: 100%; padding: 10px; border: 1px solid #d7dce3; border-radius: 7px; margin-bottom: 10px; font-size: 14px; }
 .textarea { resize: vertical; }
 .row { display: flex; gap: 10px; }
 .row .input { flex: 1; }
 .checkbox { font-size: 14px; margin-bottom: 12px; display: block; }
-.btn { display: inline-block; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; }
+.btn { display: inline-block; padding: 8px 16px; border-radius: 7px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; }
 .btn-sm { padding: 6px 12px; font-size: 13px; }
 .btn-primary { background: #3b82f6; color: #fff; }
 .btn-secondary { background: #f3f4f6; color: #374151; }
@@ -273,4 +278,5 @@ h1 { font-size: 1.5rem; }
 .msg-form { margin-top: 8px; display: flex; gap: 8px; }
 .msg-form .input { flex: 1; margin-bottom: 0; }
 .loading, .empty { text-align: center; color: #9ca3af; padding: 40px 0; }
+@media (max-width: 720px) { .help-page { padding-bottom: 58px; } .page { padding: 20px 12px 40px; } }
 </style>
