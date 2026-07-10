@@ -1,20 +1,98 @@
-# Nexus Campus - local services
-# Start MySQL with: docker compose up -d mysql
+# Nexus Campus - Docker deployment
+#
+# Public entry:
+#   nginx -> http://localhost
+#
+# Internal network:
+#   nginx   -> backend:8080
+#   backend -> mysql:3306
+#   backend -> redis:6379
 
 services:
+  nginx:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    container_name: nexus-nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+    depends_on:
+      backend:
+        condition: service_started
+    networks:
+      - nexus_net
+
+  backend:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: nexus-backend
+    restart: unless-stopped
+    expose:
+      - "8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SERVER_PORT: 8080
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE:-nexus_campus}
+      DB_USERNAME: ${MYSQL_USER:-nexus}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-nexus_pwd}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - nexus_net
+
   mysql:
     image: mysql:8.0
     container_name: nexus-mysql
     restart: unless-stopped
-    ports:
-      - "3307:3306"
+    expose:
+      - "3306"
     environment:
-      MYSQL_ROOT_PASSWORD: nexus_root_pwd
-      MYSQL_DATABASE: nexus_campus
-      MYSQL_USER: nexus
-      MYSQL_PASSWORD: nexus_pwd
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-nexus_root_pwd}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-nexus_campus}
+      MYSQL_USER: ${MYSQL_USER:-nexus}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-nexus_pwd}
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - nexus_net
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: nexus-redis
+    restart: unless-stopped
+    expose:
+      - "6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - nexus_net
 
 volumes:
   mysql_data:
+  redis_data:
+
+networks:
+  nexus_net:
+    driver: bridge

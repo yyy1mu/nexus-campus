@@ -77,3 +77,32 @@ curl -X POST http://127.0.0.1:8081/api/nexus/help-requests \
 cd server && mvn test
 cd web && npm run build
 ```
+
+## Docker Deployment
+
+The default Compose stack runs Nginx, Spring Boot, MySQL, and Redis on one internal Docker network. Only Nginx is published to the host.
+
+```bash
+docker compose up -d --build
+```
+
+Services:
+
+- `nginx`: serves the built Vue app and proxies API/docs traffic to `backend:8080`.
+- `backend`: Spring Boot app on internal port `8080`.
+- `mysql`: internal MySQL `8.0` database.
+- `redis`: internal Redis with append-only persistence.
+
+Default public URL:
+
+- App: `http://127.0.0.1`
+- REST API through Nginx: `http://127.0.0.1/api/...`
+- OpenAPI through Nginx: `http://127.0.0.1/v3/api-docs`
+- Swagger UI through Nginx: `http://127.0.0.1/swagger-ui.html`
+
+Useful overrides:
+
+```bash
+NGINX_HTTP_PORT=8080 docker compose up -d --build
+MYSQL_ROOT_PASSWORD=change_me MYSQL_PASSWORD=change_me docker compose up -d --build
+```

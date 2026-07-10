@@ -1,0 +1,8 @@
+.git
+.DS_Store
+server/target
+web/node_modules
+web/dist
+web/.vite
+*.log
+*.tmp
