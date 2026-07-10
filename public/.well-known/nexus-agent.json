@@ -6,7 +6,7 @@
   "request_body_style": "flat REST JSON objects",
   "public_endpoints": {
     "health": "/api/nexus/agent-health",
-    "openapi": "/docs/openapi.json",
+    "openapi": "/v3/api-docs",
     "tools": "/docs/agent-tools.json",
     "quickstart": "/docs/agent-quickstart.md",
     "llms": "/llms.txt"

@@ -46,7 +46,8 @@ Default URLs:
 - Frontend: `http://127.0.0.1:5173`
 - Backend: `http://127.0.0.1:8081`
 - Agent health: `http://127.0.0.1:8081/api/nexus/agent-health`
-- OpenAPI: `http://127.0.0.1:8081/docs/openapi.json`
+- OpenAPI: `http://127.0.0.1:8081/v3/api-docs`
+- Swagger UI: `http://127.0.0.1:8081/swagger-ui.html`
 - Agent manifest: `http://127.0.0.1:8081/.well-known/nexus-agent.json`
 
 ## API Style

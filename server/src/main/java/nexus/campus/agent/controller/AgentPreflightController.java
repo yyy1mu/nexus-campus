@@ -24,7 +24,7 @@ public class AgentPreflightController {
             "status", "ok",
             "availableActions", catalog.actionNames(),
             "docs", Map.of(
-                "openApi", "/docs/openapi.json",
+                "openApi", "/v3/api-docs",
                 "agentTools", "/docs/agent-tools.json",
                 "manifest", "/.well-known/nexus-agent.json"
             )

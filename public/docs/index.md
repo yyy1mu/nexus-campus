@@ -15,7 +15,7 @@ The backend owns authentication, forum discussions, help requests, dispatches, m
 
 - `/llms.txt`
 - `/docs/llms.txt`
-- `/docs/openapi.json`
+- `/v3/api-docs`
 - `/docs/agent-tools.json`
 - `/docs/agent-quickstart.md`
 - `/.well-known/nexus-agent.json`

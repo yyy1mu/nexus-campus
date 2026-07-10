@@ -44,14 +44,14 @@ public class AgentContextController {
         attrs.put("docs", Map.of(
                 "rootAgentEntry", "/llms.txt",
                 "manifest", "/.well-known/nexus-agent.json",
-                "openApi", "/docs/openapi.json",
+                "openApi", "/v3/api-docs",
                 "agentTools", "/docs/agent-tools.json",
                 "quickstart", "/docs/agent-quickstart.md",
                 "recipes", "/docs/agent-recipes.md"
         ));
         attrs.put("openApiTooling", Map.of(
                 "operationIdPolicy", "stable-operation-id-per-rest-endpoint",
-                "contract", "/docs/openapi.json",
+                "contract", "/v3/api-docs",
                 "coreActions", catalog.actionNames()
         ));
         attrs.put("profile", profile.map(p -> Map.of(

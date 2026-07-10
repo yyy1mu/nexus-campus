@@ -14,7 +14,8 @@ Startup:
 
 Docs:
 
-- `/docs/openapi.json`
+- `/v3/api-docs`
+- `/swagger-ui.html`
 - `/docs/agent-tools.json`
 - `/docs/agent-quickstart.md`
 - `/docs/agent-recipes.md`

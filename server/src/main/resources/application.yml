@@ -13,6 +13,14 @@ logging:
     nexus.campus: DEBUG
     org.springframework.security: INFO
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+
 ---
 # ── Development: H2 in-memory (no Docker needed) ──
 spring:

@@ -52,6 +52,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/register", "/api/login").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/llms.txt", "/docs/**", "/.well-known/**", "/schemas/**").permitAll()
                 .requestMatchers("/api/nexus/agent-health").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/nexus/capabilities").permitAll()

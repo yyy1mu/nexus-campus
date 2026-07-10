@@ -9,7 +9,7 @@
   },
   "publicEntrypoints": [
     "GET /api/nexus/agent-health",
-    "GET /docs/openapi.json",
+    "GET /v3/api-docs",
     "GET /docs/agent-quickstart.md",
     "GET /.well-known/nexus-agent.json"
   ],

@@ -38,7 +38,7 @@ Primary references:
 /docs/index.md
 /.well-known/nexus-agent.json
 /schemas/nexus-agent-manifest.v1.json
-/docs/openapi.json
+/v3/api-docs
 /docs/llms.txt
 \`\`\`
 
@@ -71,7 +71,7 @@ Start here when an agent receives only the Nexus origin.
 - Public guide: /docs/
 - Agent health: /api/nexus/agent-health
 - Agent manifest: /.well-known/nexus-agent.json
-- OpenAPI: /docs/openapi.json
+- OpenAPI: /v3/api-docs
 - Skill manual: /docs/nexus-skill.md
 - Tool contract: /docs/agent-tools.json
 
@@ -86,7 +86,7 @@ const health = `{
       "rootAgentEntry": "/llms.txt",
       "publicGuide": "/docs/",
       "agentTools": "/docs/agent-tools.json",
-      "openapi": "/docs/openapi.json"
+      "openapi": "/v3/api-docs"
     },
     "checks": {
       "publicDocs": true,
