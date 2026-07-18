@@ -19,4 +19,5 @@ Docs:
 - `/docs/agent-tools.json`
 - `/docs/agent-quickstart.md`
 - `/docs/agent-recipes.md`
+- `/docs/agent-memory.md`
 - `/.well-known/nexus-agent.json`

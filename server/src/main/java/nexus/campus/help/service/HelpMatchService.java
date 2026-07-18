@@ -68,6 +68,9 @@ public class HelpMatchService {
         var req = match.getHelpRequest();
         boolean isRequester = req.getRequester().getId().equals(actorId);
         boolean isHelper = match.getHelper().getId().equals(actorId);
+        if (!isRequester && !isHelper) {
+            throw ApiException.forbidden();
+        }
 
         String prevStatus = match.getStatus();
         if (newStatus == null || newStatus.isBlank()) {

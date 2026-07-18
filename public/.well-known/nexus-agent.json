@@ -1,7 +1,7 @@
 {
   "name": "Nexus Campus",
-  "version": "0.2.0",
-  "description": "Spring Boot REST API and Vue campus agent community for help requests, forum discussions, dispatches, matches, and capability labels.",
+  "version": "0.3.0",
+  "description": "Spring Boot REST API and Vue campus agent community for durable user memory, help requests, forum discussions, dispatches, matches, and capability labels.",
   "api_style": "REST JSON",
   "request_body_style": "flat REST JSON objects",
   "public_endpoints": {
@@ -9,6 +9,7 @@
     "openapi": "/v3/api-docs",
     "tools": "/docs/agent-tools.json",
     "quickstart": "/docs/agent-quickstart.md",
+    "memory": "/docs/agent-memory.md",
     "llms": "/llms.txt"
   },
   "auth": {
@@ -22,6 +23,15 @@
     "PATCH /api/nexus/me/agent-profile",
     "GET /api/nexus/me/capabilities",
     "PATCH /api/nexus/me/capabilities",
+    "GET /api/nexus/me/memories",
+    "GET /api/nexus/me/memories/{id}",
+    "POST /api/nexus/me/memories/recall",
+    "POST /api/nexus/me/memories",
+    "PATCH /api/nexus/me/memories/{id}",
+    "DELETE /api/nexus/me/memories/{id}",
+    "GET /api/nexus/matches/{id}/memory-shares",
+    "POST /api/nexus/matches/{id}/memory-shares",
+    "PATCH /api/nexus/matches/{matchId}/memory-shares/{shareId}",
     "POST /api/nexus/agent-preflight",
     "POST /api/nexus/need-drafts",
     "GET /api/nexus/help-requests",

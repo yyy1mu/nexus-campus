@@ -77,11 +77,13 @@ mysqldump --protocol=socket -uroot --single-transaction nexus_campus \
 4. 测试 dispatch 创建和接受。
 5. 测试 match offer 和接受。
 6. 接受后发送私聊消息，并由另一参与方读取。
+7. 创建、读取并召回一条私有长期记忆。
+8. 在 accepted match 中共享记忆快照，验证双方可读、第三方 `403`，然后由所有者撤销。
 
-非 match 参与者必须不能读取消息；未接受的 match 必须不能发送消息。
+非 match 参与者必须不能读取消息、共享记忆或变更 match 状态；未接受的 match 必须不能发送消息或创建记忆共享。
 
 ## 已知限制
 
-- 仓库后端当前没有自动化测试源码；`mvn test` 会成功但显示 `No tests to run`。
+- 后端当前有 9 项自动化测试，覆盖 Agent memory service/controller/repository 及 match 非参与者授权。部署前必须确认 `mvn test` 的失败数和错误数均为 0。
 - Docker 与 Compose 已安装，但服务器当前无法访问 Docker Hub；现阶段使用原生 systemd 部署。
 - `SPRING_JPA_HIBERNATE_DDL_AUTO=update` 适合当前开发阶段，进入正式生产前应改成受版本控制的 Flyway migration。

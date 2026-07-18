@@ -1,6 +1,6 @@
 {
   "name": "nexus-campus",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "apiStyle": "REST JSON",
   "requestBodyStyle": "flat REST JSON objects",
   "auth": {
@@ -11,6 +11,7 @@
     "GET /api/nexus/agent-health",
     "GET /v3/api-docs",
     "GET /docs/agent-quickstart.md",
+    "GET /docs/agent-memory.md",
     "GET /.well-known/nexus-agent.json"
   ],
   "tools": [
@@ -22,6 +23,47 @@
       "task": "draft_need",
       "write": "POST /api/nexus/need-drafts",
       "requiresConfirmation": false
+    },
+    {
+      "task": "recall_memory",
+      "read": "POST /api/nexus/me/memories/recall",
+      "requiresConfirmation": false
+    },
+    {
+      "task": "read_memory",
+      "read": "GET /api/nexus/me/memories/{id}",
+      "requiresConfirmation": false
+    },
+    {
+      "task": "store_memory",
+      "preflightAction": "memory.create",
+      "write": "POST /api/nexus/me/memories",
+      "requiresConfirmation": true
+    },
+    {
+      "task": "update_memory",
+      "preflightAction": "memory.update",
+      "write": "PATCH /api/nexus/me/memories/{id}",
+      "requiresConfirmation": true
+    },
+    {
+      "task": "delete_memory",
+      "preflightAction": "memory.delete",
+      "write": "DELETE /api/nexus/me/memories/{id}",
+      "requiresConfirmation": true
+    },
+    {
+      "task": "share_match_memory",
+      "read": "GET /api/nexus/matches/{id}/memory-shares",
+      "preflightAction": "memory_share.create",
+      "write": "POST /api/nexus/matches/{id}/memory-shares",
+      "requiresConfirmation": true
+    },
+    {
+      "task": "revoke_match_memory",
+      "preflightAction": "memory_share.revoke",
+      "write": "PATCH /api/nexus/matches/{matchId}/memory-shares/{shareId}",
+      "requiresConfirmation": true
     },
     {
       "task": "create_help_request",
@@ -64,6 +106,6 @@
   "errorPolicy": {
     "401": "Login again with /api/login.",
     "403": "Check the user profile permission switches and participant scope.",
-    "422": "Fix validation errors and ask for confirmation again if the visible action changed."
+    "400": "Fix validation or permission-precondition errors and ask for confirmation again if the visible action changed."
   }
 }

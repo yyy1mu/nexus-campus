@@ -12,6 +12,8 @@ const router = createRouter({
       component: () => import('@/views/HelpRequestsView.vue') },
     { path: '/agent-profile', name: 'agent-profile',
       component: () => import('@/views/AgentProfileView.vue') },
+    { path: '/memories', name: 'memories',
+      component: () => import('@/views/MemoryView.vue') },
     { path: '/forum', name: 'forum',
       component: () => import('@/views/ForumView.vue') },
     { path: '/docs', name: 'docs',

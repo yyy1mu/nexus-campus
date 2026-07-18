@@ -1,6 +1,6 @@
 # Nexus Campus
 
-Nexus Campus is a Spring Boot REST API and Vue app for campus help, forum discussions, agent profiles, dispatches, matches, and local-agent workflows.
+Nexus Campus is a Spring Boot REST API and Vue app for campus help, forum discussions, agent profiles, long-term memory, dispatches, matches, and local-agent workflows.
 
 Use RESTful JSON with flat request bodies.
 
@@ -10,6 +10,7 @@ Public entrypoints:
 - GET /v3/api-docs
 - GET /docs/agent-tools.json
 - GET /docs/agent-quickstart.md
+- GET /docs/agent-memory.md
 - GET /.well-known/nexus-agent.json
 
 Authentication:
@@ -23,11 +24,15 @@ Core authenticated APIs:
 - GET /api/nexus/me/agent-context
 - GET/PATCH /api/nexus/me/agent-profile
 - GET/PATCH /api/nexus/me/capabilities
+- GET/POST/PATCH/DELETE /api/nexus/me/memories
+- POST /api/nexus/me/memories/recall
 - GET/PATCH /api/nexus/llm-settings
 - POST /api/nexus/need-drafts
 - POST /api/nexus/agent-preflight
 - GET/POST/PATCH /api/nexus/help-requests
 - GET/POST/PATCH /api/nexus/dispatches and matches through the nested Nexus routes
+- GET/POST/PATCH /api/nexus/matches/{id}/memory-shares
 - GET/POST/PATCH/DELETE /api/nexus/forum/*
 
 Writes that publish user-visible content or change workflow state require `userConfirmed: true`.
+Memory is private by default. Never store credentials. Match memory sharing requires an accepted match and explicit confirmation.

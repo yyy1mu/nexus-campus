@@ -100,6 +100,67 @@ public class AgentPreflightCatalog {
             )
         ));
 
+        c.put("memory.create", Map.of(
+            "endpoint", "POST /api/nexus/me/memories",
+            "requiresConfirmation", true,
+            "permissions", List.of(),
+            "purpose", "Store a durable private memory after the user confirms the exact content, sensitivity, retention, and sharing policy.",
+            "proposedFields", List.of("kind", "title", "content", "tags", "importance",
+                    "pinned", "sourceType", "sourceRef", "sensitivity", "sharePolicy",
+                    "validFrom", "expiresAt", "userConfirmed"),
+            "sideEffects", Map.of(
+                    "createsPublicContent", false,
+                    "visibility", "private_to_user",
+                    "credentialsAllowed", false)
+        ));
+
+        c.put("memory.update", Map.of(
+            "endpoint", "PATCH /api/nexus/me/memories/{id}",
+            "requiresConfirmation", true,
+            "permissions", List.of(),
+            "purpose", "Correct, archive, reprioritize, or change the retention policy of a private memory after explicit confirmation.",
+            "proposedFields", List.of("kind", "title", "content", "tags", "status",
+                    "importance", "pinned", "sensitivity", "sharePolicy", "expiresAt",
+                    "clearExpiresAt", "userConfirmed"),
+            "sideEffects", Map.of(
+                    "createsPublicContent", false,
+                    "visibility", "private_to_user")
+        ));
+
+        c.put("memory.delete", Map.of(
+            "endpoint", "DELETE /api/nexus/me/memories/{id}",
+            "requiresConfirmation", true,
+            "permissions", List.of(),
+            "purpose", "Permanently delete a private memory and its match-share snapshots after explicit confirmation.",
+            "proposedFields", List.of("userConfirmed"),
+            "sideEffects", Map.of(
+                    "destructive", true,
+                    "visibility", "private_to_user")
+        ));
+
+        c.put("memory_share.create", Map.of(
+            "endpoint", "POST /api/nexus/matches/{id}/memory-shares",
+            "requiresConfirmation", true,
+            "permissions", List.of("allowAgentMatching"),
+            "purpose", "Share selected ask_each_time memories as immutable snapshots with the other participant of an accepted match.",
+            "proposedFields", List.of("memoryIds", "userConfirmed"),
+            "sideEffects", Map.of(
+                    "createsPublicContent", false,
+                    "visibility", "accepted_match_participants_only",
+                    "snapshot", true)
+        ));
+
+        c.put("memory_share.revoke", Map.of(
+            "endpoint", "PATCH /api/nexus/matches/{matchId}/memory-shares/{shareId}",
+            "requiresConfirmation", true,
+            "permissions", List.of(),
+            "purpose", "Revoke one of the current user's memory snapshots from a match after explicit confirmation.",
+            "proposedFields", List.of("revoked", "userConfirmed"),
+            "sideEffects", Map.of(
+                    "createsPublicContent", false,
+                    "visibility", "accepted_match_participants_only")
+        ));
+
         c.put("help_request.create", Map.of(
             "endpoint", "POST /api/nexus/help-requests",
             "requiresConfirmation", true,

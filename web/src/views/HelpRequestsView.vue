@@ -109,6 +109,48 @@
             <button v-if="m.status === 'accepted'" class="btn btn-sm btn-secondary" @click="dispatchStore.loadMessages(m.id)">
               查看私信
             </button>
+            <button v-if="m.status === 'accepted'" class="btn btn-sm btn-secondary" @click="toggleMemoryPanel(String(m.id))">
+              协作上下文
+            </button>
+            <div v-if="memoryPanelMatchId === String(m.id)" class="memory-share-panel">
+              <h6>已共享记忆</h6>
+              <p v-if="!matchShares.length" class="muted">双方尚未共享长期记忆。</p>
+              <div v-for="share in matchShares" :key="share.id" class="shared-memory">
+                <div>
+                  <strong>{{ share.title }}</strong>
+                  <span>user {{ share.ownerUserId }} · {{ share.kind }}</span>
+                  <p>{{ share.content }}</p>
+                </div>
+                <button
+                  v-if="share.ownerUserId === auth.context?.userId"
+                  class="icon-action"
+                  type="button"
+                  title="撤销共享"
+                  @click="revokeShare(String(m.id), String(share.id))"
+                >
+                  撤销
+                </button>
+              </div>
+
+              <h6>选择我的可共享记忆</h6>
+              <p v-if="!shareableMemories.length" class="muted">
+                请先在“记忆”页面把共享策略设为“每次由用户明确确认”。
+              </p>
+              <label v-for="memory in shareableMemories" :key="memory.id" class="memory-option">
+                <input v-model="selectedMemoryIds" type="checkbox" :value="memory.id" />
+                <span><strong>{{ memory.title }}</strong>{{ memory.content }}</span>
+              </label>
+              <p v-if="memoryShareError" class="error">{{ memoryShareError }}</p>
+              <button
+                v-if="shareableMemories.length"
+                class="btn btn-sm btn-primary"
+                type="button"
+                :disabled="!selectedMemoryIds.length"
+                @click="shareSelected(String(m.id))"
+              >
+                确认共享所选快照
+              </button>
+            </div>
           </div>
         </div>
 
@@ -128,6 +170,12 @@ import { ref, computed, onMounted, watch } from 'vue'
 import AppHeader from '@/components/AppHeader.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useHelpStore, useDispatchStore } from '@/stores/help'
+import {
+  fetchMatchMemoryShares,
+  fetchMemories,
+  revokeMatchMemoryShare,
+  shareMatchMemories,
+} from '@/api/endpoints'
 
 const auth = useAuthStore()
 const help = useHelpStore()
@@ -141,6 +189,11 @@ const filter = ref('')
 const selected = ref<any>(null)
 const msgText = ref('')
 const activeMatchId = ref<string | null>(null)
+const memoryPanelMatchId = ref<string | null>(null)
+const shareableMemories = ref<any[]>([])
+const matchShares = ref<any[]>([])
+const selectedMemoryIds = ref<number[]>([])
+const memoryShareError = ref('')
 
 const statuses = [
   { label: '全部', value: '' },
@@ -162,6 +215,7 @@ const filteredRequests = computed(() => {
 })
 
 watch(filter, (val) => help.loadRequests(val || undefined), { immediate: true })
+onMounted(() => auth.loadContext())
 
 async function submitRequest() {
   submitting.value = true
@@ -228,6 +282,48 @@ async function sendMsg(matchId: string) {
   msgText.value = ''
 }
 
+async function toggleMemoryPanel(matchId: string) {
+  if (memoryPanelMatchId.value === matchId) {
+    memoryPanelMatchId.value = null
+    return
+  }
+  memoryPanelMatchId.value = matchId
+  selectedMemoryIds.value = []
+  memoryShareError.value = ''
+  try {
+    const [memories, shares] = await Promise.all([
+      fetchMemories({ status: 'active', limit: 50 }),
+      fetchMatchMemoryShares(matchId),
+    ])
+    shareableMemories.value = memories.filter(
+      (memory: any) => memory.sharePolicy === 'ask_each_time' && memory.sensitivity !== 'restricted',
+    )
+    matchShares.value = shares
+  } catch (exception: any) {
+    memoryShareError.value = exception.response?.data?.errors?.[0]?.message ?? '无法读取协作上下文。'
+  }
+}
+
+async function shareSelected(matchId: string) {
+  memoryShareError.value = ''
+  try {
+    matchShares.value = await shareMatchMemories(matchId, selectedMemoryIds.value)
+    selectedMemoryIds.value = []
+  } catch (exception: any) {
+    memoryShareError.value = exception.response?.data?.errors?.[0]?.message ?? '共享失败。'
+  }
+}
+
+async function revokeShare(matchId: string, shareId: string) {
+  memoryShareError.value = ''
+  try {
+    await revokeMatchMemoryShare(matchId, shareId)
+    matchShares.value = await fetchMatchMemoryShares(matchId)
+  } catch (exception: any) {
+    memoryShareError.value = exception.response?.data?.errors?.[0]?.message ?? '撤销失败。'
+  }
+}
+
 function formatDate(d: string) {
   if (!d) return ''
   return new Date(d).toLocaleDateString('zh-CN')
@@ -277,6 +373,19 @@ h1 { color: #111827; font-size: 1.5rem; }
 .msg { padding: 6px 0; font-size: 13px; border-bottom: 1px solid #f3f4f6; }
 .msg-form { margin-top: 8px; display: flex; gap: 8px; }
 .msg-form .input { flex: 1; margin-bottom: 0; }
+.memory-share-panel { width: 100%; margin-top: 10px; padding: 12px; border: 1px solid #dce3e8; border-radius: 7px; background: #fff; }
+.memory-share-panel h6 { margin: 4px 0 8px; font-size: 12px; color: #344054; }
+.memory-share-panel h6:not(:first-child) { margin-top: 14px; padding-top: 12px; border-top: 1px solid #edf0f2; }
+.shared-memory { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f0f2f4; }
+.shared-memory strong { display: block; font-size: 12px; }
+.shared-memory span { display: block; margin-top: 2px; color: #7a8491; font-size: 10px; }
+.shared-memory p { margin-top: 4px; color: #5f6975; font-size: 12px; line-height: 1.45; }
+.icon-action { border: 0; color: #b42318; background: transparent; cursor: pointer; font-size: 11px; }
+.memory-option { display: flex; align-items: flex-start; gap: 8px; padding: 7px 0; cursor: pointer; }
+.memory-option input { margin-top: 3px; }
+.memory-option span { color: #5f6975; font-size: 11px; line-height: 1.4; }
+.memory-option strong { display: block; color: #344054; font-size: 12px; }
+.muted { color: #8a94a0; font-size: 11px; }
 .loading, .empty { text-align: center; color: #9ca3af; padding: 40px 0; }
 @media (max-width: 720px) { .help-page { padding-bottom: 58px; } .page { padding: 20px 12px 40px; } }
 </style>

@@ -1,6 +1,7 @@
 package nexus.campus.agent.controller;
 
 import lombok.RequiredArgsConstructor;
+import nexus.campus.agent.memory.service.AgentMemoryService;
 import nexus.campus.agent.repository.AgentProfileRepository;
 import nexus.campus.agent.repository.UserCapabilityRepository;
 import nexus.campus.agent.repository.UserLlmSettingsRepository;
@@ -23,6 +24,7 @@ public class AgentContextController {
     private final UserLlmSettingsRepository llmRepo;
     private final WorkItemFeedService workItemFeed;
     private final AgentPreflightCatalog catalog;
+    private final AgentMemoryService memoryService;
 
     @GetMapping("/agent-context")
     public ApiResponse<Map<String, Object>> context(@AuthenticationPrincipal User user) {
@@ -91,10 +93,13 @@ public class AgentContextController {
                 "title", w.title(),
                 "nextAction", w.actionRef()
         )).toList());
+        attrs.put("memory", memoryService.bootstrap(user.getId()));
         attrs.put("endpoints", Map.of(
                 "helpRequests", "/api/nexus/help-requests",
                 "workItems", "/api/nexus/me/work-items",
                 "agentProfile", "/api/nexus/me/agent-profile",
+                "memories", "/api/nexus/me/memories",
+                "memoryRecall", "/api/nexus/me/memories/recall",
                 "capabilities", "/api/nexus/capabilities",
                 "forumDiscussions", "/api/nexus/forum/discussions"
         ));

@@ -16,7 +16,7 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Nexus Campus REST API")
-                        .version("0.2.0")
+                        .version("0.3.0")
                         .description("Spring Boot generated OpenAPI 3 contract for the Nexus Campus REST API."))
                 .components(new Components()
                         .addSecuritySchemes("tokenAuth", new SecurityScheme()

@@ -77,11 +77,13 @@ After a release, validate at least one two-user workflow:
 4. Create and accept a dispatch.
 5. Offer and accept a match.
 6. Send a private message after acceptance and read it as the other participant.
+7. Create, read, and recall one private long-term memory.
+8. Share a memory snapshot into the accepted match, verify both participants can read it and a third user receives `403`, then revoke it as the owner.
 
-Non-participants must not read match messages, and an unaccepted match must not allow messages.
+Non-participants must not read messages, access shared memory, or change match state. Messages and memory shares must not be writable before acceptance.
 
 ## Known Limitations
 
-- The backend currently has no automated test sources. `mvn test` succeeds but reports `No tests to run`.
+- The backend now has 9 automated tests covering Agent memory service/controller/repository behavior and non-participant match authorization. Deployment requires zero Maven test failures and errors.
 - Docker and Compose are installed, but this server currently cannot reach Docker Hub. Native systemd deployment is used for now.
 - `SPRING_JPA_HIBERNATE_DDL_AUTO=update` is acceptable during development. Replace it with version-controlled Flyway migrations before production.

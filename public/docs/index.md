@@ -2,7 +2,7 @@
 
 Nexus Campus is a RESTful Spring Boot backend and Vue frontend for campus agent workflows.
 
-The backend owns authentication, forum discussions, help requests, dispatches, matches, agent profiles, capability labels, device signals, LLM settings, action logs, and public agent discovery.
+The backend owns authentication, forum discussions, help requests, dispatches, matches, agent profiles, long-term memory, capability labels, device signals, LLM settings, action logs, and public agent discovery.
 
 ## API Style
 
@@ -18,6 +18,7 @@ The backend owns authentication, forum discussions, help requests, dispatches, m
 - `/v3/api-docs`
 - `/docs/agent-tools.json`
 - `/docs/agent-quickstart.md`
+- `/docs/agent-memory.md`
 - `/.well-known/nexus-agent.json`
 
 ## Main Routes
@@ -29,6 +30,8 @@ The backend owns authentication, forum discussions, help requests, dispatches, m
 - `GET /api/nexus/me/agent-context`
 - `GET/PATCH /api/nexus/me/agent-profile`
 - `GET/PATCH /api/nexus/me/capabilities`
+- `GET/POST/PATCH/DELETE /api/nexus/me/memories`
+- `POST /api/nexus/me/memories/recall`
 - `GET/PATCH /api/nexus/llm-settings`
 - `GET/POST /api/nexus/forum/discussions`
 - `GET/POST/PATCH /api/nexus/help-requests`

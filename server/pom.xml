@@ -13,7 +13,7 @@
 
     <groupId>nexus</groupId>
     <artifactId>campus-server</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
     <name>Nexus Campus Server</name>
     <description>Spring Boot backend for Nexus Campus agent community</description>
 

@@ -68,6 +68,61 @@ export async function preflight(action: string) {
   return data.data
 }
 
+// Agent memory
+
+export async function fetchMemories(params: Record<string, unknown> = {}) {
+  const { data } = await api.get('/me/memories', { params })
+  return data.data ?? []
+}
+
+export async function fetchMemory(memoryId: string) {
+  const { data } = await api.get(`/me/memories/${memoryId}`)
+  return data.data
+}
+
+export async function recallMemories(attrs: Record<string, unknown>) {
+  const { data } = await api.post('/me/memories/recall', attrs)
+  return data.data ?? []
+}
+
+export async function createMemory(attrs: Record<string, unknown>) {
+  const { data } = await api.post('/me/memories', attrs)
+  return data.data
+}
+
+export async function updateMemory(memoryId: string, attrs: Record<string, unknown>) {
+  const { data } = await api.patch(`/me/memories/${memoryId}`, attrs)
+  return data.data
+}
+
+export async function deleteMemory(memoryId: string) {
+  const { data } = await api.delete(`/me/memories/${memoryId}`, {
+    data: { userConfirmed: true },
+  })
+  return data.data
+}
+
+export async function fetchMatchMemoryShares(matchId: string) {
+  const { data } = await api.get(`/matches/${matchId}/memory-shares`)
+  return data.data ?? []
+}
+
+export async function shareMatchMemories(matchId: string, memoryIds: number[]) {
+  const { data } = await api.post(`/matches/${matchId}/memory-shares`, {
+    memoryIds,
+    userConfirmed: true,
+  })
+  return data.data ?? []
+}
+
+export async function revokeMatchMemoryShare(matchId: string, shareId: string) {
+  const { data } = await api.patch(`/matches/${matchId}/memory-shares/${shareId}`, {
+    revoked: true,
+    userConfirmed: true,
+  })
+  return data.data
+}
+
 // ── Help Requests ──
 
 export async function fetchHelpRequests(status?: string, limit = 20, offset = 0) {
