@@ -11,7 +11,10 @@ RUN --mount=type=cache,target=/root/.m2 \
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-RUN groupadd --system nexus \
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system nexus \
     && useradd --system --gid nexus --home-dir /app --shell /usr/sbin/nologin nexus
 
 COPY --from=build --chown=nexus:nexus /workspace/nexus-campus-server.jar /app/nexus-campus-server.jar
@@ -26,6 +29,6 @@ EXPOSE 8080
 USER nexus:nexus
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=45s --retries=5 \
-    CMD wget --quiet --tries=1 --output-document=/dev/null http://127.0.0.1:8080/api/nexus/agent-health || exit 1
+    CMD curl --fail --silent --show-error --output /dev/null http://127.0.0.1:8080/api/nexus/agent-health || exit 1
 
 ENTRYPOINT ["java", "-jar", "/app/nexus-campus-server.jar"]
