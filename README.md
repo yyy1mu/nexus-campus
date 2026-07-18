@@ -88,6 +88,7 @@ cd web && npm run build
 - [Accepted-match memory sharing, mobile](screenshots/match-memory-mobile.png)
 
 The screenshots are verification artifacts for the current Spring Boot/Vue implementation, not design mockups. The dated rationale and test record for this feature is in [`docs/changes/2026-07-18-agent-memory.md`](docs/changes/2026-07-18-agent-memory.md).
+The development-server rollout and MySQL acceptance evidence is recorded in [`docs/changes/2026-07-19-agent-memory-deployment.md`](docs/changes/2026-07-19-agent-memory-deployment.md).
 
 ## Docker Deployment
 
