@@ -156,28 +156,24 @@ async function saveLlm() {
 </script>
 
 <style scoped>
-.profile-page { min-height: 100vh; background: #f6f7f9; }
+/* 按钮、输入框、卡片、字段、错误/提示等复用 styles/components.css 全局样式 */
+.profile-page { min-height: 100vh; background: var(--nx-bg-base); }
 .page { max-width: 760px; margin: 0 auto; padding: 28px 20px 72px; }
-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-h1 { font-size: 1.5rem; }
-.card { background: #fff; border: 1px solid #e0e4e9; border-radius: 8px; padding: 24px; margin-bottom: 16px; }
-h2 { font-size: 1.1rem; margin-bottom: 16px; }
-.field { display: block; margin-bottom: 14px; }
-.field span { display: block; font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 4px; }
-.input { display: block; width: 100%; padding: 10px; border: 1px solid #d7dce3; border-radius: 7px; font-size: 14px; }
-.textarea { resize: vertical; }
-.btn { display: inline-block; padding: 8px 16px; border-radius: 7px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; }
-.btn-primary { background: #3b82f6; color: #fff; }
-.btn-secondary { background: #f3f4f6; color: #374151; }
-.error { color: #ef4444; font-size: 14px; margin-top: 8px; }
-.hint { color: #9ca3af; font-size: 13px; margin-bottom: 12px; }
-.switches { display: grid; gap: 8px; }
-.switch { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--nx-space-5); }
+h1 { color: var(--nx-text-primary); font-size: var(--nx-fs-24); font-weight: 700; }
+.card { margin-bottom: var(--nx-space-4); }
+h2 { color: var(--nx-text-primary); font-size: var(--nx-fs-16); margin-bottom: var(--nx-space-4); }
+/* 权限开关 */
+.switches { display: grid; gap: var(--nx-space-2); }
+.switch { display: flex; gap: var(--nx-space-3); align-items: flex-start; cursor: pointer; padding: var(--nx-space-3); border: 1px solid var(--nx-border-subtle); border-radius: var(--nx-radius-md); background: var(--nx-bg-inset); }
+.switch:hover { border-color: var(--nx-border-strong); }
 .switch input { margin-top: 4px; }
-.switch p { margin: 2px 0 0; font-size: 12px; color: #9ca3af; }
-.cap-list { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-.cap-tag { padding: 4px 12px; background: #ede9fe; color: #6d28d9; border-radius: 16px; font-size: 13px; font-weight: 500; }
-.add-cap { display: flex; gap: 8px; }
+.switch strong { color: var(--nx-text-primary); font-size: var(--nx-fs-13); }
+.switch p { margin: 2px 0 0; font-size: var(--nx-fs-12); color: var(--nx-text-tertiary); }
+/* 能力标签 */
+.cap-list { display: flex; gap: var(--nx-space-2); flex-wrap: wrap; margin-bottom: var(--nx-space-3); }
+.cap-tag { padding: 4px 12px; background: var(--nx-accent-faint); color: var(--nx-accent); border: 1px solid var(--nx-accent-border); border-radius: var(--nx-radius-sm); font-size: var(--nx-fs-13); font-weight: 600; }
+.add-cap { display: flex; gap: var(--nx-space-2); }
 .add-cap .input { flex: 1; margin-bottom: 0; }
 @media (max-width: 720px) { .profile-page { padding-bottom: 58px; } .page { padding: 20px 12px 40px; } }
 </style>

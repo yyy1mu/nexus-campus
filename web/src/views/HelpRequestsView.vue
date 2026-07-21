@@ -331,61 +331,55 @@ function formatDate(d: string) {
 </script>
 
 <style scoped>
-.help-page { min-height: 100vh; background: #f6f7f9; }
+/* 按钮、输入框、卡片、状态标签、加载/空/错误等复用 styles/components.css 全局样式 */
+.help-page { min-height: 100vh; background: var(--nx-bg-base); }
 .page { max-width: 900px; margin: 0 auto; padding: 28px 20px 72px; }
-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-h1 { color: #111827; font-size: 1.5rem; }
-.card { background: #fff; border: 1px solid #e0e4e9; border-radius: 8px; padding: 20px; margin-bottom: 12px; cursor: pointer; transition: border-color .2s, box-shadow .2s; }
-.card:hover { border-color: #c9d2df; box-shadow: 0 4px 14px rgba(16,24,40,.05); }
-.request-card h3 { font-size: 1rem; margin: 8px 0 4px; }
-.detail { color: #6b7280; font-size: 14px; margin: 0 0 8px; }
-.meta { font-size: 12px; color: #9ca3af; display: flex; gap: 12px; }
-.input { display: block; width: 100%; padding: 10px; border: 1px solid #d7dce3; border-radius: 7px; margin-bottom: 10px; font-size: 14px; }
-.textarea { resize: vertical; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--nx-space-5); }
+h1 { color: var(--nx-text-primary); font-size: var(--nx-fs-24); font-weight: 700; }
+/* 卡片间距与可点击请求卡（基础外观来自全局 .card） */
+.card { margin-bottom: var(--nx-space-3); }
+.card h2 { color: var(--nx-text-primary); font-size: var(--nx-fs-16); margin-bottom: var(--nx-space-4); }
+.request-card { cursor: pointer; transition: border-color var(--nx-duration-fast) var(--nx-ease-out), background-color var(--nx-duration-fast) var(--nx-ease-out); }
+.request-card:hover { border-color: var(--nx-border-strong); background: var(--nx-bg-hover); }
+.request-card h3 { color: var(--nx-text-primary); font-size: var(--nx-fs-16); margin: var(--nx-space-2) 0 4px; }
+.detail { color: var(--nx-text-tertiary); font-size: var(--nx-fs-14); margin: 0 0 var(--nx-space-2); }
+.meta { font-size: var(--nx-fs-12); color: var(--nx-text-tertiary); display: flex; gap: var(--nx-space-3); }
+/* 表单间距（输入框外观来自全局 .input） */
+form .input { margin-bottom: 10px; }
 .row { display: flex; gap: 10px; }
 .row .input { flex: 1; }
-.checkbox { font-size: 14px; margin-bottom: 12px; display: block; }
-.btn { display: inline-block; padding: 8px 16px; border-radius: 7px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; }
-.btn-sm { padding: 6px 12px; font-size: 13px; }
-.btn-primary { background: #3b82f6; color: #fff; }
-.btn-secondary { background: #f3f4f6; color: #374151; }
-.error { color: #ef4444; font-size: 14px; }
-.filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-.status-tag { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-.status-tag.open { background: #dbeafe; color: #1d4ed8; }
-.status-tag.matching { background: #fef3c7; color: #b45309; }
-.status-tag.matched { background: #dcfce7; color: #15803d; }
-.status-tag.closed, .status-tag.cancelled { background: #f3f4f6; color: #6b7280; }
-.status-tag.accepted { background: #dcfce7; color: #15803d; }
-.status-tag.declined { background: #fee2e2; color: #b91c1c; }
-.status-tag.pending { background: #fef3c7; color: #b45309; }
-.status-tag.offered { background: #ede9fe; color: #6d28d9; }
-.status-tag.completed { background: #ccfbf1; color: #0f766e; }
-.urgency { margin-left: 8px; font-size: 11px; color: #ef4444; }
-.detail-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid #f3f4f6; cursor: default; }
-.detail-section h4 { font-size: 1rem; margin-bottom: 10px; }
-.detail-section p { font-size: 14px; margin: 4px 0; }
-.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.checkbox { margin-bottom: var(--nx-space-3); }
+/* 状态筛选 */
+.filters { display: flex; gap: var(--nx-space-2); margin-bottom: var(--nx-space-4); flex-wrap: wrap; }
+.urgency { margin-left: var(--nx-space-2); font-size: var(--nx-fs-11); color: var(--nx-danger); font-weight: 700; }
+/* 展开详情 */
+.detail-section { margin-top: var(--nx-space-4); padding-top: var(--nx-space-4); border-top: 1px solid var(--nx-border-subtle); cursor: default; }
+.detail-section h4 { color: var(--nx-text-primary); font-size: var(--nx-fs-16); margin-bottom: 10px; }
+.detail-section p { color: var(--nx-text-secondary); font-size: var(--nx-fs-14); margin: 4px 0; }
+.detail-section p strong { color: var(--nx-text-tertiary); }
+.actions { display: flex; gap: var(--nx-space-2); flex-wrap: wrap; margin-top: var(--nx-space-3); }
 .sub-section { margin-top: 14px; }
-.sub-section h5 { font-size: .9rem; margin-bottom: 8px; }
-.sub-item { padding: 10px; background: #f9fafb; border-radius: 8px; margin-bottom: 8px; font-size: 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.messages { margin-top: 10px; }
-.msg { padding: 6px 0; font-size: 13px; border-bottom: 1px solid #f3f4f6; }
-.msg-form { margin-top: 8px; display: flex; gap: 8px; }
+.sub-section h5 { color: var(--nx-text-secondary); font-size: var(--nx-fs-14); margin-bottom: var(--nx-space-2); }
+.sub-item { padding: 10px; background: var(--nx-bg-inset); border: 1px solid var(--nx-border-subtle); border-radius: var(--nx-radius-lg); margin-bottom: var(--nx-space-2); font-size: var(--nx-fs-14); display: flex; flex-wrap: wrap; gap: var(--nx-space-2); align-items: center; color: var(--nx-text-secondary); }
+.messages { margin-top: 10px; width: 100%; }
+.msg { padding: 6px 0; font-size: var(--nx-fs-13); border-bottom: 1px solid var(--nx-border-subtle); color: var(--nx-text-secondary); }
+.msg strong { color: var(--nx-accent); }
+.msg-form { margin-top: var(--nx-space-2); display: flex; gap: var(--nx-space-2); }
 .msg-form .input { flex: 1; margin-bottom: 0; }
-.memory-share-panel { width: 100%; margin-top: 10px; padding: 12px; border: 1px solid #dce3e8; border-radius: 7px; background: #fff; }
-.memory-share-panel h6 { margin: 4px 0 8px; font-size: 12px; color: #344054; }
-.memory-share-panel h6:not(:first-child) { margin-top: 14px; padding-top: 12px; border-top: 1px solid #edf0f2; }
-.shared-memory { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f0f2f4; }
-.shared-memory strong { display: block; font-size: 12px; }
-.shared-memory span { display: block; margin-top: 2px; color: #7a8491; font-size: 10px; }
-.shared-memory p { margin-top: 4px; color: #5f6975; font-size: 12px; line-height: 1.45; }
-.icon-action { border: 0; color: #b42318; background: transparent; cursor: pointer; font-size: 11px; }
-.memory-option { display: flex; align-items: flex-start; gap: 8px; padding: 7px 0; cursor: pointer; }
+/* 记忆共享面板 */
+.memory-share-panel { width: 100%; margin-top: 10px; padding: var(--nx-space-3); border: 1px solid var(--nx-border-default); border-radius: var(--nx-radius-md); background: var(--nx-bg-overlay); }
+.memory-share-panel h6 { margin: 4px 0 var(--nx-space-2); font-size: var(--nx-fs-12); color: var(--nx-text-secondary); }
+.memory-share-panel h6:not(:first-child) { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--nx-border-subtle); }
+.shared-memory { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--nx-space-3); padding: var(--nx-space-2) 0; border-bottom: 1px solid var(--nx-border-subtle); }
+.shared-memory strong { display: block; font-size: var(--nx-fs-12); color: var(--nx-text-primary); }
+.shared-memory span { display: block; margin-top: 2px; color: var(--nx-text-tertiary); font-size: 10px; }
+.shared-memory p { margin-top: 4px; color: var(--nx-text-secondary); font-size: var(--nx-fs-12); line-height: 1.45; }
+.icon-action { border: 0; color: var(--nx-danger); background: transparent; cursor: pointer; font-size: var(--nx-fs-11); }
+.icon-action:hover { text-decoration: underline; }
+.memory-option { display: flex; align-items: flex-start; gap: var(--nx-space-2); padding: 7px 0; cursor: pointer; }
 .memory-option input { margin-top: 3px; }
-.memory-option span { color: #5f6975; font-size: 11px; line-height: 1.4; }
-.memory-option strong { display: block; color: #344054; font-size: 12px; }
-.muted { color: #8a94a0; font-size: 11px; }
-.loading, .empty { text-align: center; color: #9ca3af; padding: 40px 0; }
+.memory-option span { color: var(--nx-text-secondary); font-size: var(--nx-fs-11); line-height: 1.4; }
+.memory-option strong { display: block; color: var(--nx-text-primary); font-size: var(--nx-fs-12); }
+.muted { color: var(--nx-text-tertiary); font-size: var(--nx-fs-11); }
 @media (max-width: 720px) { .help-page { padding-bottom: 58px; } .page { padding: 20px 12px 40px; } }
 </style>

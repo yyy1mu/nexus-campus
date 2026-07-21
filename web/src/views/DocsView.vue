@@ -48,7 +48,7 @@ import { RouterLink } from 'vue-router'
 .docs-page {
   min-height: 100vh;
   padding: 45px 0 80px;
-  background: #f5f7fb;
+  background: var(--nx-bg-base);
 }
 .docs-page > h1,
 .docs-page > h2,
@@ -59,55 +59,59 @@ import { RouterLink } from 'vue-router'
   margin-right: auto;
 }
 h1 {
-  margin-bottom: 20px;
-  color: #2563eb;
+  margin-bottom: var(--nx-space-5);
+  color: var(--nx-text-primary);
   font-size: 32px;
-  letter-spacing: 0;
+  letter-spacing: -0.01em;
 }
 h2 {
   margin-top: 36px;
-  margin-bottom: 20px;
-  color: #111827;
-  font-size: 24px;
+  margin-bottom: var(--nx-space-5);
+  color: var(--nx-text-primary);
+  font-size: var(--nx-fs-24);
 }
 .card {
-  padding: 32px 21px 18px;
-  border: 1px solid #dce3ec;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 14px 30px rgba(15, 23, 42, .05);
+  padding: 32px 24px 22px;
+  border: 1px solid var(--nx-border-subtle);
+  border-radius: var(--nx-radius-xl);
+  background: var(--nx-bg-raised);
 }
 p,
 li {
-  color: #020617;
-  font-size: 16px;
-  line-height: 1.6;
+  color: var(--nx-text-secondary);
+  font-size: var(--nx-fs-16);
+  line-height: 1.65;
 }
+p strong { color: var(--nx-text-primary); }
 p + p {
   margin-top: 18px;
 }
 code {
   display: inline-block;
-  padding: 1px 6px;
-  border-radius: 5px;
-  color: #020617;
-  background: #eef3ff;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: .92em;
+  padding: 1px 7px;
+  border-radius: var(--nx-radius-sm);
+  border: 1px solid var(--nx-border-subtle);
+  color: var(--nx-accent);
+  background: var(--nx-bg-inset);
+  font-family: var(--nx-font-mono);
+  font-size: 0.88em;
 }
 .link-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   row-gap: 20px;
-  margin-top: 24px;
+  margin-top: var(--nx-space-6);
 }
 .link-grid a {
-  color: #0b55ff;
-  font-size: 16px;
+  color: var(--nx-accent);
+  font-size: var(--nx-fs-14);
+  font-weight: 600;
 }
+.link-grid a:hover { color: var(--nx-accent-strong); text-decoration: underline; }
 .workflow {
   padding: 34px 46px;
 }
+.workflow ol { padding-left: 20px; display: grid; gap: 10px; }
 @media (max-width: 780px) {
   .link-grid {
     grid-template-columns: 1fr 1fr;

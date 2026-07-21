@@ -112,12 +112,12 @@ const content = computed(() => {
 <style scoped>
 .text-page {
   min-height: 100vh;
-  padding: 8px;
+  padding: var(--nx-space-4);
   overflow: auto;
-  color: #000;
-  background: #fff;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 13px;
+  color: var(--nx-text-secondary);
+  background: var(--nx-bg-base);
+  font-family: var(--nx-font-mono);
+  font-size: var(--nx-fs-13);
   line-height: 1.55;
   white-space: pre-wrap;
 }

@@ -1,0 +1,100 @@
+﻿/*
+ * Nexus 基础样式（Base）
+ * 全局 reset、排版、滚动条、选区、焦点与通用交互反馈。
+ * 该文件由 App.vue 引入，作用于所有页面。
+ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--nx-bg-base);
+  color-scheme: dark;
+}
+
+body {
+  min-width: 320px;
+  color: var(--nx-text-secondary);
+  font-family: var(--nx-font-sans);
+  background: var(--nx-bg-base);
+  font-size: var(--nx-fs-13);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img,
+svg {
+  display: block;
+}
+
+/* 键盘焦点：统一使用强调色描边，保证可达性 */
+:focus-visible {
+  outline: 2px solid var(--nx-accent);
+  outline-offset: 2px;
+  border-radius: var(--nx-radius-sm);
+}
+
+/* 文本选区使用强调色 */
+::selection {
+  color: var(--nx-on-accent);
+  background: var(--nx-accent);
+}
+
+/* 深色滚动条，弱化存在感 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  border: 3px solid var(--nx-bg-base);
+  border-radius: 8px;
+  background: var(--nx-border-default);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--nx-border-strong);
+}
+
+/* 数字与代码使用等宽字体，提高辨识度 */
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--nx-font-mono);
+}
+
+/* 通用过渡：快速、自然、克制 */
+a,
+button,
+input,
+select,
+textarea {
+  transition: color var(--nx-duration-fast) var(--nx-ease-out),
+    background-color var(--nx-duration-fast) var(--nx-ease-out),
+    border-color var(--nx-duration-fast) var(--nx-ease-out),
+    box-shadow var(--nx-duration-fast) var(--nx-ease-out),
+    opacity var(--nx-duration-fast) var(--nx-ease-out);
+}

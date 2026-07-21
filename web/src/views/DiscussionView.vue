@@ -62,35 +62,37 @@ const formattedBody = computed(() => discussion.value.body.split('\n').filter((l
 <style scoped>
 .discussion-page {
   min-height: 100vh;
-  background: #f6f7f9;
+  background: var(--nx-bg-base);
 }
 .title-hero {
   width: 1084px;
   max-width: calc(100vw - 32px);
-  margin: 24px auto 0;
+  margin: var(--nx-space-6) auto 0;
   padding: 22px 24px;
-  border: 1px solid #e0e4e9;
-  border-radius: 8px;
-  background: #fff;
+  border: 1px solid var(--nx-border-subtle);
+  border-radius: var(--nx-radius-lg);
+  background: var(--nx-bg-raised);
 }
 .tag-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--nx-fs-11);
   font-weight: 700;
 }
 .tag-pill span { width: 7px; height: 7px; border-radius: 2px; }
 .title-hero h1 {
   margin-top: 10px;
-  color: #111827;
+  color: var(--nx-text-primary);
   font-size: 22px;
   font-weight: 700;
+  line-height: 1.35;
 }
 .discussion-layout {
   width: 1084px;
   max-width: calc(100vw - 32px);
   margin: 28px auto 0;
+  padding-bottom: 64px;
   display: grid;
   grid-template-columns: 1fr 150px;
   gap: 68px;
@@ -99,9 +101,10 @@ const formattedBody = computed(() => discussion.value.body.split('\n').filter((l
   padding: 22px;
   display: grid;
   grid-template-columns: 72px 1fr;
-  border: 1px solid #e0e4e9;
-  border-radius: 8px;
-  background: #fff;
+  border: 1px solid var(--nx-border-subtle);
+  border-radius: var(--nx-radius-lg);
+  background: var(--nx-bg-raised);
+  align-self: start;
 }
 .avatar {
   width: 64px;
@@ -109,8 +112,8 @@ const formattedBody = computed(() => discussion.value.body.split('\n').filter((l
   display: grid;
   place-items: center;
   border-radius: 50%;
-  color: #fff;
-  background: #0f766e;
+  color: var(--nx-on-accent);
+  background: var(--nx-accent-dim);
   font-size: 34px;
 }
 .post-meta {
@@ -118,58 +121,62 @@ const formattedBody = computed(() => discussion.value.body.split('\n').filter((l
   gap: 10px;
   align-items: center;
   height: 30px;
-  color: #111827;
-  font-size: 14px;
+  color: var(--nx-text-primary);
+  font-size: var(--nx-fs-14);
 }
 .post-meta span {
-  color: #8b98a8;
+  color: var(--nx-text-tertiary);
   font-weight: 700;
 }
 .post-content {
   margin-top: 12px;
   min-height: 238px;
-  color: #111827;
+  color: var(--nx-text-secondary);
   font-size: 15px;
   line-height: 1.75;
 }
 .post-content .heading {
   margin-bottom: 14px;
+  color: var(--nx-text-primary);
   font-weight: 700;
 }
 .divider {
   height: 1px;
   margin-top: 34px;
-  background: #e7edf3;
+  background: var(--nx-border-subtle);
 }
 .reply-placeholder {
   display: flex;
   align-items: center;
   gap: 21px;
   margin-top: 68px;
-  color: #64748b;
-  font-size: 16px;
+  color: var(--nx-text-tertiary);
+  font-size: var(--nx-fs-16);
 }
 .blank-avatar {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: #e5eaf0;
+  background: var(--nx-bg-active);
 }
 .timeline button {
   width: 150px;
-  height: 36px;
+  height: 38px;
   border: 0;
-  border-radius: 7px;
-  color: #fff;
-  background: #3b82f6;
+  border-radius: var(--nx-radius-md);
+  color: var(--nx-on-accent);
+  background: var(--nx-accent);
   font-weight: 700;
+  cursor: pointer;
 }
+.timeline button:hover { background: var(--nx-accent-strong); }
+.timeline button:active { background: var(--nx-accent-dim); }
 .original {
   margin-top: 33px;
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #64748b;
+  color: var(--nx-text-tertiary);
 }
 .line {
   position: relative;
@@ -184,13 +191,13 @@ const formattedBody = computed(() => discussion.value.body.split('\n').filter((l
   width: 4px;
   height: 289px;
   border-radius: 4px;
-  background: #75a7f7;
+  background: var(--nx-accent);
 }
 .line-label {
   position: absolute;
   left: 18px;
   top: 124px;
-  color: #111827;
+  color: var(--nx-text-primary);
 }
 .line-label strong,
 .line-label span {
@@ -198,7 +205,7 @@ const formattedBody = computed(() => discussion.value.body.split('\n').filter((l
 }
 .line-label span,
 .now {
-  color: #64748b;
+  color: var(--nx-text-tertiary);
 }
 .now {
   margin-top: 15px;

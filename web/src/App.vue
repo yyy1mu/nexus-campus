@@ -14,29 +14,9 @@ onMounted(() => auth.loadContext())
 </script>
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-html {
-  background: #fff;
-}
-body {
-  min-width: 320px;
-  color: #111827;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
-  background: #fff;
-  font-size: 13px;
-}
-a {
-  color: inherit;
-  text-decoration: none;
-}
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
+/* 全局设计系统：设计令牌 + 基础样式 + 公共组件样式 */
+/* main.ts 不在可修改范围，因此通过 App.vue 引入全局样式 */
+@import './styles/tokens.css';
+@import './styles/base.css';
+@import './styles/components.css';
 </style>

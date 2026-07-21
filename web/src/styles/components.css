@@ -1,0 +1,289 @@
+﻿/*
+ * Nexus 公共组件样式（Components）
+ * 按钮、表单控件、卡片、徽章/状态标签、加载/空数据/错误状态等。
+ * 全部来自统一设计变量（tokens.css），供各页面复用，避免重复定义。
+ */
+
+/* ============ 按钮 ============ */
+.btn,
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: var(--nx-control-h);
+  padding: 0 var(--nx-space-4);
+  border: 1px solid transparent;
+  border-radius: var(--nx-radius-md);
+  font-size: var(--nx-fs-13);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--nx-duration-fast) var(--nx-ease-out),
+    border-color var(--nx-duration-fast) var(--nx-ease-out),
+    color var(--nx-duration-fast) var(--nx-ease-out),
+    opacity var(--nx-duration-fast) var(--nx-ease-out);
+}
+
+/* 主按钮：荧光黄绿底 + 深色字（核心操作） */
+.btn-primary,
+.button.primary {
+  color: var(--nx-on-accent);
+  background: var(--nx-accent);
+  border-color: var(--nx-accent);
+}
+.btn-primary:hover,
+.button.primary:hover {
+  background: var(--nx-accent-strong);
+  border-color: var(--nx-accent-strong);
+}
+.btn-primary:active,
+.button.primary:active {
+  background: var(--nx-accent-dim);
+  border-color: var(--nx-accent-dim);
+}
+
+/* 次按钮：深灰底 + 描边（常规操作） */
+.btn-secondary,
+.button.secondary {
+  color: var(--nx-text-primary);
+  background: var(--nx-bg-overlay);
+  border-color: var(--nx-border-default);
+}
+.btn-secondary:hover,
+.button.secondary:hover {
+  background: var(--nx-bg-hover);
+  border-color: var(--nx-border-strong);
+}
+.btn-secondary:active,
+.button.secondary:active {
+  background: var(--nx-bg-active);
+}
+
+/* 幽灵按钮：无底色 */
+.btn-ghost,
+.button.ghost {
+  color: var(--nx-text-secondary);
+  background: transparent;
+  border-color: transparent;
+}
+.btn-ghost:hover,
+.button.ghost:hover {
+  color: var(--nx-text-primary);
+  background: var(--nx-bg-hover);
+}
+
+/* 危险操作（文字型） */
+.button.danger-text,
+.btn-danger-text {
+  color: var(--nx-danger);
+  background: transparent;
+  border-color: transparent;
+}
+.button.danger-text:hover,
+.btn-danger-text:hover {
+  background: var(--nx-danger-bg);
+}
+
+/* 小尺寸按钮 */
+.btn-sm {
+  min-height: 30px;
+  padding: 0 var(--nx-space-3);
+  font-size: var(--nx-fs-12);
+}
+
+/* 禁用 / 加载 */
+.btn:disabled,
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ============ 表单控件 ============ */
+.input,
+select,
+textarea,
+.textarea {
+  display: block;
+  width: 100%;
+  min-height: var(--nx-control-h);
+  padding: 0 var(--nx-space-3);
+  border: 1px solid var(--nx-border-default);
+  border-radius: var(--nx-radius-md);
+  outline: 0;
+  color: var(--nx-text-primary);
+  background: var(--nx-bg-inset);
+  font-size: var(--nx-fs-14);
+  transition: border-color var(--nx-duration-fast) var(--nx-ease-out),
+    box-shadow var(--nx-duration-fast) var(--nx-ease-out),
+    background-color var(--nx-duration-fast) var(--nx-ease-out);
+}
+.input::placeholder,
+textarea::placeholder,
+.textarea::placeholder {
+  color: var(--nx-text-tertiary);
+}
+.input:hover,
+select:hover,
+textarea:hover,
+.textarea:hover {
+  border-color: var(--nx-border-strong);
+}
+.input:focus,
+select:focus,
+textarea:focus,
+.textarea:focus {
+  border-color: var(--nx-accent);
+  box-shadow: 0 0 0 3px rgba(200, 245, 66, 0.12);
+  background: var(--nx-bg-base);
+}
+textarea,
+.textarea {
+  min-height: 96px;
+  padding: var(--nx-space-2) var(--nx-space-3);
+  resize: vertical;
+  line-height: 1.5;
+}
+select {
+  appearance: none;
+  padding-right: 30px;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23707a85' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+select option {
+  color: var(--nx-text-primary);
+  background: var(--nx-bg-overlay);
+}
+
+/* 复选框强调色 */
+input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--nx-accent);
+  cursor: pointer;
+}
+
+/* 字段标签 */
+.field {
+  display: block;
+  margin-bottom: var(--nx-space-4);
+}
+.field > span,
+label > span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--nx-text-tertiary);
+  font-size: var(--nx-fs-12);
+  font-weight: 600;
+}
+.hint {
+  color: var(--nx-text-tertiary);
+  font-size: var(--nx-fs-12);
+  margin-bottom: var(--nx-space-3);
+}
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--nx-space-2);
+  color: var(--nx-text-secondary);
+  font-size: var(--nx-fs-13);
+  cursor: pointer;
+}
+
+/* ============ 卡片 / 面板 ============ */
+.card {
+  background: var(--nx-bg-raised);
+  border: 1px solid var(--nx-border-subtle);
+  border-radius: var(--nx-radius-lg);
+  padding: var(--nx-space-5);
+}
+
+/* ============ 徽章 / 状态标签 ============ */
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: var(--nx-radius-sm);
+  border: 1px solid transparent;
+  font-size: var(--nx-fs-11);
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+/* 开放：强调色 */
+.status-tag.open {
+  color: var(--nx-accent);
+  background: var(--nx-accent-faint);
+  border-color: var(--nx-accent-border);
+}
+/* 匹配中 / 待处理：警告 */
+.status-tag.matching,
+.status-tag.pending {
+  color: var(--nx-warning);
+  background: var(--nx-warning-bg);
+  border-color: rgba(217, 166, 72, 0.25);
+}
+/* 已匹配 / 已接受 / 已完成：成功 */
+.status-tag.matched,
+.status-tag.accepted,
+.status-tag.completed {
+  color: var(--nx-success);
+  background: var(--nx-success-bg);
+  border-color: rgba(76, 195, 138, 0.25);
+}
+/* 已关闭 / 已取消：中性 */
+.status-tag.closed,
+.status-tag.cancelled {
+  color: var(--nx-text-tertiary);
+  background: var(--nx-bg-active);
+  border-color: var(--nx-border-subtle);
+}
+/* 已拒绝：错误 */
+.status-tag.declined {
+  color: var(--nx-danger);
+  background: var(--nx-danger-bg);
+  border-color: rgba(224, 92, 92, 0.25);
+}
+/* 已提供：中性偏亮 */
+.status-tag.offered {
+  color: var(--nx-text-secondary);
+  background: var(--nx-bg-overlay);
+  border-color: var(--nx-border-default);
+}
+
+/* ============ 加载 / 空数据 / 错误状态 ============ */
+.loading,
+.empty,
+.state {
+  padding: var(--nx-space-10) 0;
+  text-align: center;
+  color: var(--nx-text-tertiary);
+  font-size: var(--nx-fs-13);
+}
+.state.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nx-space-2);
+}
+.state.empty strong {
+  color: var(--nx-text-secondary);
+  font-size: var(--nx-fs-14);
+}
+.state.empty span {
+  color: var(--nx-text-tertiary);
+  font-size: var(--nx-fs-12);
+}
+.error,
+.state.error,
+.form-error {
+  color: var(--nx-danger);
+  font-size: var(--nx-fs-13);
+}
+.form-error {
+  margin-bottom: var(--nx-space-3);
+  font-size: var(--nx-fs-12);
+}
