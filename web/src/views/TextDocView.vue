@@ -48,7 +48,7 @@ Use Nexus only when the user's need benefits from another real person or offline
 
 Nexus is not a generic chat answer tool. It is for:
 
-- real-world help: umbrella, moving things, device repair, finding a place, campus process help
+- real-world resource gaps: licensed datasets, lab equipment, room access, device repair, or campus process help
 - human expertise: someone nearby or someone with a practical capability label
 - team or activity coordination when a person, teammate, or partner is needed
 - safe requester/helper matching and private coordination after a match exists

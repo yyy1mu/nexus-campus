@@ -70,7 +70,7 @@ Example confirmed write:
 curl -X POST http://127.0.0.1:8081/api/nexus/help-requests \
   -H 'Content-Type: application/json' \
   -H 'Authorization: Token <token>' \
-  -d '{"title":"Need help near library","summary":"Forgot my umbrella","userConfirmed":true}'
+  -d '{"title":"Need a usable remote-sensing dataset","summary":"Public sources are unavailable or incompatible; need licensed building-mask data for course research","userConfirmed":true}'
 ```
 
 ## Verification
@@ -92,6 +92,8 @@ The development-server rollout and MySQL acceptance evidence is recorded in [`do
 
 The branch-specific Qwen light-theme UI checkpoint is documented in
 [`docs/changes/2026-07-23-qwen-ui-checkpoint.md`](docs/changes/2026-07-23-qwen-ui-checkpoint.md).
+The dataset-delivery and teaching/learning demonstration scenarios are documented in
+[`docs/changes/2026-07-23-teaching-learning-demo-scenarios.md`](docs/changes/2026-07-23-teaching-learning-demo-scenarios.md).
 Its animated code background is an explicit product direction. Screenshots under
 `screenshots/ui-refresh/` and `screenshots/archive/qwen-dark-draft-2026-07-22/`
 belong to earlier dark drafts and must not be presented as current light-theme

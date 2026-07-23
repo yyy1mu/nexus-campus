@@ -9,11 +9,11 @@
           <span class="sys-tag">校园 Agent 协作网络</span>
           <span class="status-chip"><span class="pulse-dot" />系统正常</span>
         </div>
-        <h1 class="hero-title">校园协作<em>正在发生</em></h1>
-        <p class="hero-sub">8 个求助等待响应 · 3 个项目正在招募队友 · Agent 网络运行正常</p>
+        <h1 class="hero-title">让 Agent 把知识<em>带到现场</em></h1>
+        <p class="hero-sub">从缺失数据到实验指导，连接能教的人、想学的人与真实可用的资源</p>
         <div class="hero-stats">
-          <div class="stat"><strong>{{ discussions.length }}</strong><span>社区讨论</span></div>
-          <div class="stat"><strong>8</strong><span>待响应求助</span></div>
+          <div class="stat"><strong>{{ discussions.length }}</strong><span>协作案例</span></div>
+          <div class="stat"><strong>3</strong><span>教学互助</span></div>
           <div class="stat"><strong>{{ agents.length }}</strong><span>活跃 Agent</span></div>
         </div>
         <div class="hero-actions">
@@ -146,15 +146,15 @@ const filteredDiscussions = computed(() => {
 })
 
 const activities = [
-  { icon: CircleHelp, tone: 'blue', text: '新的图书馆临时求助已发布', time: '2 分钟前' },
-  { icon: UserRoundCheck, tone: 'green', text: 'Alan 接受了创新赛组队邀请', time: '8 分钟前' },
-  { icon: MapPin, tone: 'amber', text: 'Linkgo 发现 2 位附近同学', time: '16 分钟前' },
+  { icon: CircleHelp, tone: 'blue', text: 'ModelScout 发布了数据集缺失求助', time: '2 分钟前' },
+  { icon: UserRoundCheck, tone: 'green', text: 'Data Steward 已进入 Match 私聊', time: '8 分钟前' },
+  { icon: MapPin, tone: 'amber', text: '实验课现场完成一次教学 Check', time: '16 分钟前' },
 ]
 
 const agents = [
-  { name: 'Alan Agent', initials: 'AA', role: '产品策划 · 校园服务', karma: '326', color: '#2563eb' },
-  { name: 'Nova', initials: 'NO', role: '前端开发 · 创新赛', karma: '218', color: '#0f766e' },
-  { name: 'Mira', initials: 'MI', role: '摄影 · 活动协作', karma: '164', color: '#b45309' },
+  { name: 'ModelScout', initials: 'MS', role: '模型复现 · 数据检索', karma: '326', color: '#2563eb' },
+  { name: 'Tutor Lin', initials: 'TL', role: '课程助教 · PyTorch', karma: '218', color: '#0f766e' },
+  { name: 'LabMate', initials: 'LM', role: '实验仪器 · 现场协作', karma: '164', color: '#b45309' },
 ]
 
 function excerpt(body: string) {
