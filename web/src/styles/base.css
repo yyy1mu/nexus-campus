@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Nexus 基础样式（Base）
  * 全局 reset、排版、滚动条、选区、焦点与通用交互反馈。
  * 该文件由 App.vue 引入，作用于所有页面。
@@ -12,7 +12,7 @@
 
 html {
   background: var(--nx-bg-base);
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
@@ -97,4 +97,10 @@ textarea {
     border-color var(--nx-duration-fast) var(--nx-ease-out),
     box-shadow var(--nx-duration-fast) var(--nx-ease-out),
     opacity var(--nx-duration-fast) var(--nx-ease-out);
+}
+
+/* ============ 应用骨架：桌面端左侧栏偏移 ============ */
+/* 侧边栏为 fixed 定位，正文整体右移让出空间；移动端（<=720px）无侧边栏。 */
+@media (min-width: 721px) {
+  body { padding-left: var(--nx-sidebar-w); }
 }

@@ -10,15 +10,15 @@
       </RouterLink>
 
       <nav class="main-nav" aria-label="主导航">
-        <RouterLink to="/" exact-active-class="active"><House :size="17" />动态</RouterLink>
-        <RouterLink to="/forum" active-class="active"><MessagesSquare :size="17" />讨论</RouterLink>
-        <RouterLink to="/help-requests" active-class="active"><CircleHelp :size="17" />求助</RouterLink>
-        <RouterLink to="/memories" active-class="active"><Brain :size="17" />记忆</RouterLink>
-        <RouterLink to="/agent-profile" active-class="active"><UserRoundCog :size="17" />Agent</RouterLink>
+        <RouterLink to="/" exact-active-class="active"><House :size="18" /><span>动态</span></RouterLink>
+        <RouterLink to="/forum" active-class="active"><MessagesSquare :size="18" /><span>讨论</span></RouterLink>
+        <RouterLink to="/help-requests" active-class="active"><CircleHelp :size="18" /><span>求助</span></RouterLink>
+        <RouterLink to="/memories" active-class="active"><Brain :size="18" /><span>记忆</span></RouterLink>
+        <RouterLink to="/agent-profile" active-class="active"><UserRoundCog :size="18" /><span>Agent</span></RouterLink>
       </nav>
 
       <label class="search-box">
-        <Search :size="17" />
+        <Search :size="16" />
         <input
           :value="searchValue"
           type="search"
@@ -57,7 +57,7 @@
             <RouterLink to="/memories" @click="accountOpen = false">
               <Brain :size="16" /> 长期记忆
             </RouterLink>
-            <button type="button" @click="logout">
+            <button type="button" class="menu-logout" @click="logout">
               <LogOut :size="16" /> 退出登录
             </button>
           </div>
@@ -74,7 +74,7 @@
       <section class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title">
         <header class="auth-dialog-header">
           <div>
-            <span>Nexus 账户</span>
+            <span class="auth-eyebrow">Nexus 账户</span>
             <h2 id="auth-title">{{ authMode === 'login' ? '登录社区' : '创建账户' }}</h2>
           </div>
           <button class="icon-button" type="button" aria-label="关闭" @click="closeAuth">
@@ -83,32 +83,14 @@
         </header>
 
         <div class="auth-modes" aria-label="账户操作">
-          <button
-            type="button"
-            :class="{ active: authMode === 'login' }"
-            @click="switchMode('login')"
-          >
-            登录
-          </button>
-          <button
-            type="button"
-            :class="{ active: authMode === 'register' }"
-            @click="switchMode('register')"
-          >
-            注册
-          </button>
+          <button type="button" :class="{ active: authMode === 'login' }" @click="switchMode('login')">登录</button>
+          <button type="button" :class="{ active: authMode === 'register' }" @click="switchMode('register')">注册</button>
         </div>
 
         <form @submit.prevent="submitAuth">
           <label v-if="authMode === 'register'">
             <span>用户名</span>
-            <input
-              v-model.trim="authForm.username"
-              autocomplete="username"
-              minlength="2"
-              maxlength="50"
-              required
-            />
+            <input v-model.trim="authForm.username" autocomplete="username" minlength="2" maxlength="50" required />
           </label>
           <label>
             <span>{{ authMode === 'login' ? '用户名或邮箱' : '邮箱' }}</span>
@@ -214,365 +196,224 @@ function logout() {
   accountOpen.value = false
 }
 </script>
-
 <style scoped>
+/* ============================================================
+   应用骨架 —— 桌面左侧边栏 / 移动端顶栏 + 底部 Tab
+   OKX 式克制高级感：纯黑底、灰阶层次、大留白；
+   荧光绿仅用于品牌方块、激活指示条与 CTA，无辉光无花哨动效。
+   模板与脚本保持 100% 原有功能，此处为骨架级样式重构。
+   ============================================================ */
+
+/* ---- 侧边栏主体（桌面，固定左侧，与主背景同色仅以细线分隔） ---- */
 .app-header {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  top: 0; bottom: 0; left: 0;
   z-index: var(--nx-z-header);
-  height: var(--nx-header-h);
-  border-bottom: 1px solid var(--nx-border-subtle);
-  background: rgba(11, 14, 17, 0.92);
-  backdrop-filter: blur(14px);
+  width: var(--nx-sidebar-w);
+  border-right: 1px solid var(--nx-border-subtle);
+  background: var(--nx-bg-base);
 }
 .header-inner {
-  width: min(var(--nx-container-w), calc(100vw - 40px));
-  height: var(--nx-header-h);
-  margin: 0 auto;
+  height: 100%;
   display: flex;
-  align-items: center;
-  gap: var(--nx-space-6);
+  flex-direction: column;
+  padding: 20px 14px 16px;
 }
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 0 0 auto;
-}
+
+/* ---- 品牌（克制：纯绿圆角方块 + 无衬线白字，无动效） ---- */
+.brand { order: 1; display: flex; align-items: center; gap: 11px; padding: 2px 8px 20px; }
 .brand-mark {
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--nx-radius-lg);
+  width: 36px; height: 36px; flex: 0 0 auto;
+  display: grid; place-items: center;
+  border-radius: 10px;
   color: var(--nx-on-accent);
   background: var(--nx-accent);
 }
-.brand-copy {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.05;
-}
+.brand-copy { display: flex; flex-direction: column; line-height: 1.15; }
 .brand-copy strong {
   color: var(--nx-text-primary);
-  font-size: 17px;
-  letter-spacing: 0.01em;
+  font-size: 16px; font-weight: 800; letter-spacing: -0.01em;
 }
-.brand-copy small {
-  margin-top: 4px;
+.brand-copy small { margin-top: 3px; color: var(--nx-text-tertiary); font-size: 11px; }
+
+/* ---- 搜索框 ---- */
+.search-box {
+  order: 2;
+  height: 38px; flex: 0 0 auto;
+  display: flex; align-items: center; gap: 9px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
   color: var(--nx-text-tertiary);
-  font-size: var(--nx-fs-11);
+  background: var(--nx-bg-raised);
+  transition: border-color var(--nx-duration-fast) var(--nx-ease-out),
+    background-color var(--nx-duration-fast) var(--nx-ease-out);
 }
-.main-nav {
-  height: 100%;
-  display: flex;
-  align-items: stretch;
-}
+.search-box:hover { background: var(--nx-bg-hover); }
+.search-box:focus-within { border-color: var(--nx-accent); background: var(--nx-bg-base); }
+.search-box input { width: 100%; border: 0; outline: 0; color: var(--nx-text-primary); background: transparent; font-size: var(--nx-fs-13); }
+.search-box input::placeholder { color: var(--nx-text-tertiary); }
+
+/* ---- 主导航（纵向：灰字，悬停白，激活白字 + 绿色指示条） ---- */
+.main-nav { order: 3; display: flex; flex-direction: column; gap: 2px; margin-top: 18px; }
 .main-nav a {
   position: relative;
-  min-width: 70px;
-  padding: 0 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
+  height: 42px; padding: 0 12px;
+  display: flex; align-items: center; gap: 11px;
+  border-radius: 10px;
   color: var(--nx-text-tertiary);
-  font-size: var(--nx-fs-14);
-  font-weight: 600;
+  font-size: var(--nx-fs-14); font-weight: 500;
+  transition: color var(--nx-duration-fast) var(--nx-ease-out),
+    background-color var(--nx-duration-fast) var(--nx-ease-out);
 }
-.main-nav a:hover {
-  color: var(--nx-text-secondary);
-}
-.main-nav a.active {
-  color: var(--nx-text-primary);
-}
+.main-nav a svg { flex: 0 0 auto; }
+.main-nav a:hover { color: var(--nx-text-primary); background: var(--nx-bg-hover); }
+.main-nav a.active { color: var(--nx-text-primary); background: var(--nx-bg-active); font-weight: 600; }
 .main-nav a.active::after {
   content: '';
-  position: absolute;
-  right: 14px;
-  bottom: 0;
-  left: 14px;
-  height: 3px;
-  border-radius: 3px 3px 0 0;
+  position: absolute; left: 0; top: 11px; bottom: 11px;
+  width: 3px; border-radius: 0 3px 3px 0;
   background: var(--nx-accent);
 }
-.search-box {
-  height: var(--nx-control-h);
-  max-width: 360px;
-  margin-left: auto;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 0 var(--nx-space-3);
-  border: 1px solid var(--nx-border-default);
-  border-radius: var(--nx-radius-md);
-  color: var(--nx-text-tertiary);
-  background: var(--nx-bg-inset);
-}
-.search-box:hover {
-  border-color: var(--nx-border-strong);
-}
-.search-box:focus-within {
-  border-color: var(--nx-accent);
-  box-shadow: 0 0 0 3px rgba(200, 245, 66, 0.12);
-  background: var(--nx-bg-base);
-}
-.search-box input {
-  width: 100%;
-  border: 0;
-  outline: 0;
-  color: var(--nx-text-primary);
-  background: transparent;
-  font-size: var(--nx-fs-13);
-}
-.search-box input::placeholder {
-  color: var(--nx-text-tertiary);
-}
+
+/* ---- 底部操作区（文档 / 通知 / 账户） ---- */
 .header-actions {
+  order: 4;
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--nx-space-2);
-}
-.icon-button,
-.profile-button,
-.login-button {
-  position: relative;
-  height: 36px;
+  margin-top: auto;
   display: grid;
-  place-items: center;
-  border: 0;
-  border-radius: var(--nx-radius-md);
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--nx-border-subtle);
+}
+.icon-button {
+  position: relative;
+  height: 38px;
+  display: grid; place-items: center;
+  border: 0; border-radius: 10px;
   color: var(--nx-text-tertiary);
   background: transparent;
   cursor: pointer;
+  transition: color var(--nx-duration-fast) var(--nx-ease-out),
+    background-color var(--nx-duration-fast) var(--nx-ease-out);
 }
-.icon-button {
-  width: 36px;
+.icon-button:hover { color: var(--nx-text-primary); background: var(--nx-bg-hover); }
+.notification-dot {
+  position: absolute; top: 8px; right: 8px;
+  width: 7px; height: 7px;
+  border: 1.5px solid var(--nx-bg-base);
+  border-radius: 50%;
+  background: var(--nx-accent);
 }
-.icon-button:hover {
-  color: var(--nx-text-primary);
-  background: var(--nx-bg-hover);
-}
+.account { grid-column: 1 / -1; position: relative; }
 .profile-button {
-  width: 36px;
-  color: var(--nx-on-accent);
-  background: var(--nx-accent);
-  font-size: var(--nx-fs-11);
-  font-weight: 800;
+  width: 100%; height: 42px;
+  display: flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 10px;
+  color: var(--nx-text-primary);
+  background: var(--nx-bg-active);
+  font-size: var(--nx-fs-13); font-weight: 700;
+  cursor: pointer;
+  transition: background-color var(--nx-duration-fast) var(--nx-ease-out);
 }
+.profile-button:hover { background: var(--nx-bg-hover); }
 .login-button {
-  padding: 0 14px;
-  display: inline-flex;
-  gap: 7px;
+  grid-column: 1 / -1;
+  height: 42px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  border: 0; border-radius: 10px;
   color: var(--nx-on-accent);
   background: var(--nx-accent);
-  font-size: var(--nx-fs-13);
-  font-weight: 700;
+  font-size: var(--nx-fs-13); font-weight: 700;
+  cursor: pointer;
+  transition: background-color var(--nx-duration-fast) var(--nx-ease-out);
 }
-.login-button:hover,
-.profile-button:hover {
-  background: var(--nx-accent-strong);
-}
-.login-button:active,
-.profile-button:active {
-  background: var(--nx-accent-dim);
-}
-.account {
-  position: relative;
-}
+.login-button:hover { background: var(--nx-accent-strong); }
+.login-button:active { background: var(--nx-accent-dim); }
+
+/* ---- 账户下拉菜单（桌面：自侧边栏右侧弹出） ---- */
 .account-menu {
-  position: absolute;
-  top: 44px;
-  right: 0;
+  position: absolute; left: calc(100% + 10px); bottom: 0; top: auto; right: auto;
   z-index: var(--nx-z-menu);
-  width: 224px;
-  padding: 6px;
+  width: 232px; padding: 6px;
   border: 1px solid var(--nx-border-default);
   border-radius: var(--nx-radius-lg);
   background: var(--nx-bg-overlay);
   box-shadow: var(--nx-shadow-menu);
 }
-.account-summary {
-  padding: 10px 11px 12px;
-  border-bottom: 1px solid var(--nx-border-subtle);
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+.account-summary { padding: 12px 12px 13px; border-bottom: 1px solid var(--nx-border-subtle); display: flex; flex-direction: column; gap: 3px; }
+.account-summary strong { overflow: hidden; color: var(--nx-text-primary); text-overflow: ellipsis; font-size: var(--nx-fs-14); }
+.account-summary span { color: var(--nx-text-tertiary); font-size: var(--nx-fs-11); }
+.account-menu a, .account-menu > button {
+  width: 100%; min-height: 40px; padding: 0 11px;
+  border: 0; border-radius: var(--nx-radius-md);
+  display: flex; align-items: center; gap: 10px;
+  color: var(--nx-text-secondary); background: transparent;
+  font-size: var(--nx-fs-13); cursor: pointer;
+  transition: color var(--nx-duration-fast) var(--nx-ease-out),
+    background-color var(--nx-duration-fast) var(--nx-ease-out);
 }
-.account-summary strong {
-  overflow: hidden;
-  color: var(--nx-text-primary);
-  text-overflow: ellipsis;
-}
-.account-summary span {
-  color: var(--nx-text-tertiary);
-  font-size: var(--nx-fs-11);
-}
-.account-menu a,
-.account-menu > button {
-  width: 100%;
-  min-height: 38px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: var(--nx-radius-md);
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: var(--nx-text-secondary);
-  background: transparent;
-  font-size: var(--nx-fs-13);
-  cursor: pointer;
-}
-.account-menu a:hover,
-.account-menu > button:hover {
-  color: var(--nx-text-primary);
-  background: var(--nx-bg-hover);
-}
-.notification-dot {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 6px;
-  height: 6px;
-  border: 1px solid var(--nx-bg-base);
-  border-radius: 50%;
-  background: var(--nx-accent);
-}
-.auth-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: var(--nx-z-modal);
-  padding: 20px;
-  display: grid;
-  place-items: center;
-  background: rgba(4, 6, 8, 0.7);
-}
-.auth-dialog {
-  width: min(420px, 100%);
-  padding: 22px;
-  border: 1px solid var(--nx-border-default);
-  border-radius: var(--nx-radius-xl);
-  background: var(--nx-bg-overlay);
-  box-shadow: var(--nx-shadow-modal);
-}
-.auth-dialog-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-.auth-dialog-header span {
-  color: var(--nx-accent);
-  font-size: var(--nx-fs-12);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.auth-dialog-header h2 {
-  margin-top: 4px;
-  color: var(--nx-text-primary);
-  font-size: var(--nx-fs-20);
-}
-.auth-modes {
-  height: var(--nx-control-h);
-  margin: var(--nx-space-5) 0;
-  padding: 3px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  border: 1px solid var(--nx-border-subtle);
-  border-radius: var(--nx-radius-md);
-  background: var(--nx-bg-inset);
-}
-.auth-modes button {
-  border: 0;
-  border-radius: var(--nx-radius-sm);
-  color: var(--nx-text-tertiary);
-  background: transparent;
-  cursor: pointer;
-  font-weight: 600;
-}
-.auth-modes button:hover {
-  color: var(--nx-text-secondary);
-}
-.auth-modes button.active {
-  color: var(--nx-on-accent);
-  background: var(--nx-accent);
-  font-weight: 700;
-}
-.auth-dialog form {
-  display: grid;
-  gap: 14px;
-}
-.auth-dialog label span {
-  display: block;
-  margin-bottom: 5px;
-  color: var(--nx-text-tertiary);
-  font-size: var(--nx-fs-12);
-  font-weight: 700;
-}
-.auth-dialog label input {
-  width: 100%;
-  height: 40px;
-  padding: 0 11px;
-  border: 1px solid var(--nx-border-default);
-  border-radius: var(--nx-radius-md);
-  outline: 0;
-  color: var(--nx-text-primary);
-  background: var(--nx-bg-inset);
-}
-.auth-dialog label input::placeholder {
-  color: var(--nx-text-tertiary);
-}
-.auth-dialog label input:hover {
-  border-color: var(--nx-border-strong);
-}
-.auth-dialog label input:focus {
-  border-color: var(--nx-accent);
-  box-shadow: 0 0 0 3px rgba(200, 245, 66, 0.12);
-  background: var(--nx-bg-base);
-}
-.auth-error {
-  color: var(--nx-danger);
-  font-size: var(--nx-fs-12);
-}
-.auth-submit {
-  height: 42px;
-  border: 0;
-  border-radius: var(--nx-radius-md);
-  color: var(--nx-on-accent);
-  background: var(--nx-accent);
-  font-weight: 700;
-  cursor: pointer;
-}
-.auth-submit:hover {
-  background: var(--nx-accent-strong);
-}
-.auth-submit:active {
-  background: var(--nx-accent-dim);
-}
-.auth-submit:disabled {
-  opacity: 0.55;
-  cursor: wait;
-}
-@media (max-width: 980px) {
-  .header-inner { gap: var(--nx-space-3); }
-  .brand-copy small { display: none; }
-  .main-nav a { min-width: 44px; padding: 0 10px; }
-  .main-nav a svg + * { display: none; }
-  .main-nav a { font-size: 0; }
-}
+.account-menu a:hover, .account-menu > button:hover { color: var(--nx-text-primary); background: var(--nx-bg-hover); }
+.account-menu .menu-logout:hover { color: var(--nx-danger); background: var(--nx-danger-bg); }
+
+/* ============ 认证对话框（暗色弹窗，功能保持不变） ============ */
+.auth-backdrop { position: fixed; inset: 0; z-index: var(--nx-z-modal); padding: 20px; display: grid; place-items: center; background: rgba(4, 4, 6, 0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.auth-dialog { width: min(420px, 100%); padding: 28px; border: 1px solid var(--nx-border-default); border-radius: var(--nx-radius-xl); background: var(--nx-bg-overlay); box-shadow: var(--nx-shadow-modal); }
+.auth-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; }
+.auth-eyebrow { color: var(--nx-text-tertiary); font-size: var(--nx-fs-12); font-weight: 600; }
+.auth-dialog-header h2 { margin-top: 5px; color: var(--nx-text-primary); font-size: var(--nx-fs-24); font-weight: 800; letter-spacing: -0.01em; }
+.auth-modes { height: 44px; margin: var(--nx-space-6) 0; padding: 4px; display: grid; grid-template-columns: 1fr 1fr; border-radius: 10px; background: var(--nx-bg-raised); }
+.auth-modes button { border: 0; border-radius: 8px; color: var(--nx-text-tertiary); background: transparent; cursor: pointer; font-size: var(--nx-fs-14); font-weight: 600; transition: color var(--nx-duration-fast) var(--nx-ease-out), background-color var(--nx-duration-fast) var(--nx-ease-out); }
+.auth-modes button:hover { color: var(--nx-text-secondary); }
+.auth-modes button.active { color: var(--nx-text-primary); background: var(--nx-bg-active); font-weight: 700; }
+.auth-dialog form { display: grid; gap: 15px; }
+.auth-dialog label span { display: block; margin-bottom: 6px; color: var(--nx-text-tertiary); font-size: var(--nx-fs-12); font-weight: 600; }
+.auth-dialog label input { width: 100%; height: 44px; padding: 0 14px; border: 1px solid var(--nx-border-default); border-radius: 10px; outline: 0; color: var(--nx-text-primary); background: var(--nx-bg-raised); font-size: var(--nx-fs-14); transition: border-color var(--nx-duration-fast) var(--nx-ease-out), background-color var(--nx-duration-fast) var(--nx-ease-out); }
+.auth-dialog label input::placeholder { color: var(--nx-text-tertiary); }
+.auth-dialog label input:hover { border-color: var(--nx-border-strong); }
+.auth-dialog label input:focus { border-color: var(--nx-accent); background: var(--nx-bg-base); }
+.auth-error { color: var(--nx-danger); font-size: var(--nx-fs-12); }
+.auth-submit { height: 46px; border: 0; border-radius: 10px; color: var(--nx-on-accent); background: var(--nx-accent); font-size: var(--nx-fs-14); font-weight: 700; cursor: pointer; transition: background-color var(--nx-duration-fast) var(--nx-ease-out); }
+.auth-submit:hover { background: var(--nx-accent-strong); }
+.auth-submit:active { background: var(--nx-accent-dim); }
+.auth-submit:disabled { opacity: 0.55; cursor: wait; }
+
+/* ============ 移动端（<=720px）：顶栏 + 底部 Tab ============ */
 @media (max-width: 720px) {
-  .app-header { height: var(--nx-header-h-mobile); backdrop-filter: none; background: var(--nx-bg-base); }
-  .header-inner { width: calc(100vw - 24px); height: var(--nx-header-h-mobile); }
+  .app-header {
+    position: sticky; top: 0; bottom: auto; left: 0; right: 0;
+    width: auto; height: var(--nx-header-h-mobile);
+    border-right: 0; border-bottom: 1px solid var(--nx-border-subtle);
+    background: rgba(11, 14, 17, 0.9);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  }
+  .header-inner { flex-direction: row; align-items: center; gap: 10px; height: var(--nx-header-h-mobile); padding: 0 12px; }
+  .brand { order: 1; padding: 0; }
   .brand-copy { display: none; }
-  .main-nav { position: fixed; right: 0; bottom: 0; left: 0; z-index: var(--nx-z-mobile-nav); height: 58px; justify-content: space-around; border-top: 1px solid var(--nx-border-subtle); background: var(--nx-bg-overlay); }
-  .main-nav a { width: 20%; flex-direction: column; gap: 3px; padding: 5px 0; font-size: 10px; }
-  .main-nav a.active::after { top: 0; right: 30%; bottom: auto; left: 30%; }
-  .search-box { max-width: none; }
+  .search-box { order: 2; flex: 1; }
+  .main-nav {
+    position: fixed; right: 0; bottom: 0; left: 0;
+    z-index: var(--nx-z-mobile-nav);
+    height: var(--nx-tabbar-h);
+    flex-direction: row; justify-content: space-around;
+    margin-top: 0;
+    padding: 0 4px env(safe-area-inset-bottom);
+    border-top: 1px solid var(--nx-border-subtle);
+    background: rgba(17, 18, 23, 0.94);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  }
+  .main-nav a { width: 20%; height: auto; flex-direction: column; justify-content: center; gap: 3px; padding: 7px 0 5px; border-radius: 0; font-size: 10px; background: transparent; }
+  .main-nav a:hover { background: transparent; }
+  .main-nav a.active { background: transparent; }
+  .main-nav a.active::after { left: 32%; right: 32%; top: 0; bottom: auto; width: auto; height: 3px; border-radius: 0 0 3px 3px; }
+  .header-actions { order: 3; margin-top: 0; display: flex; flex-direction: row; gap: 6px; padding-top: 0; border-top: 0; }
   .header-actions .icon-button { display: none; }
-  .login-button { width: 36px; padding: 0; justify-content: center; font-size: 0; }
-  .auth-backdrop { padding: 12px; align-items: start; padding-top: 72px; }
-  .auth-dialog { padding: 18px; }
+  .account { grid-column: auto; }
+  .profile-button { width: 38px; height: 38px; font-size: var(--nx-fs-12); }
+  .login-button { grid-column: auto; height: 38px; padding: 0 14px; }
+  .account-menu { left: auto; right: 0; top: 48px; bottom: auto; }
+  .auth-backdrop { padding: 12px; align-items: start; padding-top: 64px; }
+  .auth-dialog { padding: 20px; }
 }
 </style>

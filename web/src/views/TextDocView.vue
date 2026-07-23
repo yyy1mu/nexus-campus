@@ -115,7 +115,7 @@ const content = computed(() => {
   padding: var(--nx-space-4);
   overflow: auto;
   color: var(--nx-text-secondary);
-  background: var(--nx-bg-base);
+  background: transparent;
   font-family: var(--nx-font-mono);
   font-size: var(--nx-fs-13);
   line-height: 1.55;

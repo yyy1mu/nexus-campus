@@ -48,21 +48,22 @@ import { RouterLink } from 'vue-router'
 .docs-page {
   min-height: 100vh;
   padding: 45px 0 80px;
-  background: var(--nx-bg-base);
+  background: transparent;
 }
 .docs-page > h1,
 .docs-page > h2,
 .card {
   width: 980px;
-  max-width: calc(100vw - 48px);
+  max-width: calc(100% - 48px);
   margin-left: auto;
   margin-right: auto;
 }
 h1 {
   margin-bottom: var(--nx-space-5);
   color: var(--nx-text-primary);
-  font-size: 32px;
-  letter-spacing: -0.01em;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 h2 {
   margin-top: 36px;

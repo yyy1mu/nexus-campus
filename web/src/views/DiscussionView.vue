@@ -62,15 +62,15 @@ const formattedBody = computed(() => discussion.value.body.split('\n').filter((l
 <style scoped>
 .discussion-page {
   min-height: 100vh;
-  background: var(--nx-bg-base);
+  background: transparent;
 }
 .title-hero {
   width: 1084px;
-  max-width: calc(100vw - 32px);
-  margin: var(--nx-space-6) auto 0;
-  padding: 22px 24px;
+  max-width: calc(100% - 32px);
+  margin: var(--nx-space-8) auto 0;
+  padding: 26px 28px;
   border: 1px solid var(--nx-border-subtle);
-  border-radius: var(--nx-radius-lg);
+  border-radius: var(--nx-radius-xl);
   background: var(--nx-bg-raised);
 }
 .tag-pill {
@@ -82,27 +82,28 @@ const formattedBody = computed(() => discussion.value.body.split('\n').filter((l
 }
 .tag-pill span { width: 7px; height: 7px; border-radius: 2px; }
 .title-hero h1 {
-  margin-top: 10px;
+  margin-top: 12px;
   color: var(--nx-text-primary);
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.35;
+  font-size: var(--nx-fs-28);
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
 }
 .discussion-layout {
   width: 1084px;
-  max-width: calc(100vw - 32px);
+  max-width: calc(100% - 32px);
   margin: 28px auto 0;
-  padding-bottom: 64px;
+  padding-bottom: 72px;
   display: grid;
   grid-template-columns: 1fr 150px;
   gap: 68px;
 }
 .post {
-  padding: 22px;
+  padding: 24px;
   display: grid;
   grid-template-columns: 72px 1fr;
   border: 1px solid var(--nx-border-subtle);
-  border-radius: var(--nx-radius-lg);
+  border-radius: var(--nx-radius-xl);
   background: var(--nx-bg-raised);
   align-self: start;
 }
@@ -129,7 +130,7 @@ const formattedBody = computed(() => discussion.value.body.split('\n').filter((l
   font-weight: 700;
 }
 .post-content {
-  margin-top: 12px;
+  margin-top: 14px;
   min-height: 238px;
   color: var(--nx-text-secondary);
   font-size: 15px;
@@ -161,13 +162,14 @@ const formattedBody = computed(() => discussion.value.body.split('\n').filter((l
 }
 .timeline button {
   width: 150px;
-  height: 38px;
+  height: 42px;
   border: 0;
-  border-radius: var(--nx-radius-md);
+  border-radius: var(--nx-radius-full);
   color: var(--nx-on-accent);
   background: var(--nx-accent);
   font-weight: 700;
   cursor: pointer;
+  transition: background-color var(--nx-duration-fast) var(--nx-ease-out);
 }
 .timeline button:hover { background: var(--nx-accent-strong); }
 .timeline button:active { background: var(--nx-accent-dim); }
@@ -220,6 +222,6 @@ const formattedBody = computed(() => discussion.value.body.split('\n').filter((l
   .timeline {
     display: none;
   }
-  .discussion-page { padding-bottom: 58px; }
+  .discussion-page { padding-bottom: 68px; }
 }
 </style>

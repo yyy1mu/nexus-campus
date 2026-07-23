@@ -27,7 +27,7 @@
       <section class="forum-content">
         <header class="content-header">
           <div class="title-row">
-            <span class="title-mark" :style="{ backgroundColor: activeTag?.color || '#111827' }">
+            <span class="title-mark" :style="{ backgroundColor: activeTag?.color || '#2a2a32' }">
               {{ activeTag?.name.slice(0, 1) || '全' }}
             </span>
             <div>
@@ -116,69 +116,75 @@ function excerpt(body: string) {
 </script>
 
 <style scoped>
-.forum-page { min-height: 100vh; background: var(--nx-bg-base); }
-.forum-shell { width: min(1280px, calc(100vw - 40px)); margin: 0 auto; padding: var(--nx-space-6) 0 64px; display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 28px; }
+.forum-page { min-height: 100vh; background: transparent; }
+.forum-shell { width: min(1280px, calc(100% - 40px)); margin: 0 auto; padding: var(--nx-space-8) 0 72px; display: grid; grid-template-columns: 216px minmax(0, 1fr); gap: 28px; }
 .forum-sidebar { min-width: 0; }
-.new-post { height: 40px; display: flex; align-items: center; justify-content: center; gap: var(--nx-space-2); border-radius: var(--nx-radius-md); color: var(--nx-on-accent); background: var(--nx-accent); font-size: var(--nx-fs-13); font-weight: 700; }
+.new-post { height: 44px; display: flex; align-items: center; justify-content: center; gap: var(--nx-space-2); border-radius: var(--nx-radius-full); color: var(--nx-on-accent); background: var(--nx-accent); font-size: var(--nx-fs-13); font-weight: 700; transition: background-color var(--nx-duration-fast) var(--nx-ease-out); }
 .new-post:hover { background: var(--nx-accent-strong); }
 .new-post:active { background: var(--nx-accent-dim); }
-.base-links { margin-top: var(--nx-space-4); padding-bottom: var(--nx-space-4); border-bottom: 1px solid var(--nx-border-subtle); }
-.base-links a { height: 40px; padding: 0 10px; display: flex; align-items: center; gap: 10px; border-radius: var(--nx-radius-md); color: var(--nx-text-tertiary); font-size: var(--nx-fs-13); font-weight: 600; }
+.base-links { margin-top: var(--nx-space-5); padding-bottom: var(--nx-space-4); border-bottom: 1px solid var(--nx-border-subtle); }
+.base-links a { height: 42px; padding: 0 12px; display: flex; align-items: center; gap: 10px; border-radius: var(--nx-radius-md); color: var(--nx-text-tertiary); font-size: var(--nx-fs-13); font-weight: 600; transition: color var(--nx-duration-fast) var(--nx-ease-out), background-color var(--nx-duration-fast) var(--nx-ease-out); }
 .base-links a:hover { color: var(--nx-text-secondary); background: var(--nx-bg-hover); }
 .base-links a.active { color: var(--nx-text-primary); background: var(--nx-bg-active); }
-.sidebar-label { height: 44px; display: flex; align-items: center; color: var(--nx-text-tertiary); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
+.sidebar-label { height: 46px; display: flex; align-items: center; color: var(--nx-text-tertiary); font-size: 12px; font-weight: 600; }
 .tag-links { display: grid; gap: 3px; }
-.tag-links a { height: 40px; padding: 0 8px; display: flex; align-items: center; gap: 9px; border-radius: var(--nx-radius-md); color: var(--nx-text-tertiary); }
+.tag-links a { height: 42px; padding: 0 10px; display: flex; align-items: center; gap: 10px; border-radius: var(--nx-radius-md); color: var(--nx-text-tertiary); transition: background-color var(--nx-duration-fast) var(--nx-ease-out); }
 .tag-links a:hover { background: var(--nx-bg-hover); }
 .tag-links a.active { background: var(--nx-bg-active); }
-.tag-links a > span { width: 25px; height: 25px; display: grid; place-items: center; border-radius: var(--nx-radius-md); color: var(--nx-on-accent); font-size: 10px; font-weight: 800; }
+.tag-links a > span { width: 26px; height: 26px; display: grid; place-items: center; border-radius: var(--nx-radius-md); color: #fff; font-size: 10px; font-weight: 800; }
 .tag-links strong { min-width: 0; flex: 1; overflow: hidden; color: var(--nx-text-secondary); font-size: var(--nx-fs-12); text-overflow: ellipsis; white-space: nowrap; }
 .tag-links small { color: var(--nx-text-tertiary); font-size: 10px; }
 .forum-content { min-width: 0; }
-.content-header { min-height: 112px; padding: 20px 22px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--nx-border-subtle); border-radius: var(--nx-radius-lg); background: var(--nx-bg-raised); }
-.title-row { display: flex; align-items: center; gap: 14px; }
-.title-mark { width: 48px; height: 48px; display: grid; place-items: center; border-radius: var(--nx-radius-lg); color: var(--nx-on-accent); font-size: 17px; font-weight: 800; }
-.content-header h1 { color: var(--nx-text-primary); font-size: var(--nx-fs-20); }
-.content-header p { max-width: 690px; margin-top: 6px; color: var(--nx-text-tertiary); font-size: var(--nx-fs-11); line-height: 1.5; }
-.header-stats { min-width: 82px; padding-left: 20px; display: flex; flex-direction: column; border-left: 1px solid var(--nx-border-subtle); text-align: center; }
-.header-stats strong { color: var(--nx-accent); font-size: var(--nx-fs-20); }
+
+/* ---- 内容头部（OKX 式大标题卡片） ---- */
+.content-header { min-height: 120px; padding: 22px 24px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--nx-border-subtle); border-radius: var(--nx-radius-xl); background: var(--nx-bg-raised); }
+.title-row { display: flex; align-items: center; gap: 16px; }
+.title-mark { width: 52px; height: 52px; display: grid; place-items: center; border-radius: var(--nx-radius-lg); color: #fff; font-size: 18px; font-weight: 800; }
+.content-header h1 { color: var(--nx-text-primary); font-size: var(--nx-fs-24); font-weight: 800; letter-spacing: -0.02em; }
+.content-header p { max-width: 690px; margin-top: 6px; color: var(--nx-text-tertiary); font-size: var(--nx-fs-12); line-height: 1.55; }
+.header-stats { min-width: 88px; padding-left: 22px; display: flex; flex-direction: column; border-left: 1px solid var(--nx-border-subtle); text-align: center; }
+.header-stats strong { color: var(--nx-accent); font-size: var(--nx-fs-24); font-weight: 800; }
 .header-stats span { margin-top: 3px; color: var(--nx-text-tertiary); font-size: 10px; }
-.filter-bar { height: 66px; display: flex; align-items: center; gap: var(--nx-space-3); }
+
+/* ---- 筛选栏（OKX 胶囊分段控件） ---- */
+.filter-bar { height: 70px; display: flex; align-items: center; gap: var(--nx-space-3); }
 .filter-bar > span { color: var(--nx-text-tertiary); font-size: var(--nx-fs-11); }
-.segmented-control { height: 32px; padding: 3px; display: flex; border: 1px solid var(--nx-border-default); border-radius: var(--nx-radius-md); background: var(--nx-bg-inset); }
-.segmented-control button { min-width: 58px; border: 0; border-radius: var(--nx-radius-sm); color: var(--nx-text-tertiary); background: transparent; font-size: var(--nx-fs-11); cursor: pointer; }
+.segmented-control { height: 36px; padding: 4px; display: flex; border-radius: var(--nx-radius-full); background: var(--nx-bg-inset); }
+.segmented-control button { min-width: 60px; border: 0; border-radius: var(--nx-radius-full); color: var(--nx-text-tertiary); background: transparent; font-size: var(--nx-fs-12); font-weight: 600; cursor: pointer; transition: color var(--nx-duration-fast) var(--nx-ease-out), background-color var(--nx-duration-fast) var(--nx-ease-out); }
 .segmented-control button:hover { color: var(--nx-text-secondary); }
 .segmented-control button.active { color: var(--nx-on-accent); background: var(--nx-accent); font-weight: 700; }
-.view-button { width: 34px; height: 34px; margin-left: auto; display: grid; place-items: center; border: 1px solid var(--nx-border-default); border-radius: var(--nx-radius-md); color: var(--nx-text-tertiary); background: var(--nx-bg-raised); cursor: pointer; }
+.view-button { width: 36px; height: 36px; margin-left: auto; display: grid; place-items: center; border: 1px solid var(--nx-border-default); border-radius: var(--nx-radius-md); color: var(--nx-text-tertiary); background: var(--nx-bg-raised); cursor: pointer; transition: color var(--nx-duration-fast) var(--nx-ease-out), border-color var(--nx-duration-fast) var(--nx-ease-out); }
 .view-button:hover { color: var(--nx-text-primary); border-color: var(--nx-border-strong); }
-.discussion-list { border: 1px solid var(--nx-border-subtle); border-radius: var(--nx-radius-lg); overflow: hidden; background: var(--nx-bg-raised); }
-.discussion-row { min-height: 126px; padding: 18px 20px; display: grid; grid-template-columns: 38px minmax(0, 1fr) 142px; align-items: start; gap: 14px; border-bottom: 1px solid var(--nx-border-subtle); }
+
+/* ---- 讨论列表（OKX 式卡片行） ---- */
+.discussion-list { border: 1px solid var(--nx-border-subtle); border-radius: var(--nx-radius-xl); overflow: hidden; background: var(--nx-bg-raised); }
+.discussion-row { min-height: 128px; padding: 19px 22px; display: grid; grid-template-columns: 40px minmax(0, 1fr) 148px; align-items: start; gap: 15px; border-bottom: 1px solid var(--nx-border-subtle); transition: background-color var(--nx-duration-fast) var(--nx-ease-out); }
 .discussion-row:last-child { border-bottom: 0; }
 .discussion-row:hover { background: var(--nx-bg-hover); }
-.avatar { width: 36px; height: 36px; display: grid; place-items: center; border-radius: var(--nx-radius-md); color: var(--nx-on-accent); background: var(--nx-accent-dim); font-size: var(--nx-fs-12); font-weight: 800; }
+.avatar { width: 38px; height: 38px; display: grid; place-items: center; border-radius: var(--nx-radius-md); color: var(--nx-on-accent); background: var(--nx-accent-dim); font-size: var(--nx-fs-12); font-weight: 800; }
 .discussion-main { min-width: 0; }
-.discussion-meta { display: flex; align-items: center; gap: 8px; color: var(--nx-text-tertiary); font-size: 10px; }
+.discussion-meta { display: flex; align-items: center; gap: 9px; color: var(--nx-text-tertiary); font-size: 10px; }
 .tag-label { display: inline-flex; align-items: center; gap: 5px; color: var(--nx-text-secondary); font-weight: 700; }
 .tag-label:hover { color: var(--nx-accent); }
 .tag-label span { width: 7px; height: 7px; border-radius: 2px; }
-.discussion-main h2 { margin-top: 8px; color: var(--nx-text-primary); font-size: 15px; line-height: 1.35; }
+.discussion-main h2 { margin-top: 9px; color: var(--nx-text-primary); font-size: var(--nx-fs-16); font-weight: 700; line-height: 1.35; letter-spacing: -0.01em; transition: color var(--nx-duration-fast) var(--nx-ease-out); }
 .discussion-main a:hover h2 { color: var(--nx-accent); }
-.discussion-main p { max-width: 780px; margin-top: 6px; color: var(--nx-text-tertiary); font-size: var(--nx-fs-11); line-height: 1.55; }
+.discussion-main p { max-width: 780px; margin-top: 7px; color: var(--nx-text-tertiary); font-size: var(--nx-fs-12); line-height: 1.6; }
 .discussion-metrics { align-self: center; display: grid; grid-template-columns: 1fr 1fr; }
 .discussion-metrics span { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--nx-text-tertiary); }
-.discussion-metrics strong { color: var(--nx-text-secondary); font-size: var(--nx-fs-12); }
+.discussion-metrics strong { color: var(--nx-text-secondary); font-size: var(--nx-fs-13); font-weight: 700; }
 .discussion-metrics small { font-size: 9px; }
-.empty-state { height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; color: var(--nx-text-tertiary); }
-.empty-state strong { color: var(--nx-text-secondary); font-size: var(--nx-fs-13); }
+.empty-state { height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--nx-text-tertiary); }
+.empty-state strong { color: var(--nx-text-secondary); font-size: var(--nx-fs-14); }
 .empty-state span { font-size: var(--nx-fs-11); }
 @media (max-width: 820px) {
-  .forum-shell { width: calc(100vw - 24px); padding-top: 14px; grid-template-columns: 1fr; }
+  .forum-shell { width: calc(100vw - 24px); padding-top: 16px; grid-template-columns: 1fr; }
   .forum-sidebar { display: none; }
-  .discussion-row { grid-template-columns: 36px minmax(0, 1fr); padding: 15px 13px; }
+  .discussion-row { grid-template-columns: 38px minmax(0, 1fr); padding: 16px 14px; }
   .discussion-metrics { display: none; }
-  .content-header { padding: 16px; }
+  .content-header { padding: 18px; }
   .header-stats { display: none; }
   .content-header p { max-width: none; }
-  .forum-page { padding-bottom: 58px; }
+  .forum-page { padding-bottom: 68px; }
 }
 </style>

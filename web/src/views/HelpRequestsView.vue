@@ -332,16 +332,16 @@ function formatDate(d: string) {
 
 <style scoped>
 /* 按钮、输入框、卡片、状态标签、加载/空/错误等复用 styles/components.css 全局样式 */
-.help-page { min-height: 100vh; background: var(--nx-bg-base); }
+.help-page { min-height: 100vh; background: transparent; }
 .page { max-width: 900px; margin: 0 auto; padding: 28px 20px 72px; }
 header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--nx-space-5); }
-h1 { color: var(--nx-text-primary); font-size: var(--nx-fs-24); font-weight: 700; }
+h1 { color: var(--nx-text-primary); font-size: var(--nx-fs-28); font-weight: 800; letter-spacing: -0.02em; }
 /* 卡片间距与可点击请求卡（基础外观来自全局 .card） */
 .card { margin-bottom: var(--nx-space-3); }
-.card h2 { color: var(--nx-text-primary); font-size: var(--nx-fs-16); margin-bottom: var(--nx-space-4); }
+.card h2 { color: var(--nx-text-primary); font-size: var(--nx-fs-18); font-weight: 700; margin-bottom: var(--nx-space-4); }
 .request-card { cursor: pointer; transition: border-color var(--nx-duration-fast) var(--nx-ease-out), background-color var(--nx-duration-fast) var(--nx-ease-out); }
 .request-card:hover { border-color: var(--nx-border-strong); background: var(--nx-bg-hover); }
-.request-card h3 { color: var(--nx-text-primary); font-size: var(--nx-fs-16); margin: var(--nx-space-2) 0 4px; }
+.request-card h3 { color: var(--nx-text-primary); font-size: var(--nx-fs-16); font-weight: 700; margin: var(--nx-space-2) 0 4px; }
 .detail { color: var(--nx-text-tertiary); font-size: var(--nx-fs-14); margin: 0 0 var(--nx-space-2); }
 .meta { font-size: var(--nx-fs-12); color: var(--nx-text-tertiary); display: flex; gap: var(--nx-space-3); }
 /* 表单间距（输入框外观来自全局 .input） */
@@ -381,5 +381,5 @@ form .input { margin-bottom: 10px; }
 .memory-option span { color: var(--nx-text-secondary); font-size: var(--nx-fs-11); line-height: 1.4; }
 .memory-option strong { display: block; color: var(--nx-text-primary); font-size: var(--nx-fs-12); }
 .muted { color: var(--nx-text-tertiary); font-size: var(--nx-fs-11); }
-@media (max-width: 720px) { .help-page { padding-bottom: 58px; } .page { padding: 20px 12px 40px; } }
+@media (max-width: 720px) { .help-page { padding-bottom: 68px; } .page { padding: 20px 12px 40px; } }
 </style>

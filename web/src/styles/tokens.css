@@ -1,49 +1,56 @@
-﻿/*
- * Nexus 设计令牌（Design Tokens）
- * 现代高端金融科技 / 数字资产平台设计语言
- * 深色基底 + 荧光黄绿强调色 + 分层中性灰文本
+/*
+ * Nexus 设计令牌（Design Tokens）—— 高级浅色 · 白底 · 青柠绿点缀
+ * 设计语言：柔和白基底（#F7F8FA）+ 清晰灰阶层次 + 可读青柠绿（#65A30D）。
+ * 大留白、大字号、极弱边框、克制用色；强调绿用于 CTA、激活态与关键状态。
  * 所有页面的颜色、间距、圆角、阴影、动效必须引用这里定义的变量，
  * 避免在各页面重复定义互相冲突的样式。
  */
 :root {
-  /* ============ 色彩 · 背景（黑灰色阶建立层次） ============ */
-  --nx-bg-base: #0b0e11;      /* 页面基底（近纯黑） */
-  --nx-bg-inset: #0e1116;     /* 次级底色 / 投票列等凹陷区域 */
-  --nx-bg-raised: #12161c;    /* 卡片 / 面板 */
-  --nx-bg-overlay: #171c23;   /* 弹层 / 菜单 / 对话框 */
-  --nx-bg-hover: #1c2129;     /* 悬停 */
-  --nx-bg-active: #232933;    /* 按下 / 选中底 */
+  /* ============ 色彩 · 背景（柔和白基底，灰阶建立层次） ============ */
+  --nx-bg-base: #f7f8fa;
+  --nx-bg-inset: #edeef1;
+  --nx-bg-raised: #ffffff;
+  --nx-bg-overlay: #ffffff;
+  --nx-bg-hover: #eceef2;
+  --nx-bg-active: #e2e5ea;
 
-  /* ============ 色彩 · 边框 ============ */
-  --nx-border-subtle: #1f242c;  /* 极弱分隔线 */
-  --nx-border-default: #2a303a; /* 常规描边 */
-  --nx-border-strong: #3a414d;  /* 强调描边 / 输入框悬停 */
+  /* ============ 色彩 · 边框（极弱、克制） ============ */
+  --nx-border-subtle: rgba(15, 23, 42, 0.06);
+  --nx-border-default: rgba(15, 23, 42, 0.1);
+  --nx-border-strong: rgba(15, 23, 42, 0.16);
 
-  /* ============ 色彩 · 强调色（荧光黄绿） ============ */
-  --nx-accent: #c8f542;          /* 核心强调色 */
-  --nx-accent-strong: #dbff66;   /* 悬停 / 更亮 */
-  --nx-accent-dim: #a9d438;      /* 按下 / 降亮 */
-  --nx-accent-faint: #161d0b;    /* 强调色弱底（标签/选中底） */
-  --nx-accent-border: #41501e;   /* 强调色描边 */
-  --nx-on-accent: #0b0e11;       /* 强调色之上的文字（深色） */
+  /* ============ 色彩 · 强调色（可读青柠绿，白底清晰） ============ */
+  --nx-accent: #65a30d;
+  --nx-accent-strong: #76b917;
+  --nx-accent-dim: #4f830a;
+  --nx-accent-faint: rgba(101, 163, 13, 0.14);
+  --nx-accent-subtle: rgba(101, 163, 13, 0.07);
+  --nx-accent-border: rgba(101, 163, 13, 0.35);
+  --nx-accent-glow: 0 6px 20px rgba(101, 163, 13, 0.18);
+  --nx-on-accent: #101503;
 
-  /* ============ 色彩 · 文本（分层中性灰） ============ */
-  --nx-text-primary: #f2f5f7;    /* 高亮白 · 标题 */
-  --nx-text-secondary: #a9b1ba;  /* 正文 */
-  --nx-text-tertiary: #707a85;   /* 辅助信息 */
-  --nx-text-disabled: #4a525c;   /* 禁用 */
+  /* ============ 色彩 · 文本（深字白底，高对比分层） ============ */
+  --nx-text-primary: #17181c;
+  --nx-text-secondary: #5b6472;
+  --nx-text-tertiary: #8b93a1;
+  --nx-text-disabled: #b6bdc7;
 
-  /* ============ 色彩 · 语义状态（降饱和、保持统一） ============ */
-  --nx-success: #4cc38a;
-  --nx-success-bg: #101f18;
-  --nx-warning: #d9a648;
-  --nx-warning-bg: #221c0f;
-  --nx-danger: #e05c5c;
-  --nx-danger-bg: #251113;
-  --nx-info: #a9b1ba;
-  --nx-info-bg: #171c23;
+  /* ============ 色彩 · 语义状态（浅底可读深度） ============ */
+  --nx-success: #15803d;
+  --nx-success-bg: rgba(21, 128, 61, 0.1);
+  --nx-warning: #b45309;
+  --nx-warning-bg: rgba(180, 83, 9, 0.1);
+  --nx-danger: #b91c1c;
+  --nx-danger-bg: rgba(185, 28, 28, 0.1);
+  --nx-info: #64748b;
+  --nx-info-bg: rgba(100, 116, 139, 0.1);
 
-  /* ============ 间距 ============ */
+  /* ============ 背景动效（流动字符）专用色 ============ */
+  /* 字符为深橄榄绿（白底可见），辉光为强调绿；均为 RGB 三元组。 */
+  --nx-techbg-char: 84, 110, 52;
+  --nx-techbg-glow: 101, 163, 13;
+
+  /* ============ 间距（8px 网格） ============ */
   --nx-space-1: 4px;
   --nx-space-2: 8px;
   --nx-space-3: 12px;
@@ -54,20 +61,24 @@
   --nx-space-10: 40px;
   --nx-space-14: 56px;
 
-  /* ============ 圆角（克制，不过度圆润） ============ */
-  --nx-radius-sm: 4px;
-  --nx-radius-md: 6px;
-  --nx-radius-lg: 8px;
-  --nx-radius-xl: 12px;
+  /* ============ 圆角（中等圆角 + 胶囊） ============ */
+  --nx-radius-sm: 6px;
+  --nx-radius-md: 8px;
+  --nx-radius-lg: 12px;
+  --nx-radius-xl: 16px;
+  --nx-radius-full: 999px;
 
   /* ============ 尺寸 ============ */
   --nx-header-h: 64px;
   --nx-header-h-mobile: 56px;
-  --nx-control-h: 38px;
-  --nx-control-h-lg: 44px;
-  --nx-container-w: 1380px;
+  --nx-tabbar-h: 60px;
+  --nx-sidebar-w: 236px;
+  --nx-control-h: 40px;
+  --nx-control-h-lg: 48px;
+  --nx-container-w: 1280px;
+  --nx-container-narrow: 880px;
 
-  /* ============ 字号 ============ */
+  /* ============ 字号（大字号层级） ============ */
   --nx-fs-11: 11px;
   --nx-fs-12: 12px;
   --nx-fs-13: 13px;
@@ -78,6 +89,8 @@
   --nx-fs-24: 24px;
   --nx-fs-28: 28px;
   --nx-fs-34: 34px;
+  --nx-fs-40: 40px;
+  --nx-fs-44: 44px;
 
   /* ============ 字体 ============ */
   --nx-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -85,9 +98,9 @@
   --nx-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", monospace;
 
-  /* ============ 阴影（极弱、克制） ============ */
-  --nx-shadow-menu: 0 12px 32px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.4);
-  --nx-shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.45);
+  /* ============ 阴影（浅色下轻盈、以边框为主） ============ */
+  --nx-shadow-menu: 0 12px 32px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.06);
+  --nx-shadow-modal: 0 24px 64px rgba(15, 23, 42, 0.16), 0 4px 16px rgba(15, 23, 42, 0.08);
 
   /* ============ 动效（快速、自然、克制） ============ */
   --nx-duration-fast: 120ms;

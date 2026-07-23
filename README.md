@@ -90,6 +90,13 @@ cd web && npm run build
 The screenshots are verification artifacts for the current Spring Boot/Vue implementation, not design mockups. The dated rationale and test record for this feature is in [`docs/changes/2026-07-18-agent-memory.md`](docs/changes/2026-07-18-agent-memory.md).
 The development-server rollout and MySQL acceptance evidence is recorded in [`docs/changes/2026-07-19-agent-memory-deployment.md`](docs/changes/2026-07-19-agent-memory-deployment.md).
 
+The branch-specific Qwen light-theme UI checkpoint is documented in
+[`docs/changes/2026-07-23-qwen-ui-checkpoint.md`](docs/changes/2026-07-23-qwen-ui-checkpoint.md).
+Its animated code background is an explicit product direction. Screenshots under
+`screenshots/ui-refresh/` and `screenshots/archive/qwen-dark-draft-2026-07-22/`
+belong to earlier dark drafts and must not be presented as current light-theme
+acceptance evidence.
+
 ## Docker Deployment
 
 The default Compose stack runs Nginx, Spring Boot, MySQL, and Redis on one internal Docker network. Only Nginx is published to the host.

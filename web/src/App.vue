@@ -1,6 +1,9 @@
 <template>
   <div id="nexus-app">
-    <RouterView />
+    <TechBg />
+    <div class="app-content">
+      <RouterView />
+    </div>
   </div>
 </template>
 
@@ -8,6 +11,7 @@
 import { onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import TechBg from '@/components/TechBg.vue'
 
 const auth = useAuthStore()
 onMounted(() => auth.loadContext())
@@ -19,4 +23,10 @@ onMounted(() => auth.loadContext())
 @import './styles/tokens.css';
 @import './styles/base.css';
 @import './styles/components.css';
+
+/* 内容层位于科技感背景画布（TechBg，z-index: 0）之上 */
+.app-content {
+  position: relative;
+  z-index: 1;
+}
 </style>
