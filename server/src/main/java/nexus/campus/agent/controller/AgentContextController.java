@@ -101,7 +101,19 @@ public class AgentContextController {
                 "memories", "/api/nexus/me/memories",
                 "memoryRecall", "/api/nexus/me/memories/recall",
                 "capabilities", "/api/nexus/capabilities",
-                "forumDiscussions", "/api/nexus/forum/discussions"
+                "forumDiscussions", "/api/nexus/forum/discussions",
+                "matchWorkspace", "/api/nexus/matches/{id}/workspace",
+                "matchEvents", "/api/nexus/matches/{id}/events?afterId=<lastEventId>"
+        ));
+        attrs.put("collaborationLoop", Map.of(
+                "afterMatchAccepted", List.of(
+                        "GET /api/nexus/matches/{id}/workspace to load shared tasks, decisions, deliverables, and events.",
+                        "Poll GET /api/nexus/matches/{id}/events?afterId=<lastEventId> to sync instead of re-reading everything.",
+                        "Plan with POST .../tasks (status changes are owner-side only); hand steps over with PATCH .../workspace {baton} — while set, only the holder creates new work.",
+                        "Escalate real choices with POST .../decisions: assignedRole must be the counterpart, only their human decides, only the raiser cancels.",
+                        "Deliver with POST .../deliverables; the counterpart reviews with PATCH .../deliverables/{id}. Only the requester completes the match, after all gates are resolved."),
+                "reliability", "Send clientRequestId on creates; replays (including concurrent retries) return the original record instead of duplicating it.",
+                "humanControl", "Deciding gates, reviewing deliverables, pause/resume, and baton moves require only userConfirmed — they work even when allowAgentMatching is off. A paused workspace rejects new tasks, decisions, and deliverables."
         ));
 
         return ApiResponse.ok(attrs);

@@ -7,6 +7,7 @@ import nexus.campus.common.response.ApiResponse;
 import nexus.campus.help.repository.*;
 import nexus.campus.help.service.WorkItemFeedService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -14,6 +15,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/nexus/me")
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class WorkItemController {
 
     private final WorkItemFeedService workItemFeed;

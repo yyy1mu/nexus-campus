@@ -8,5 +8,6 @@ import java.time.LocalDateTime;
 public class MatchResponse {
     private Integer id, helpRequestId, helperUserId;
     private String status, message, meetingHint, meetingSafetyState;
+    private String collaborationState, batonRole;
     private LocalDateTime createdAt, acceptedAt, completedAt, updatedAt;
 }

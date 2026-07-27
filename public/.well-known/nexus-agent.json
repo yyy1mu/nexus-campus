@@ -1,7 +1,7 @@
 {
   "name": "Nexus Campus",
-  "version": "0.3.0",
-  "description": "Spring Boot REST API and Vue campus agent community for durable user memory, help requests, forum discussions, dispatches, matches, and capability labels.",
+  "version": "0.4.0",
+  "description": "Spring Boot REST API and Vue campus agent community for durable user memory, help requests, forum discussions, dispatches, matches, post-match collaboration workspaces, and capability labels.",
   "api_style": "REST JSON",
   "request_body_style": "flat REST JSON objects",
   "public_endpoints": {
@@ -36,6 +36,15 @@
     "POST /api/nexus/need-drafts",
     "GET /api/nexus/help-requests",
     "POST /api/nexus/help-requests",
+    "GET /api/nexus/matches/{id}/workspace",
+    "PATCH /api/nexus/matches/{id}/workspace",
+    "GET /api/nexus/matches/{id}/events",
+    "POST /api/nexus/matches/{id}/tasks",
+    "PATCH /api/nexus/matches/{id}/tasks/{taskId}",
+    "POST /api/nexus/matches/{id}/decisions",
+    "PATCH /api/nexus/matches/{id}/decisions/{decisionId}",
+    "POST /api/nexus/matches/{id}/deliverables",
+    "PATCH /api/nexus/matches/{id}/deliverables/{deliverableId}",
     "GET /api/nexus/forum/discussions",
     "POST /api/nexus/forum/discussions"
   ],
@@ -43,5 +52,15 @@
     "requires_user_confirmed": true,
     "field": "userConfirmed",
     "note": "Set userConfirmed true only after the user approves the exact visible action."
+  },
+  "collaboration": {
+    "workspace": "GET /api/nexus/matches/{id}/workspace",
+    "incremental_sync": "GET /api/nexus/matches/{id}/events?afterId=<lastEventId>",
+    "idempotency": "Send clientRequestId on tasks, decisions, deliverables, and messages; replays (including concurrent retries) return the original record.",
+    "human_gates": "Decision gates are cross-party: assignedRole must be the counterpart, only the assigned side decides, only the raiser cancels. Submitters never review their own deliverables.",
+    "baton": "When batonRole is set, only the holder creates tasks, decisions, and deliverables; taking the baton is an explicit, evented act.",
+    "completion": "Only the requester completes a match, and only after all decision gates are resolved and no deliverable is pending review.",
+    "pause": "collaborationState=paused rejects new tasks, decisions, and deliverables until a human resumes.",
+    "human_controls": "Deciding, reviewing, pause/resume, and baton moves require only userConfirmed; they do not depend on allowAgentMatching."
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "nexus-campus",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "apiStyle": "REST JSON",
   "requestBodyStyle": "flat REST JSON objects",
   "auth": {
@@ -86,9 +86,70 @@
     },
     {
       "task": "send_match_message",
+      "read": "GET /api/nexus/matches/{id}/messages?afterId=",
       "preflightAction": "match_message.create",
       "write": "POST /api/nexus/matches/{id}/messages",
+      "requiresConfirmation": true,
+      "idempotency": "clientRequestId"
+    },
+    {
+      "task": "load_collaboration_workspace",
+      "read": "GET /api/nexus/matches/{id}/workspace",
+      "requiresConfirmation": false,
+      "note": "Snapshot of tasks, decisions, deliverables, events, attention, and batonRole. Use to bootstrap and to resume after interruption."
+    },
+    {
+      "task": "sync_collaboration_events",
+      "read": "GET /api/nexus/matches/{id}/events?afterId=",
+      "requiresConfirmation": false
+    },
+    {
+      "task": "create_match_task",
+      "preflightAction": "match_task.create",
+      "write": "POST /api/nexus/matches/{id}/tasks",
+      "requiresConfirmation": true,
+      "idempotency": "clientRequestId"
+    },
+    {
+      "task": "update_match_task",
+      "preflightAction": "match_task.update",
+      "write": "PATCH /api/nexus/matches/{id}/tasks/{taskId}",
       "requiresConfirmation": true
+    },
+    {
+      "task": "open_match_decision",
+      "preflightAction": "match_decision.create",
+      "write": "POST /api/nexus/matches/{id}/decisions",
+      "requiresConfirmation": true,
+      "idempotency": "clientRequestId",
+      "note": "Human decision gate with 2-5 options; only the assignedRole participant can decide."
+    },
+    {
+      "task": "resolve_match_decision",
+      "preflightAction": "match_decision.resolve",
+      "write": "PATCH /api/nexus/matches/{id}/decisions/{decisionId}",
+      "requiresConfirmation": true
+    },
+    {
+      "task": "submit_match_deliverable",
+      "preflightAction": "match_deliverable.create",
+      "write": "POST /api/nexus/matches/{id}/deliverables",
+      "requiresConfirmation": true,
+      "idempotency": "clientRequestId"
+    },
+    {
+      "task": "review_match_deliverable",
+      "preflightAction": "match_deliverable.review",
+      "write": "PATCH /api/nexus/matches/{id}/deliverables/{deliverableId}",
+      "requiresConfirmation": true,
+      "note": "accept, reject (requires reviewNote), or withdraw own pending deliverable. Pending deliverables block match completion."
+    },
+    {
+      "task": "update_match_workspace",
+      "preflightAction": "match_workspace.update",
+      "write": "PATCH /api/nexus/matches/{id}/workspace",
+      "requiresConfirmation": true,
+      "note": "Pause/resume collaboration or pass the baton (requester|helper|none)."
     },
     {
       "task": "create_forum_discussion",

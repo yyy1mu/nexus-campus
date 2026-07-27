@@ -181,13 +181,59 @@ export async function updateMatch(matchId: string, attrs: Record<string, unknown
   return data.data
 }
 
-export async function fetchMessages(matchId: string) {
-  const { data } = await api.get(`/matches/${matchId}/messages`)
+export async function fetchMessages(matchId: string, afterId?: number) {
+  const params: Record<string, unknown> = {}
+  if (afterId) params.afterId = afterId
+  const { data } = await api.get(`/matches/${matchId}/messages`, { params })
   return data.data ?? []
 }
 
-export async function sendMessage(matchId: string, content: string) {
-  const { data } = await api.post(`/matches/${matchId}/messages`, { content, userConfirmed: true })
+export async function sendMessage(matchId: string, content: string, kind = 'chat') {
+  const { data } = await api.post(`/matches/${matchId}/messages`, { content, kind, userConfirmed: true })
+  return data.data
+}
+
+// ── Match Collaboration Workspace ──
+
+export async function fetchMyMatches() {
+  const { data } = await api.get('/me/matches')
+  return data.data ?? []
+}
+
+export async function fetchWorkspace(matchId: string) {
+  const { data } = await api.get(`/matches/${matchId}/workspace`)
+  return data.data
+}
+
+export async function updateWorkspace(matchId: string, attrs: Record<string, unknown>) {
+  const { data } = await api.patch(`/matches/${matchId}/workspace`, { ...attrs, userConfirmed: true })
+  return data.data
+}
+
+export async function fetchMatchEvents(matchId: string, afterId?: number) {
+  const params: Record<string, unknown> = {}
+  if (afterId) params.afterId = afterId
+  const { data } = await api.get(`/matches/${matchId}/events`, { params })
+  return data.data ?? []
+}
+
+export async function createMatchTask(matchId: string, attrs: Record<string, unknown>) {
+  const { data } = await api.post(`/matches/${matchId}/tasks`, { ...attrs, userConfirmed: true })
+  return data.data
+}
+
+export async function updateMatchTask(matchId: string, taskId: number, attrs: Record<string, unknown>) {
+  const { data } = await api.patch(`/matches/${matchId}/tasks/${taskId}`, { ...attrs, userConfirmed: true })
+  return data.data
+}
+
+export async function resolveMatchDecision(matchId: string, decisionId: number, attrs: Record<string, unknown>) {
+  const { data } = await api.patch(`/matches/${matchId}/decisions/${decisionId}`, { ...attrs, userConfirmed: true })
+  return data.data
+}
+
+export async function reviewMatchDeliverable(matchId: string, deliverableId: number, attrs: Record<string, unknown>) {
+  const { data } = await api.patch(`/matches/${matchId}/deliverables/${deliverableId}`, { ...attrs, userConfirmed: true })
   return data.data
 }
 

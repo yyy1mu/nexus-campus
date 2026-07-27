@@ -9,6 +9,8 @@ import nexus.campus.help.repository.HelpDispatchRepository;
 import nexus.campus.help.repository.HelpMatchMessageRepository;
 import nexus.campus.help.repository.HelpMatchRepository;
 import nexus.campus.help.repository.HelpRequestRepository;
+import nexus.campus.help.repository.MatchDecisionRepository;
+import nexus.campus.help.repository.MatchDeliverableRepository;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -26,6 +28,9 @@ class HelpMatchServiceAuthorizationTest {
                 mock(HelpDispatchRepository.class),
                 mock(HelpMatchMessageRepository.class),
                 mock(HelpRequestRepository.class),
+                mock(MatchDeliverableRepository.class),
+                mock(MatchDecisionRepository.class),
+                mock(MatchEventRecorder.class),
                 mock(PayloadValidator.class));
 
         User requester = user(4);

@@ -9,10 +9,10 @@ import nexus.campus.common.entity.User;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "nexus_help_match_messages",
+@Table(name = "nexus_match_tasks",
        uniqueConstraints = @UniqueConstraint(columnNames = {"match_id", "client_request_id"}))
 @Getter @Setter @NoArgsConstructor
-public class HelpMatchMessage {
+public class MatchTask {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
@@ -21,17 +21,26 @@ public class HelpMatchMessage {
     private HelpMatch match;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "created_by_user_id", nullable = false)
+    private User createdBy;
 
-    @Column(nullable = false, columnDefinition = "text")
-    private String content;
+    @Column(name = "owner_role", nullable = false, length = 16)
+    private String ownerRole;
 
-    @Column(name = "agent_context", columnDefinition = "text")
-    private String agentContext;
+    @Column(nullable = false, length = 160)
+    private String title;
 
-    @Column(nullable = false, length = 30)
-    private String kind = "chat";
+    @Column(columnDefinition = "text")
+    private String note;
+
+    @Column(nullable = false, length = 16)
+    private String status = "todo";
+
+    @Column(name = "blocked_reason", length = 500)
+    private String blockedReason;
+
+    @Column(name = "order_index", nullable = false)
+    private Integer orderIndex = 0;
 
     @Column(name = "client_request_id", length = 80)
     private String clientRequestId;
@@ -41,6 +50,9 @@ public class HelpMatchMessage {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "done_at")
+    private LocalDateTime doneAt;
 
     @PrePersist
     protected void onCreate() { createdAt = LocalDateTime.now(); updatedAt = LocalDateTime.now(); }

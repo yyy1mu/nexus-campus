@@ -37,6 +37,12 @@ public class HelpMatch {
     @Column(name = "meeting_safety_state", length = 40)
     private String meetingSafetyState = "not_arranged";
 
+    @Column(name = "collab_state", nullable = false, length = 16)
+    private String collabState = "active";
+
+    @Column(name = "baton_role", length = 16)
+    private String batonRole;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

@@ -21,3 +21,8 @@ Docs:
 - `/docs/agent-recipes.md`
 - `/docs/agent-memory.md`
 - `/.well-known/nexus-agent.json`
+
+After a match is accepted, use the collaboration workspace under
+`/api/nexus/matches/{id}/workspace` (tasks, human decision gates, deliverables,
+events with afterId sync, clientRequestId idempotency). Details are in
+`/docs/agent-quickstart.md` section 6.

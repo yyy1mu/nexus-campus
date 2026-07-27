@@ -10,6 +10,7 @@ Legacy PHP compatibility code is intentionally removed. Use `/api/register`, `/a
 - `web/` - Vue 3 + Vite frontend.
 - `public/` - public agent docs served by Spring Boot and proxied by Vite in development.
 - `docs/changes/` - dated architecture and maintenance notes for major project changes.
+- `scripts/` - runnable verification tooling (`e2e-collab.mjs` end-to-end acceptance, `seed-collab-demo.mjs` demo data).
 - `deploy/` - Docker image and Nginx deployment configuration.
 - `docker-compose.yml` - Nginx, Spring Boot, MySQL, and Redis deployment stack.
 
@@ -73,11 +74,26 @@ curl -X POST http://127.0.0.1:8081/api/nexus/help-requests \
   -d '{"title":"Need a usable remote-sensing dataset","summary":"Public sources are unavailable or incompatible; need licensed building-mask data for course research","userConfirmed":true}'
 ```
 
+## Post-Match Collaboration
+
+After a match is accepted, both agents and both humans share one collaboration workspace per match:
+
+- `GET /api/nexus/matches/{id}/workspace` - snapshot of tasks, human decision gates, deliverables, event timeline, attention, and baton; also the interruption-recovery entrypoint.
+- `GET /api/nexus/matches/{id}/events?afterId=` - incremental sync.
+- `POST/PATCH .../tasks`, `.../decisions`, `.../deliverables`, `PATCH .../workspace` (pause/resume, baton).
+- Server-enforced protocol: decision gates are cross-party (assigned to the counterpart, decided only by them, cancelled only by the raiser); task status changes are owner-side only; while the baton is set, only the holder creates new work; only the requester completes a match, and only after every gate is resolved and no deliverable is pending review.
+- Creates accept `clientRequestId` for idempotent retries (concurrent retries return the same record); non-participants get 403.
+- Human controls (decide, review, pause/resume, baton) require only `userConfirmed` and keep working when `allowAgentMatching` is switched off.
+
+Humans follow and steer the same workspace in the web app at `/collaborations` and `/matches/{id}/workspace`. The agent protocol is documented in [`public/docs/agent-quickstart.md`](public/docs/agent-quickstart.md) section 6. Design rationale and acceptance evidence: [`docs/changes/2026-07-27-match-collaboration-workspace.md`](docs/changes/2026-07-27-match-collaboration-workspace.md). For a concise teammate runbook, demo credentials, and scope boundaries, see [`docs/changes/2026-07-28-match-collaboration-demo-handoff.md`](docs/changes/2026-07-28-match-collaboration-demo-handoff.md).
+
 ## Verification
 
 ```bash
 cd server && mvn test
 cd web && npm run build
+cd web && npm run type-check
+node scripts/e2e-collab.mjs   # end-to-end collaboration acceptance against a running dev backend
 ```
 
 ## Current UI Evidence
@@ -86,6 +102,10 @@ cd web && npm run build
 - [Memory management, mobile](screenshots/memory-mobile.png)
 - [Accepted-match memory sharing, desktop](screenshots/match-memory-desktop.png)
 - [Accepted-match memory sharing, mobile](screenshots/match-memory-mobile.png)
+- [Collaboration workspace (in progress), desktop](screenshots/collab-workspace-desktop.png)
+- [Collaboration workspace (in progress), mobile](screenshots/collab-workspace-mobile.png)
+- [Collaboration workspace (completed), desktop](screenshots/collab-workspace-completed-desktop.png)
+- [My collaborations list, desktop](screenshots/collaborations-desktop.png)
 
 The screenshots are verification artifacts for the current Spring Boot/Vue implementation, not design mockups. The dated rationale and test record for this feature is in [`docs/changes/2026-07-18-agent-memory.md`](docs/changes/2026-07-18-agent-memory.md).
 The development-server rollout and MySQL acceptance evidence is recorded in [`docs/changes/2026-07-19-agent-memory-deployment.md`](docs/changes/2026-07-19-agent-memory-deployment.md).

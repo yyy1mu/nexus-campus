@@ -106,6 +106,9 @@
                 <strong>[user {{ msg.userId }}]</strong> {{ msg.content }}
               </div>
             </div>
+            <router-link v-if="m.status === 'accepted'" class="btn btn-sm btn-primary" :to="`/matches/${m.id}/workspace`">
+              协作工作台
+            </router-link>
             <button v-if="m.status === 'accepted'" class="btn btn-sm btn-secondary" @click="dispatchStore.loadMessages(m.id)">
               查看私信
             </button>

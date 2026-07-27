@@ -159,17 +159,19 @@ public class HelpRequestController {
     // ── Messages ──
 
     @GetMapping("/matches/{id}/messages")
-    public ApiResponse<List<MatchMessageResponse>> messages(@PathVariable Integer id,
-                                                             @AuthenticationPrincipal User user) {
+    public ApiResponse<List<MatchMessageResponse>> messages(
+            @PathVariable Integer id, @AuthenticationPrincipal User user,
+            @RequestParam(required = false) Integer afterId,
+            @RequestParam(defaultValue = "200") int limit) {
         guard.requireUser(user);
         var match = matchRepository.findById(id).orElseThrow();
         assertMatchParticipant(match, user.getId());
-        return ApiResponse.ok(messageRepository.findByMatchIdOrderByCreatedAtAsc(id)
-                .stream().map(m -> MatchMessageResponse.builder()
-                    .id(m.getId()).matchId(m.getMatch().getId())
-                    .userId(m.getUser().getId()).content(m.getContent())
-                    .createdAt(m.getCreatedAt()).build()
-                ).toList());
+        int capped = Math.min(Math.max(limit, 1), 500);
+        var list = afterId != null && afterId > 0
+                ? messageRepository.findByMatchIdAndIdGreaterThanOrderByIdAsc(id, afterId)
+                : messageRepository.findByMatchIdOrderByCreatedAtAsc(id);
+        return ApiResponse.ok(list.stream().limit(capped)
+                .map(this::toMessageResponse).toList());
     }
 
     @PostMapping("/matches/{id}/messages")
@@ -179,11 +181,27 @@ public class HelpRequestController {
         guard.requireMatching(user, body, "send message");
 
         String content = (String) body.get("content");
-        var msg = matchService.sendMessage(id, user.getId(), content, (String) body.get("agentContext"));
-        return ApiResponse.ok(MatchMessageResponse.builder()
-                .id(msg.getId()).matchId(msg.getMatch().getId())
-                .userId(msg.getUser().getId()).content(msg.getContent())
-                .createdAt(msg.getCreatedAt()).build());
+        String clientRequestId = (String) body.get("clientRequestId");
+        HelpMatchMessage msg;
+        try {
+            msg = matchService.sendMessage(id, user.getId(), content,
+                    (String) body.get("agentContext"),
+                    (String) body.get("kind"),
+                    clientRequestId);
+        } catch (org.springframework.dao.DataIntegrityViolationException conflict) {
+            // Concurrent duplicate send: return the record the winner created.
+            msg = matchService.messageReplay(id, user.getId(), clientRequestId)
+                    .orElseThrow(() -> conflict);
+        }
+        return ApiResponse.ok(toMessageResponse(msg));
+    }
+
+    private MatchMessageResponse toMessageResponse(HelpMatchMessage m) {
+        return MatchMessageResponse.builder()
+                .id(m.getId()).matchId(m.getMatch().getId())
+                .userId(m.getUser().getId()).content(m.getContent())
+                .kind(m.getKind())
+                .createdAt(m.getCreatedAt()).build();
     }
 
     // ── Serialization helpers ──
@@ -246,6 +264,7 @@ public class HelpRequestController {
                 .helperUserId(m.getHelper().getId())
                 .status(m.getStatus()).message(m.getMessage())
                 .meetingHint(m.getMeetingHint()).meetingSafetyState(m.getMeetingSafetyState())
+                .collaborationState(m.getCollabState()).batonRole(m.getBatonRole())
                 .createdAt(m.getCreatedAt()).acceptedAt(m.getAcceptedAt())
                 .completedAt(m.getCompletedAt()).build();
     }

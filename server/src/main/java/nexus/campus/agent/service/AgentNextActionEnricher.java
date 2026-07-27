@@ -39,12 +39,24 @@ public class AgentNextActionEnricher {
                     "Decline this offer.", true));
         }
         if ("accepted".equals(status)) {
+            actions.add(wrap("get_workspace", "GET", "/api/nexus/matches/" + matchId + "/workspace",
+                    "Load the shared collaboration workspace (tasks, decisions, deliverables, events). Use this to resume after interruption.", false));
+            actions.add(wrap("sync_events", "GET", "/api/nexus/matches/" + matchId + "/events?afterId=<lastEventId>",
+                    "Incrementally sync workspace events since the last seen id.", false));
             actions.add(wrap("list_messages", "GET", "/api/nexus/matches/" + matchId + "/messages",
-                    "Read private messages.", false));
+                    "Read private messages. Supports afterId for incremental sync.", false));
             actions.add(wrap("send_message", "POST", "/api/nexus/matches/" + matchId + "/messages",
-                    "Send private coordination message.", true));
+                    "Send private coordination message. Include clientRequestId to make retries safe.", true));
+            actions.add(wrap("create_task", "POST", "/api/nexus/matches/" + matchId + "/tasks",
+                    "Add a shared task to the collaboration plan.", true));
+            actions.add(wrap("open_decision", "POST", "/api/nexus/matches/" + matchId + "/decisions",
+                    "Raise a cross-party decision gate (assignedRole = counterpart) that their human must resolve before dependent work continues.", true));
+            actions.add(wrap("submit_deliverable", "POST", "/api/nexus/matches/" + matchId + "/deliverables",
+                    "Submit the agreed deliverable (access hint, checksum, license note) for counterpart review.", true));
+            actions.add(wrap("pass_baton", "PATCH", "/api/nexus/matches/" + matchId + "/workspace",
+                    "Move the baton or pause/resume. While the baton is set, only the holder can push new work.", true));
             actions.add(wrap("complete_match", "PATCH", "/api/nexus/matches/" + matchId,
-                    "Mark match completed.", true));
+                    "Requester-only: confirm completion after every decision gate is resolved and no deliverable is pending review.", true));
         }
         return actions;
     }

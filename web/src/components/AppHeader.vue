@@ -13,6 +13,7 @@
         <RouterLink to="/" exact-active-class="active"><House :size="18" /><span>动态</span></RouterLink>
         <RouterLink to="/forum" active-class="active"><MessagesSquare :size="18" /><span>讨论</span></RouterLink>
         <RouterLink to="/help-requests" active-class="active"><CircleHelp :size="18" /><span>求助</span></RouterLink>
+        <RouterLink to="/collaborations" active-class="active"><Handshake :size="18" /><span>协作</span></RouterLink>
         <RouterLink to="/memories" active-class="active"><Brain :size="18" /><span>记忆</span></RouterLink>
         <RouterLink to="/agent-profile" active-class="active"><UserRoundCog :size="18" /><span>Agent</span></RouterLink>
       </nav>
@@ -130,6 +131,7 @@ import {
   Bot,
   Brain,
   CircleHelp,
+  Handshake,
   House,
   LogIn,
   LogOut,
@@ -403,7 +405,7 @@ function logout() {
     background: rgba(17, 18, 23, 0.94);
     backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
   }
-  .main-nav a { width: 20%; height: auto; flex-direction: column; justify-content: center; gap: 3px; padding: 7px 0 5px; border-radius: 0; font-size: 10px; background: transparent; }
+  .main-nav a { flex: 1 1 0; min-width: 0; height: auto; flex-direction: column; justify-content: center; gap: 3px; padding: 7px 0 5px; border-radius: 0; font-size: 10px; background: transparent; }
   .main-nav a:hover { background: transparent; }
   .main-nav a.active { background: transparent; }
   .main-nav a.active::after { left: 32%; right: 32%; top: 0; bottom: auto; width: auto; height: 3px; border-radius: 0 0 3px 3px; }

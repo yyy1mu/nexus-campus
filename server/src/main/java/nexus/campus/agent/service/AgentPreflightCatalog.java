@@ -208,8 +208,101 @@ public class AgentPreflightCatalog {
             "endpoint", "POST /api/nexus/matches/{id}/messages",
             "requiresConfirmation", true,
             "permissions", List.of("allowAgentMatching"),
-            "purpose", "Send a private coordination message within an accepted match after explicit confirmation.",
-            "proposedFields", List.of("content", "agentContext", "userConfirmed"),
+            "purpose", "Send a private coordination message within an accepted match after explicit confirmation. Use kind (chat|update|question|handoff) and clientRequestId for safe retries.",
+            "proposedFields", List.of("content", "kind", "clientRequestId", "agentContext", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", false,
+                "visibility", "match_participants_only",
+                "idempotency", "clientRequestId replays return the original message"
+            )
+        ));
+
+        c.put("match_task.create", Map.of(
+            "endpoint", "POST /api/nexus/matches/{id}/tasks",
+            "requiresConfirmation", true,
+            "permissions", List.of("allowAgentMatching"),
+            "purpose", "Add a shared task to an accepted match's collaboration plan so both sides can track progress.",
+            "proposedFields", List.of("title", "note", "ownerRole", "clientRequestId", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", false,
+                "visibility", "match_participants_only",
+                "idempotency", "clientRequestId replays return the original task",
+                "blockedWhilePaused", true
+            )
+        ));
+
+        c.put("match_task.update", Map.of(
+            "endpoint", "PATCH /api/nexus/matches/{id}/tasks/{taskId}",
+            "requiresConfirmation", true,
+            "permissions", List.of("allowAgentMatching"),
+            "purpose", "Advance, block (with blockedReason), retitle, or hand over a shared collaboration task. Status changes are allowed only for the side that owns the task.",
+            "proposedFields", List.of("status", "title", "note", "ownerRole", "blockedReason", "orderIndex", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", false,
+                "visibility", "match_participants_only",
+                "blockedWhilePaused", true
+            )
+        ));
+
+        c.put("match_decision.create", Map.of(
+            "endpoint", "POST /api/nexus/matches/{id}/decisions",
+            "requiresConfirmation", true,
+            "permissions", List.of("allowAgentMatching"),
+            "purpose", "Open a human decision gate with 2-5 concrete options. assignedRole must be the counterpart (cross-party checkpoint); work that depends on the choice must wait until the assigned human decides.",
+            "proposedFields", List.of("title", "context", "options", "assignedRole", "clientRequestId", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", false,
+                "visibility", "match_participants_only",
+                "idempotency", "clientRequestId replays return the original decision",
+                "blockedWhilePaused", true
+            )
+        ));
+
+        c.put("match_decision.resolve", Map.of(
+            "endpoint", "PATCH /api/nexus/matches/{id}/decisions/{decisionId}",
+            "requiresConfirmation", true,
+            "permissions", List.of("allowAgentMatching"),
+            "purpose", "Record the assigned human participant's choice (action=decide with optionKey) or, as the raiser, withdraw an open decision (action=cancel). Human gate: requires userConfirmed only, not allowAgentMatching.",
+            "proposedFields", List.of("action", "optionKey", "note", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", false,
+                "visibility", "match_participants_only",
+                "idempotency", "re-deciding with the same optionKey returns the decided record"
+            )
+        ));
+
+        c.put("match_deliverable.create", Map.of(
+            "endpoint", "POST /api/nexus/matches/{id}/deliverables",
+            "requiresConfirmation", true,
+            "permissions", List.of("allowAgentMatching"),
+            "purpose", "Submit the agreed deliverable (title, access hint, checksum, license note) for the counterpart's review.",
+            "proposedFields", List.of("title", "description", "accessHint", "checksum", "licenseNote", "clientRequestId", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", false,
+                "visibility", "match_participants_only",
+                "idempotency", "clientRequestId replays return the original deliverable",
+                "blockedWhilePaused", true
+            )
+        ));
+
+        c.put("match_deliverable.review", Map.of(
+            "endpoint", "PATCH /api/nexus/matches/{id}/deliverables/{deliverableId}",
+            "requiresConfirmation", true,
+            "permissions", List.of("allowAgentMatching"),
+            "purpose", "Accept or reject (with reviewNote) a counterpart deliverable, or withdraw one's own pending deliverable. A pending deliverable blocks match completion. Human gate: requires userConfirmed only, not allowAgentMatching.",
+            "proposedFields", List.of("action", "reviewNote", "userConfirmed"),
+            "sideEffects", Map.of(
+                "createsPublicContent", false,
+                "visibility", "match_participants_only"
+            )
+        ));
+
+        c.put("match_workspace.update", Map.of(
+            "endpoint", "PATCH /api/nexus/matches/{id}/workspace",
+            "requiresConfirmation", true,
+            "permissions", List.of("allowAgentMatching"),
+            "purpose", "Pause or resume collaboration, or move the baton (requester|helper|none). While the baton is set, only the holder can create tasks, decisions, and deliverables. Paused workspaces reject new work. Human control: requires userConfirmed only, not allowAgentMatching.",
+            "proposedFields", List.of("collaborationState", "baton", "note", "userConfirmed"),
             "sideEffects", Map.of(
                 "createsPublicContent", false,
                 "visibility", "match_participants_only"
