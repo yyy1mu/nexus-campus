@@ -1,5 +1,6 @@
-// E2E acceptance: "missing training dataset" — two agents negotiate and
-// deliver through the post-match collaboration workspace.
+// E2E acceptance: an edge-vision INT8 deployment needs target-sensor
+// calibration data, which two agents negotiate and deliver through the
+// post-match collaboration workspace.
 // Covers: happy path, interruption recovery, duplicate requests (idempotency),
 // failure handling (reject -> resubmit), pause control, and isolation (403s).
 const BASE = process.env.NEXUS_BASE || 'http://127.0.0.1:8081'
@@ -33,9 +34,9 @@ async function register(username) {
 const ts = Date.now().toString(36)
 const scenario = async () => {
   console.log(`\n== Setup: two users + a bystander (base ${BASE}) ==`)
-  const requester = await register(`ds_requester_${ts}`)
-  const helper = await register(`ds_helper_${ts}`)
-  const outsider = await register(`ds_outsider_${ts}`)
+  const requester = await register(`edge_requester_${ts}`)
+  const helper = await register(`edge_helper_${ts}`)
+  const outsider = await register(`edge_outsider_${ts}`)
   check('three users registered', !!requester.token && !!helper.token && !!outsider.token)
 
   // The outsider also enables matching so that isolation tests hit the
@@ -48,15 +49,15 @@ const scenario = async () => {
     check(`${u.username} enabled allowAgentMatching`, r.status === 200, r.raw)
   }
 
-  console.log('\n== Phase 1: requester agent publishes the dataset help request ==')
+  console.log('\n== Phase 1: requester agent escalates the INT8 calibration blocker ==')
   const reqCreate = await call('POST', '/api/nexus/help-requests', {
     token: requester.token,
     body: {
-      title: '缺少可用的遥感建筑分割训练数据集',
-      summary: '公开检索失败：需要带许可的建筑掩膜数据用于课程模型特化训练',
-      content: '公开数据源不可用或许可不兼容。需要约 2000 张已标注切片，可接受校内传输或线下交接。',
+      title: '边缘视觉芯片 INT8 部署缺少目标传感器域校准数据',
+      summary: '公开数据与目标 CMOS 传感器和 ISP 分布不匹配，需要带授权的匿名校准样本',
+      content: 'FP32 模型转换到边缘 NPU 后准确率明显下降。需要约 2000 帧目标传感器域数据，可接受校内加密传输或线下交接。',
       categoryLabel: 'dataset',
-      neededLabels: ['remote-sensing', 'dataset-steward'],
+      neededLabels: ['edge-vision', 'sensor-data-steward'],
       urgency: 'normal',
       userConfirmed: true,
     },
@@ -67,7 +68,7 @@ const scenario = async () => {
   console.log('\n== Phase 2: helper agent offers, requester human accepts ==')
   const offer = await call('POST', `/api/nexus/help-requests/${helpId}/matches`, {
     token: helper.token,
-    body: { message: '我这边有课程组授权的建筑掩膜数据集，可以协商传输方式。', meetingSafetyState: 'not_arranged', userConfirmed: true },
+    body: { message: '实验室有同型号 CMOS 传感器的授权采集数据，已脱敏，可协商安全交付方式。', meetingSafetyState: 'not_arranged', userConfirmed: true },
   })
   check('match offered', offer.status === 200 && offer.data?.status === 'offered', offer.raw)
   const matchId = offer.data.id
@@ -86,44 +87,44 @@ const scenario = async () => {
 
   const t1 = await call('POST', `/api/nexus/matches/${matchId}/tasks`, {
     token: helper.token,
-    body: { title: '确认数据集许可范围与引用要求', ownerRole: 'helper', clientRequestId: 'task-license', userConfirmed: true },
+    body: { title: '确认目标 CMOS 传感器、ISP 配置与数据授权边界', ownerRole: 'helper', clientRequestId: 'task-license', userConfirmed: true },
   })
   const t2 = await call('POST', `/api/nexus/matches/${matchId}/tasks`, {
     token: helper.token,
-    body: { title: '准备 2000 张标注切片并计算校验和', ownerRole: 'helper', clientRequestId: 'task-package', userConfirmed: true },
+    body: { title: '准备 2000 帧匿名校准样本、清单与校验和', ownerRole: 'helper', clientRequestId: 'task-package', userConfirmed: true },
   })
   const t3 = await call('POST', `/api/nexus/matches/${matchId}/tasks`, {
     token: helper.token,
-    body: { title: '接收后抽样验证标注质量', ownerRole: 'requester', clientRequestId: 'task-verify', userConfirmed: true },
+    body: { title: '在边缘 NPU 上复测 INT8 准确率与时延', ownerRole: 'requester', clientRequestId: 'task-verify', userConfirmed: true },
   })
   check('three tasks created', [t1, t2, t3].every(r => r.status === 200), { t1: t1.status, t2: t2.status, t3: t3.status })
 
   const t1Replay = await call('POST', `/api/nexus/matches/${matchId}/tasks`, {
     token: helper.token,
-    body: { title: '确认数据集许可范围与引用要求', ownerRole: 'helper', clientRequestId: 'task-license', userConfirmed: true },
+    body: { title: '确认目标 CMOS 传感器、ISP 配置与数据授权边界', ownerRole: 'helper', clientRequestId: 'task-license', userConfirmed: true },
   })
   check('duplicate task create returns original (idempotent)', t1Replay.status === 200 && t1Replay.data.id === t1.data.id, t1Replay.raw)
 
   const msg1 = await call('POST', `/api/nexus/matches/${matchId}/messages`, {
     token: helper.token,
-    body: { content: '数据集为课程组内部授权，可用于课程研究，不可二次分发。', kind: 'update', clientRequestId: 'msg-license', userConfirmed: true },
+    body: { content: '样本已完成人脸与车牌脱敏，仅限校内芯片量化校准和评估，不可二次分发。', kind: 'update', clientRequestId: 'msg-license', userConfirmed: true },
   })
   check('agent update message sent', msg1.status === 200 && msg1.data?.kind === 'update', msg1.raw)
   const msg1Replay = await call('POST', `/api/nexus/matches/${matchId}/messages`, {
     token: helper.token,
-    body: { content: '数据集为课程组内部授权，可用于课程研究，不可二次分发。', kind: 'update', clientRequestId: 'msg-license', userConfirmed: true },
+    body: { content: '样本已完成人脸与车牌脱敏，仅限校内芯片量化校准和评估，不可二次分发。', kind: 'update', clientRequestId: 'msg-license', userConfirmed: true },
   })
   check('duplicate message returns original (idempotent)', msg1Replay.status === 200 && msg1Replay.data.id === msg1.data.id, msg1Replay.raw)
 
-  console.log('\n== Phase 4: decision gate — transfer method needs the requester human ==')
+  console.log('\n== Phase 4: decision gate — data delivery needs the requester human ==')
   const dec = await call('POST', `/api/nexus/matches/${matchId}/decisions`, {
     token: helper.token,
     body: {
-      title: '选择数据集传输方式',
-      context: '两种方式都可行：校内网 HTTP 临时链接（需要你在校园网内），或线下 U 盘交接（图书馆一楼，公共场所）。',
+      title: '选择校准数据的安全交付方式',
+      context: '两种方式都符合授权边界：校内网限时 HTTPS（需要在校园网内），或实验室加密 SSD 交接（现场核对设备和接收人）。',
       options: [
-        { key: 'campus-http', label: '校内网临时 HTTP 传输', note: '当天有效链接 + SHA-256 校验' },
-        { key: 'offline-usb', label: '线下 U 盘交接', note: '图书馆一楼服务台旁，公共场所' },
+        { key: 'campus-https', label: '校内网限时 HTTPS', note: '当天有效链接 + SHA-256 校验' },
+        { key: 'encrypted-ssd', label: '实验室加密 SSD 交接', note: '现场核对设备编号与接收人' },
       ],
       assignedRole: 'requester',
       clientRequestId: 'dec-transfer',
@@ -134,7 +135,7 @@ const scenario = async () => {
   const decId = dec.data.id
   const decReplay = await call('POST', `/api/nexus/matches/${matchId}/decisions`, {
     token: helper.token,
-    body: { title: '选择数据集传输方式', options: [{ key: 'a', label: 'x' }, { key: 'b', label: 'y' }], assignedRole: 'requester', clientRequestId: 'dec-transfer', userConfirmed: true },
+    body: { title: '选择校准数据的安全交付方式', options: [{ key: 'a', label: 'x' }, { key: 'b', label: 'y' }], assignedRole: 'requester', clientRequestId: 'dec-transfer', userConfirmed: true },
   })
   check('duplicate decision returns original (idempotent)', decReplay.status === 200 && decReplay.data.id === decId, decReplay.raw)
 
@@ -150,7 +151,7 @@ const scenario = async () => {
   check('self-assigned decision rejected (400)', selfAssigned.status === 400, selfAssigned.raw)
 
   const helperDecide = await call('PATCH', `/api/nexus/matches/${matchId}/decisions/${decId}`, {
-    token: helper.token, body: { action: 'decide', optionKey: 'campus-http', userConfirmed: true },
+    token: helper.token, body: { action: 'decide', optionKey: 'campus-https', userConfirmed: true },
   })
   check('non-assigned role cannot decide (403)', helperDecide.status === 403, helperDecide.raw)
 
@@ -161,27 +162,27 @@ const scenario = async () => {
 
   const decide = await call('PATCH', `/api/nexus/matches/${matchId}/decisions/${decId}`, {
     token: requester.token,
-    body: { action: 'decide', optionKey: 'campus-http', note: '本周都在校园网内，选校内传输。', userConfirmed: true },
+    body: { action: 'decide', optionKey: 'campus-https', note: '量化服务器在校园网内，选限时 HTTPS。', userConfirmed: true },
   })
-  check('requester human decided campus-http', decide.status === 200 && decide.data?.decidedOptionKey === 'campus-http', decide.raw)
+  check('requester human decided campus-https', decide.status === 200 && decide.data?.decidedOptionKey === 'campus-https', decide.raw)
 
   const decideReplay = await call('PATCH', `/api/nexus/matches/${matchId}/decisions/${decId}`, {
-    token: requester.token, body: { action: 'decide', optionKey: 'campus-http', userConfirmed: true },
+    token: requester.token, body: { action: 'decide', optionKey: 'campus-https', userConfirmed: true },
   })
   check('re-deciding same option is idempotent', decideReplay.status === 200 && decideReplay.data?.status === 'decided', decideReplay.raw)
   const decideConflict = await call('PATCH', `/api/nexus/matches/${matchId}/decisions/${decId}`, {
-    token: requester.token, body: { action: 'decide', optionKey: 'offline-usb', userConfirmed: true },
+    token: requester.token, body: { action: 'decide', optionKey: 'encrypted-ssd', userConfirmed: true },
   })
   check('re-deciding different option rejected (400)', decideConflict.status === 400, decideConflict.raw)
 
   console.log('\n== Phase 5: baton handoff + pause intervention ==')
   const baton = await call('PATCH', `/api/nexus/matches/${matchId}/workspace`, {
-    token: requester.token, body: { baton: 'helper', note: '方案已定，等你打包数据。', userConfirmed: true },
+    token: requester.token, body: { baton: 'helper', note: '交付方式已定，等你打包校准数据和元数据。', userConfirmed: true },
   })
   check('baton passed to helper', baton.status === 200 && baton.data?.batonRole === 'helper', baton.raw)
 
   const pause = await call('PATCH', `/api/nexus/matches/${matchId}/workspace`, {
-    token: requester.token, body: { collaborationState: 'paused', note: '先确认导师同意再继续。', userConfirmed: true },
+    token: requester.token, body: { collaborationState: 'paused', note: '先确认项目负责人接受数据用途边界再继续。', userConfirmed: true },
   })
   check('requester paused collaboration', pause.status === 200 && pause.data?.collaborationState === 'paused', pause.raw)
 
@@ -190,12 +191,12 @@ const scenario = async () => {
   })
   check('paused workspace rejects new task (400)', pausedTask.status === 400, pausedTask.raw)
   const pausedMsg = await call('POST', `/api/nexus/matches/${matchId}/messages`, {
-    token: helper.token, body: { content: '好的，等你们确认。', userConfirmed: true },
+    token: helper.token, body: { content: '好的，保持暂停，等你们确认授权范围。', userConfirmed: true },
   })
   check('messages still allowed while paused', pausedMsg.status === 200, pausedMsg.raw)
 
   const resume = await call('PATCH', `/api/nexus/matches/${matchId}/workspace`, {
-    token: requester.token, body: { collaborationState: 'active', note: '导师已同意。', userConfirmed: true },
+    token: requester.token, body: { collaborationState: 'active', note: '项目负责人已确认。', userConfirmed: true },
   })
   check('collaboration resumed', resume.status === 200 && resume.data?.collaborationState === 'active', resume.raw)
 
@@ -205,7 +206,7 @@ const scenario = async () => {
   })
   check('task moved to doing', doing.status === 200 && doing.data?.status === 'doing', doing.raw)
   const blocked = await call('PATCH', `/api/nexus/matches/${matchId}/tasks/${t2.data.id}`, {
-    token: helper.token, body: { status: 'blocked', blockedReason: '标注文件缺 300 张，需要重新导出。', userConfirmed: true },
+    token: helper.token, body: { status: 'blocked', blockedReason: '低照度场景元数据缺少 300 帧，需要重新导出。', userConfirmed: true },
   })
   check('task blocked with reason', blocked.status === 200 && blocked.data?.status === 'blocked', blocked.raw)
   const blockedNoReason = await call('PATCH', `/api/nexus/matches/${matchId}/tasks/${t1.data.id}`, {
@@ -240,7 +241,7 @@ const scenario = async () => {
   const guardDec = await call('POST', `/api/nexus/matches/${matchId}/decisions`, {
     token: helper.token,
     body: {
-      title: '是否需要补充验证集切片',
+      title: '是否需要补充低照度验证样本',
       options: [{ key: 'yes', label: '需要' }, { key: 'no', label: '不需要' }],
       assignedRole: 'requester', clientRequestId: 'dec-guard', userConfirmed: true,
     },
@@ -263,7 +264,7 @@ const scenario = async () => {
   check('open decision blocks completion (400)', completeWithOpenGate.status === 400, completeWithOpenGate.raw)
 
   const raiserCancel = await call('PATCH', `/api/nexus/matches/${matchId}/decisions/${guardDec.data.id}`, {
-    token: helper.token, body: { action: 'cancel', note: '样例阶段先不需要。', userConfirmed: true },
+    token: helper.token, body: { action: 'cancel', note: '当前校准批次已覆盖目标照度范围。', userConfirmed: true },
   })
   check('raiser can cancel own decision', raiserCancel.status === 200 && raiserCancel.data?.status === 'cancelled', raiserCancel.raw)
 
@@ -275,13 +276,13 @@ const scenario = async () => {
   check('non-holder task create blocked by baton (400)', batonBlocked.status === 400, batonBlocked.raw)
 
   const takeBaton = await call('PATCH', `/api/nexus/matches/${matchId}/workspace`, {
-    token: requester.token, body: { baton: 'requester', note: '我先补充一个验证任务。', userConfirmed: true },
+    token: requester.token, body: { baton: 'requester', note: '我先补充 INT8 回归验收阈值。', userConfirmed: true },
   })
   check('requester takes the baton explicitly', takeBaton.status === 200 && takeBaton.data?.batonRole === 'requester', takeBaton.raw)
 
   const afterTake = await call('POST', `/api/nexus/matches/${matchId}/tasks`, {
     token: requester.token,
-    body: { title: '记录抽样验证标准', ownerRole: 'requester', clientRequestId: 'task-criteria', userConfirmed: true },
+    body: { title: '记录 INT8 回归验收阈值', ownerRole: 'requester', clientRequestId: 'task-criteria', userConfirmed: true },
   })
   check('baton holder can create work', afterTake.status === 200, afterTake.raw)
 
@@ -291,7 +292,7 @@ const scenario = async () => {
   check('non-owner cannot advance counterpart task (403)', foreignAdvance.status === 403, foreignAdvance.raw)
 
   const giveBack = await call('PATCH', `/api/nexus/matches/${matchId}/workspace`, {
-    token: requester.token, body: { baton: 'helper', note: '轮到你打包交付。', userConfirmed: true },
+    token: requester.token, body: { baton: 'helper', note: '验收阈值已记录，轮到你打包交付。', userConfirmed: true },
   })
   check('baton handed back to helper', giveBack.status === 200 && giveBack.data?.batonRole === 'helper', giveBack.raw)
 
@@ -299,18 +300,18 @@ const scenario = async () => {
   const d1 = await call('POST', `/api/nexus/matches/${matchId}/deliverables`, {
     token: helper.token,
     body: {
-      title: '遥感建筑分割数据集 v1（2000 张切片）',
-      description: '校内网临时 HTTP 链接当天有效，含标注说明。',
-      accessHint: 'http://10.12.8.21:8000/dataset-v1.tar.gz（当天 22:00 前有效）',
+      title: '目标 CMOS 传感器 INT8 校准集 v1（2000 帧）',
+      description: '校内网限时 HTTPS 链接当天有效，含匿名帧、传感器/ISP 元数据与场景清单。',
+      accessHint: 'https://10.12.8.21:8443/edge-int8-calibration-v1.tar.zst（当天 22:00 前有效）',
       checksum: 'sha256:51a9f0f1e2d3c4b5a6978869504132231405f6e7d8c9b0a1f2e3d4c5b6a79880',
-      licenseNote: '课程组内部授权，仅限本课程研究使用，不可二次分发。',
+      licenseNote: '仅限校内边缘视觉芯片的量化校准与评估，不得用于身份识别或二次分发。',
       clientRequestId: 'deliv-v1',
       userConfirmed: true,
     },
   })
   check('deliverable v1 submitted', d1.status === 200 && d1.data?.status === 'submitted', d1.raw)
   const d1Replay = await call('POST', `/api/nexus/matches/${matchId}/deliverables`, {
-    token: helper.token, body: { title: '遥感建筑分割数据集 v1（2000 张切片）', clientRequestId: 'deliv-v1', userConfirmed: true },
+    token: helper.token, body: { title: '目标 CMOS 传感器 INT8 校准集 v1（2000 帧）', clientRequestId: 'deliv-v1', userConfirmed: true },
   })
   check('duplicate deliverable returns original (idempotent)', d1Replay.status === 200 && d1Replay.data.id === d1.data.id, d1Replay.raw)
 
@@ -331,18 +332,18 @@ const scenario = async () => {
 
   const reject = await call('PATCH', `/api/nexus/matches/${matchId}/deliverables/${d1.data.id}`, {
     token: requester.token,
-    body: { action: 'reject', reviewNote: '抽样发现 12% 切片缺少掩膜，请补齐后重新提交。', userConfirmed: true },
+    body: { action: 'reject', reviewNote: '低照度场景的 ISP 增益元数据缺失，量化回归无法复现，请补齐后重新提交。', userConfirmed: true },
   })
   check('deliverable v1 rejected with note', reject.status === 200 && reject.data?.status === 'rejected', reject.raw)
 
   const d2 = await call('POST', `/api/nexus/matches/${matchId}/deliverables`, {
     token: helper.token,
     body: {
-      title: '遥感建筑分割数据集 v2（补齐缺失掩膜）',
-      description: '补齐缺失掩膜并重新打包，新校验和如下。',
-      accessHint: 'http://10.12.8.21:8000/dataset-v2.tar.gz（当天 22:00 前有效）',
+      title: '目标 CMOS 传感器 INT8 校准集 v2（补齐 ISP 元数据）',
+      description: '补齐低照度帧的曝光、增益和 ISP 版本字段并重新打包，新校验和如下。',
+      accessHint: 'https://10.12.8.21:8443/edge-int8-calibration-v2.tar.zst（当天 22:00 前有效）',
       checksum: 'sha256:8c7b6a5948372615049382716a5b4c3d2e1f00998877665544332211aabbccdd',
-      licenseNote: '同 v1：课程组内部授权，不可二次分发。',
+      licenseNote: '同 v1：仅限量化校准与评估，不得用于身份识别或二次分发。',
       clientRequestId: 'deliv-v2',
       userConfirmed: true,
     },
@@ -419,7 +420,7 @@ const scenario = async () => {
 
   console.log('\n== Phase 10: acceptance and completion ==')
   const accept2 = await call('PATCH', `/api/nexus/matches/${matchId}/deliverables/${d2.data.id}`, {
-    token: requester.token, body: { action: 'accept', reviewNote: '抽样验证通过，校验和一致。', userConfirmed: true },
+    token: requester.token, body: { action: 'accept', reviewNote: 'INT8 回归达到准确率和时延阈值，校验和一致。', userConfirmed: true },
   })
   check('deliverable v2 accepted', accept2.status === 200 && accept2.data?.status === 'accepted', accept2.raw)
 
@@ -428,7 +429,7 @@ const scenario = async () => {
   })
   // Close out the extra tasks created in phases 7b/8b (each by its owner side).
   const criteriaTask = (await call('GET', `/api/nexus/matches/${matchId}/workspace`, { token: requester.token }))
-    .data.tasks.find(t => t.title === '记录抽样验证标准')
+    .data.tasks.find(t => t.title === '记录 INT8 回归验收阈值')
   await call('PATCH', `/api/nexus/matches/${matchId}/tasks/${criteriaTask.id}`, {
     token: requester.token, body: { status: 'done', userConfirmed: true },
   })

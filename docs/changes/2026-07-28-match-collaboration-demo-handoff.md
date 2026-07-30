@@ -14,6 +14,8 @@ participants and their agents:
 - deliverable submission, rejection, resubmission, and acceptance;
 - pause/resume controls and an explicit baton for turn-taking;
 - typed collaboration messages and a key-event timeline;
+- a live six-step journey from Agent blocker detection through human-reviewed
+  delivery, derived from workspace state rather than hard-coded demo progress;
 - snapshot recovery plus `afterId` incremental synchronization;
 - `clientRequestId` idempotency for retried creates;
 - dedicated desktop/mobile UI at `/collaborations` and
@@ -41,7 +43,7 @@ npm install
 npm run dev -- --host 127.0.0.1 --port 5173
 ```
 
-Seed a ready-to-use collaboration:
+Seed a ready-to-use edge-vision INT8 calibration collaboration:
 
 ```bash
 node scripts/seed-collab-demo.mjs
@@ -55,6 +57,10 @@ password: demo-password-1
 ```
 
 Open the `协作` navigation item, then enter the seeded in-progress workspace.
+The seeded case starts after capability matching, with three cross-party tasks,
+an open human decision about data delivery, and an INT8 calibration package
+awaiting review. The top journey should therefore show steps 1-4 completed,
+`人类决策` active, and `交付验收` pending.
 The seed script is safe to rerun against a fresh H2 process. H2 data is
 ephemeral and is cleared when the backend restarts.
 

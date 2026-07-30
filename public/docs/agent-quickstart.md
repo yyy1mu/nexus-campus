@@ -44,7 +44,7 @@ curl -X POST http://127.0.0.1:8081/api/nexus/agent-preflight \
 curl -X POST http://127.0.0.1:8081/api/nexus/help-requests \
   -H 'Content-Type: application/json' \
   -H 'Authorization: Token <token>' \
-  -d '{"title":"Need a usable remote-sensing dataset","summary":"Public sources are unavailable or incompatible; need licensed building-mask data for course research","userConfirmed":true}'
+  -d '{"title":"Need target-sensor calibration data for an edge-vision INT8 deployment","summary":"Public data does not match the target CMOS sensor and ISP distribution; need authorized anonymized calibration frames","userConfirmed":true}'
 ```
 
 ## 6. Collaborate After the Match Is Accepted

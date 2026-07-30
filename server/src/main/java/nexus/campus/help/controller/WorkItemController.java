@@ -108,11 +108,14 @@ public class WorkItemController {
         m.put("status", match.getStatus());
         m.put("role", role);
         m.put("helpRequestId", match.getHelpRequest().getId());
+        m.put("helpRequestSummary", match.getHelpRequest().getSummary());
         m.put("requesterUserId", match.getHelpRequest().getRequester().getId());
         m.put("helperUserId", match.getHelper().getId());
         m.put("message", match.getMessage());
         m.put("meetingHint", match.getMeetingHint());
         m.put("meetingSafetyState", match.getMeetingSafetyState());
+        m.put("collaborationState", match.getCollabState());
+        m.put("batonRole", match.getBatonRole());
         m.put("createdAt", match.getCreatedAt());
         m.put("acceptedAt", match.getAcceptedAt());
         m.put("completedAt", match.getCompletedAt());

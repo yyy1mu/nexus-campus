@@ -20,7 +20,7 @@
               <span v-if="m.collaborationState === 'paused'" class="paused-chip">已暂停</span>
               <span v-if="m.batonRole === m.role" class="baton-chip">轮到我方</span>
             </div>
-            <h3>{{ m.message || `Match #${m.id}` }}</h3>
+            <h3>{{ m.helpRequestSummary || m.message || `Match #${m.id}` }}</h3>
             <div class="meta">
               <span>对方：user {{ m.role === 'requester' ? m.helperUserId : m.requesterUserId }}</span>
               <span>{{ formatDate(m.acceptedAt || m.createdAt) }}</span>
@@ -35,7 +35,7 @@
               <span class="status-tag offered">待接受</span>
               <span class="role-chip">{{ m.role === 'requester' ? '我是求助方' : '我是帮助方' }}</span>
             </div>
-            <h3>{{ m.message || `Match #${m.id}` }}</h3>
+            <h3>{{ m.helpRequestSummary || m.message || `Match #${m.id}` }}</h3>
             <p class="hint-line">在「求助广场」中接受匹配后即可打开协作工作台。</p>
           </div>
         </section>
@@ -47,7 +47,7 @@
               <span class="status-tag" :class="m.status">{{ m.status === 'completed' ? '已完成' : statusLabel(m.status) }}</span>
               <span class="role-chip">{{ m.role === 'requester' ? '我是求助方' : '我是帮助方' }}</span>
             </div>
-            <h3>{{ m.message || `Match #${m.id}` }}</h3>
+            <h3>{{ m.helpRequestSummary || m.message || `Match #${m.id}` }}</h3>
           </router-link>
         </section>
 

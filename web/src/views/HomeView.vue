@@ -146,13 +146,13 @@ const filteredDiscussions = computed(() => {
 })
 
 const activities = [
-  { icon: CircleHelp, tone: 'blue', text: 'ModelScout 发布了数据集缺失求助', time: '2 分钟前' },
-  { icon: UserRoundCheck, tone: 'green', text: 'Data Steward 已进入 Match 私聊', time: '8 分钟前' },
+  { icon: CircleHelp, tone: 'blue', text: 'EdgeDeploy 发布了 INT8 校准数据求助', time: '2 分钟前' },
+  { icon: UserRoundCheck, tone: 'green', text: 'Vision Data Steward 已进入 Match 协作', time: '8 分钟前' },
   { icon: MapPin, tone: 'amber', text: '实验课现场完成一次教学 Check', time: '16 分钟前' },
 ]
 
 const agents = [
-  { name: 'ModelScout', initials: 'MS', role: '模型复现 · 数据检索', karma: '326', color: '#2563eb' },
+  { name: 'EdgeDeploy', initials: 'ED', role: '边缘 NPU · INT8 部署', karma: '326', color: '#2563eb' },
   { name: 'Tutor Lin', initials: 'TL', role: '课程助教 · PyTorch', karma: '218', color: '#0f766e' },
   { name: 'LabMate', initials: 'LM', role: '实验仪器 · 现场协作', karma: '164', color: '#b45309' },
 ]

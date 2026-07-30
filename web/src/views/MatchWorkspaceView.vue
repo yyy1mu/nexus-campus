@@ -19,6 +19,33 @@
               </span>
             </div>
           </div>
+          <section class="collab-journey" aria-labelledby="collab-journey-title">
+            <div class="journey-heading">
+              <div>
+                <span class="journey-kicker">Nexus 协作路径</span>
+                <h2 id="collab-journey-title">从本地阻塞到可信交付</h2>
+              </div>
+              <span class="journey-now" :class="{ complete: ws.matchStatus === 'completed' }">
+                <span class="journey-pulse" aria-hidden="true" />
+                {{ journeyStatus }}
+              </span>
+            </div>
+            <ol class="journey-steps">
+              <li
+                v-for="(stage, index) in journeyStages"
+                :key="stage.key"
+                class="journey-step"
+                :class="stage.state"
+                :aria-current="stage.state === 'active' ? 'step' : undefined"
+              >
+                <span class="journey-index">{{ index + 1 }}</span>
+                <span class="journey-copy">
+                  <strong>{{ stage.label }}</strong>
+                  <small>{{ stage.detail }}</small>
+                </span>
+              </li>
+            </ol>
+          </section>
           <div class="ws-progress">
             <div class="progress-line">
               <span>任务 {{ ws.progress.tasksDone }}/{{ ws.progress.tasksTotal }}</span>
@@ -205,6 +232,14 @@ import {
   updateWorkspace,
 } from '@/api/endpoints'
 
+type JourneyState = 'done' | 'active' | 'pending'
+type JourneyStage = {
+  key: string
+  label: string
+  detail: string
+  state: JourneyState
+}
+
 const route = useRoute()
 const auth = useAuthStore()
 const matchId = String(route.params.id)
@@ -252,6 +287,90 @@ const visibleDeliverables = computed(() =>
 const hasPendingDeliverable = computed(() =>
   (ws.value?.deliverables ?? []).some((d: any) => d.status === 'submitted'))
 const timelineEvents = computed(() => [...(ws.value?.events ?? [])].reverse().slice(0, 30))
+const pendingReviewForMe = computed(() =>
+  visibleDeliverables.value.find((d: any) =>
+    d.status === 'submitted' && d.submitterRole !== ws.value?.viewerRole))
+const journeyStages = computed<JourneyStage[]>(() => {
+  const snapshot = ws.value
+  const decisions = snapshot?.decisions ?? []
+  const deliverables = visibleDeliverables.value
+  const openDecisionCount = decisions.filter((d: any) => d.status === 'open').length
+  const taskCount = snapshot?.progress?.tasksTotal ?? 0
+  const matchCompleted = snapshot?.matchStatus === 'completed'
+  const matchActive = snapshot?.matchStatus === 'accepted'
+  const hasDecisionHistory = decisions.length > 0
+  const deliveryStarted = deliverables.length > 0
+  const deliveryAccepted = matchCompleted || snapshot?.progress?.deliverableAccepted === true
+
+  const collaborationState: JourneyState = matchCompleted || hasDecisionHistory || deliveryStarted
+    ? 'done'
+    : matchActive ? 'active' : 'pending'
+  const decisionState: JourneyState = openDecisionCount > 0
+    ? 'active'
+    : matchCompleted || hasDecisionHistory || deliveryStarted ? 'done' : 'pending'
+  const deliveryState: JourneyState = deliveryAccepted
+    ? 'done'
+    : openDecisionCount === 0 && deliveryStarted ? 'active' : 'pending'
+
+  return [
+    {
+      key: 'blocker',
+      label: 'Agent 发现阻塞',
+      detail: '本地能力无法补齐关键数据',
+      state: 'done',
+    },
+    {
+      key: 'authorization',
+      label: '用户授权求助',
+      detail: '确认需求与共享边界',
+      state: 'done',
+    },
+    {
+      key: 'matching',
+      label: '能力匹配',
+      detail: '找到具备互补资源的一方',
+      state: 'done',
+    },
+    {
+      key: 'collaboration',
+      label: '双方 Agent 协作',
+      detail: matchCompleted
+        ? `${taskCount} 项任务已完成`
+        : taskCount > 0 ? `${taskCount} 项任务正在接力推进` : '正在建立协作计划',
+      state: collaborationState,
+    },
+    {
+      key: 'decision',
+      label: '人类决策',
+      detail: openDecisionCount > 0
+        ? `${openDecisionCount} 个关键选择待确认`
+        : hasDecisionHistory ? `${decisions.length} 个关键选择已有记录`
+          : deliveryStarted || matchCompleted ? '本次无需额外决策' : '关键选择交由人类确认',
+      state: decisionState,
+    },
+    {
+      key: 'delivery',
+      label: '交付验收',
+      detail: deliveryAccepted
+        ? '结果已检查并验收'
+        : deliveryStarted ? '等待检查、通过或退回' : '交付结果可检查、可退回',
+      state: deliveryState,
+    },
+  ]
+})
+const journeyStatus = computed(() => {
+  if (ws.value?.matchStatus === 'completed') return '闭环完成：交付已验收'
+  if (ws.value?.matchStatus === 'cancelled') return '本次协作已结束'
+  if (ws.value?.collaborationState === 'paused') return '流程已暂停，人类控制仍可用'
+  if (myOpenDecisions.value.length) return `轮到你：${myOpenDecisions.value[0].title}`
+  if (pendingReviewForMe.value) return `轮到你：验收「${pendingReviewForMe.value.title}」`
+  if (theirOpenDecisions.value.length) return `等待对方：${theirOpenDecisions.value[0].title}`
+  const pendingDelivery = visibleDeliverables.value.find((d: any) => d.status === 'submitted')
+  if (pendingDelivery) return `等待对方验收「${pendingDelivery.title}」`
+  if (ws.value?.progress?.deliverableAccepted) return '交付已验收，等待求助方确认完成'
+  if (ws.value?.batonRole) return `当前由${batonWithMe.value ? '我方' : '对方'} Agent 推进`
+  return '双方 Agent 正在协作'
+})
 
 onMounted(async () => {
   await auth.loadContext()
@@ -446,6 +565,26 @@ function formatTime(value: string) {
 .paused-chip { padding: 2px 9px; border-radius: 999px; background: var(--nx-danger-bg); color: var(--nx-danger); font-size: var(--nx-fs-11); font-weight: 700; }
 .baton-chip { padding: 2px 9px; border-radius: 999px; background: var(--nx-bg-inset); color: var(--nx-text-tertiary); font-size: var(--nx-fs-11); }
 .baton-chip.mine { background: var(--nx-accent); color: var(--nx-on-accent); font-weight: 700; }
+.collab-journey { padding: 15px 0 17px; border-top: 1px solid var(--nx-border-subtle); border-bottom: 1px solid var(--nx-border-subtle); }
+.journey-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--nx-space-3); margin-bottom: 15px; }
+.journey-kicker { display: block; color: var(--nx-accent); font-size: 10px; font-weight: 800; letter-spacing: 0.09em; }
+.journey-heading h2 { margin: 2px 0 0; color: var(--nx-text-primary); font-size: var(--nx-fs-15); font-weight: 800; line-height: 1.35; }
+.journey-now { max-width: 48%; padding: 5px 10px; display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--nx-accent-border); border-radius: 999px; color: var(--nx-accent-dim); background: var(--nx-accent-subtle); font-size: var(--nx-fs-11); font-weight: 700; line-height: 1.35; }
+.journey-now.complete { color: var(--nx-accent-dim); }
+.journey-pulse { width: 7px; height: 7px; flex: 0 0 auto; border-radius: 50%; background: var(--nx-accent); box-shadow: 0 0 0 3px var(--nx-accent-faint); }
+.journey-steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); list-style: none; margin: 0; padding: 0; }
+.journey-step { position: relative; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 7px; text-align: center; }
+.journey-step::before { content: ''; position: absolute; z-index: 0; top: 14px; right: calc(50% + 16px); left: calc(-50% + 16px); height: 2px; background: var(--nx-border-default); }
+.journey-step:first-child::before { display: none; }
+.journey-step.done::before, .journey-step.active::before { background: var(--nx-accent); }
+.journey-index { position: relative; z-index: 1; width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--nx-border-default); border-radius: 50%; color: var(--nx-text-tertiary); background: var(--nx-bg-raised); font-size: var(--nx-fs-11); font-weight: 800; }
+.journey-step.done .journey-index { border-color: var(--nx-accent); color: var(--nx-on-accent); background: var(--nx-accent); }
+.journey-step.active .journey-index { border: 2px solid var(--nx-accent); color: var(--nx-accent-dim); background: var(--nx-bg-raised); box-shadow: 0 0 0 4px var(--nx-accent-faint); }
+.journey-copy { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.journey-copy strong { color: var(--nx-text-tertiary); font-size: var(--nx-fs-11); font-weight: 700; line-height: 1.35; }
+.journey-copy small { color: var(--nx-text-disabled); font-size: 10px; line-height: 1.4; }
+.journey-step.done .journey-copy strong, .journey-step.active .journey-copy strong { color: var(--nx-text-primary); }
+.journey-step.active .journey-copy small { color: var(--nx-text-secondary); }
 .ws-progress { display: flex; flex-direction: column; gap: 6px; }
 .progress-line { display: flex; justify-content: space-between; color: var(--nx-text-tertiary); font-size: var(--nx-fs-12); }
 .progress-line .ok { color: var(--nx-accent); font-weight: 700; }
@@ -547,8 +686,20 @@ function formatTime(value: string) {
   .page { padding: 20px 12px 40px; }
   .ws-grid { grid-template-columns: 1fr; }
   .ws-title h1 { font-size: var(--nx-fs-18); }
+  .journey-heading { align-items: flex-start; }
+  .journey-now { max-width: 56%; border-radius: var(--nx-radius-md); }
+  .journey-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .journey-step { min-height: 62px; padding: 9px; flex-direction: row; align-items: flex-start; border: 1px solid var(--nx-border-subtle); border-radius: var(--nx-radius-md); background: var(--nx-bg-inset); text-align: left; }
+  .journey-step::before { display: none; }
+  .journey-index { width: 24px; height: 24px; flex: 0 0 auto; }
+  .journey-copy { align-items: flex-start; }
   .msg-list { max-height: 300px; }
   .decision-actions { flex-direction: column; }
   .task-form { flex-wrap: wrap; }
+}
+
+@media (max-width: 460px) {
+  .journey-heading { flex-direction: column; }
+  .journey-now { max-width: none; align-self: stretch; }
 }
 </style>

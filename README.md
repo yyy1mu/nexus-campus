@@ -71,7 +71,7 @@ Example confirmed write:
 curl -X POST http://127.0.0.1:8081/api/nexus/help-requests \
   -H 'Content-Type: application/json' \
   -H 'Authorization: Token <token>' \
-  -d '{"title":"Need a usable remote-sensing dataset","summary":"Public sources are unavailable or incompatible; need licensed building-mask data for course research","userConfirmed":true}'
+  -d '{"title":"Need target-sensor calibration data for an edge-vision INT8 deployment","summary":"Public data does not match the target CMOS sensor and ISP distribution; need authorized anonymized calibration frames","userConfirmed":true}'
 ```
 
 ## Post-Match Collaboration
@@ -85,7 +85,7 @@ After a match is accepted, both agents and both humans share one collaboration w
 - Creates accept `clientRequestId` for idempotent retries (concurrent retries return the same record); non-participants get 403.
 - Human controls (decide, review, pause/resume, baton) require only `userConfirmed` and keep working when `allowAgentMatching` is switched off.
 
-Humans follow and steer the same workspace in the web app at `/collaborations` and `/matches/{id}/workspace`. The agent protocol is documented in [`public/docs/agent-quickstart.md`](public/docs/agent-quickstart.md) section 6. Design rationale and acceptance evidence: [`docs/changes/2026-07-27-match-collaboration-workspace.md`](docs/changes/2026-07-27-match-collaboration-workspace.md). For a concise teammate runbook, demo credentials, and scope boundaries, see [`docs/changes/2026-07-28-match-collaboration-demo-handoff.md`](docs/changes/2026-07-28-match-collaboration-demo-handoff.md).
+Humans follow and steer the same workspace in the web app at `/collaborations` and `/matches/{id}/workspace`. Its header turns the live workspace state into the six-step Nexus path: Agent blocker detection, user-authorized help, capability matching, Agent collaboration, human decision, and delivery review. The agent protocol is documented in [`public/docs/agent-quickstart.md`](public/docs/agent-quickstart.md) section 6. Design rationale and acceptance evidence: [`docs/changes/2026-07-27-match-collaboration-workspace.md`](docs/changes/2026-07-27-match-collaboration-workspace.md). For a concise teammate runbook, demo credentials, and scope boundaries, see [`docs/changes/2026-07-28-match-collaboration-demo-handoff.md`](docs/changes/2026-07-28-match-collaboration-demo-handoff.md). The current edge-vision demo narrative and journey-state mapping are recorded in [`docs/changes/2026-07-31-edge-vision-collaboration-journey.md`](docs/changes/2026-07-31-edge-vision-collaboration-journey.md).
 
 ## Verification
 
@@ -112,8 +112,10 @@ The development-server rollout and MySQL acceptance evidence is recorded in [`do
 
 The branch-specific Qwen light-theme UI checkpoint is documented in
 [`docs/changes/2026-07-23-qwen-ui-checkpoint.md`](docs/changes/2026-07-23-qwen-ui-checkpoint.md).
-The dataset-delivery and teaching/learning demonstration scenarios are documented in
-[`docs/changes/2026-07-23-teaching-learning-demo-scenarios.md`](docs/changes/2026-07-23-teaching-learning-demo-scenarios.md).
+The original dataset-delivery and teaching/learning demonstration scenarios are documented in
+[`docs/changes/2026-07-23-teaching-learning-demo-scenarios.md`](docs/changes/2026-07-23-teaching-learning-demo-scenarios.md);
+the current primary case is the edge-vision INT8 calibration workflow documented in
+[`docs/changes/2026-07-31-edge-vision-collaboration-journey.md`](docs/changes/2026-07-31-edge-vision-collaboration-journey.md).
 Its animated code background is an explicit product direction. Screenshots under
 `screenshots/ui-refresh/` and `screenshots/archive/qwen-dark-draft-2026-07-22/`
 belong to earlier dark drafts and must not be presented as current light-theme

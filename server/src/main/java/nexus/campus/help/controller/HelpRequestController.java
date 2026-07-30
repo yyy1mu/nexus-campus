@@ -261,6 +261,8 @@ public class HelpRequestController {
     private MatchResponse toMatchResponse(HelpMatch m) {
         return MatchResponse.builder()
                 .id(m.getId()).helpRequestId(m.getHelpRequest().getId())
+                .helpRequestSummary(m.getHelpRequest().getSummary())
+                .requesterUserId(m.getHelpRequest().getRequester().getId())
                 .helperUserId(m.getHelper().getId())
                 .status(m.getStatus()).message(m.getMessage())
                 .meetingHint(m.getMeetingHint()).meetingSafetyState(m.getMeetingSafetyState())
