@@ -12,7 +12,8 @@ FROM nginx:1.27-alpine
 COPY deploy/nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=build --chown=nginx:nginx /workspace/web/dist /usr/share/nginx/html
 
-RUN nginx -t
+# The `backend` upstream resolves only after the Compose network is running;
+# Nginx validates the configuration when the container starts.
 
 EXPOSE 80
 
