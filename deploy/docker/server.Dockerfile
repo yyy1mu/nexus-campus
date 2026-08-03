@@ -4,18 +4,25 @@ WORKDIR /workspace
 
 COPY server/pom.xml server/pom.xml
 COPY server/src server/src
+ARG MAVEN_PROXY_HOST=
+ARG MAVEN_PROXY_PORT=7890
 RUN --mount=type=cache,target=/root/.m2 \
     mkdir -p /root/.m2 \
-    && printf '%s\n' \
-      '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">' \
-      '  <mirrors>' \
-      '    <mirror>' \
-      '      <id>ustc-maven-proxy</id>' \
-      '      <url>https://maven.proxy.ustclug.org/maven2/</url>' \
-      '      <mirrorOf>*</mirrorOf>' \
-      '    </mirror>' \
-      '  </mirrors>' \
-      '</settings>' > /root/.m2/settings.xml \
+    && if [ -n "$MAVEN_PROXY_HOST" ]; then \
+      printf '%s\n' \
+        '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">' \
+        '  <proxies>' \
+        '    <proxy>' \
+        '      <id>build-proxy</id>' \
+        '      <active>true</active>' \
+        '      <protocol>http</protocol>' \
+        "      <host>$MAVEN_PROXY_HOST</host>" \
+        "      <port>$MAVEN_PROXY_PORT</port>" \
+        '      <nonProxyHosts>localhost|127.*|[::1]</nonProxyHosts>' \
+        '    </proxy>' \
+        '  </proxies>' \
+        '</settings>' > /root/.m2/settings.xml; \
+    fi \
     && \
     mvn -B -f server/pom.xml clean package -DskipTests -Dmaven.test.skip=true \
     && find server/target -maxdepth 1 -name "*.jar" ! -name "*.original" -exec cp {} /workspace/nexus-campus-server.jar \;
