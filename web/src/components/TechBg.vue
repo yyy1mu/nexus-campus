@@ -65,7 +65,7 @@ function initLines() {
       text: buildText(cols),
       x: -Math.random() * tw,
       y: i * LINE_HEIGHT + 15,
-      speed: 0.34 + Math.random() * 0.44,
+      speed: 0.30 + Math.random() * 0.39,
       alpha: 0.08 + Math.random() * 0.22,
       tw,
     })
