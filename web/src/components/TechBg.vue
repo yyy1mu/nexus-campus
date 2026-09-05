@@ -35,6 +35,7 @@ interface FlowLine {
 let raf = 0
 let running = false
 let reduced = false
+let colorScheme: MediaQueryList | null = null
 let lines: FlowLine[] = []
 let ctx: CanvasRenderingContext2D | null = null
 let W = 0
@@ -156,12 +157,20 @@ function onVisibility() {
   else start()
 }
 
-onMounted(() => {
+function syncTheme() {
   const cs = getComputedStyle(document.documentElement)
   const charToken = cs.getPropertyValue('--nx-techbg-char').trim()
   const glowToken = cs.getPropertyValue('--nx-techbg-glow').trim()
   if (charToken) CHAR_RGB = charToken
   if (glowToken) GLOW_RGB = glowToken
+  // 减少动态效果时没有动画循环，需要立即重绘静态背景。
+  if (!running) render()
+}
+
+onMounted(() => {
+  colorScheme = window.matchMedia('(prefers-color-scheme: dark)')
+  colorScheme.addEventListener('change', syncTheme)
+  syncTheme()
   reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   resize()
   if (reduced) render()
@@ -174,6 +183,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   stop()
+  colorScheme?.removeEventListener('change', syncTheme)
   window.removeEventListener('resize', resize)
   window.removeEventListener('mousemove', onMouseMove)
   document.documentElement.removeEventListener('mouseleave', onMouseLeave)

@@ -1,11 +1,12 @@
 /*
- * Nexus 设计令牌（Design Tokens）—— 高级浅色 · 白底 · 青柠绿点缀
- * 设计语言：柔和白基底（#F7F8FA）+ 清晰灰阶层次 + 可读青柠绿（#65A30D）。
+ * Nexus 设计令牌（Design Tokens）—— 跟随系统的明暗主题
+ * 默认柔和白底与青柠绿；系统深色模式使用黑灰底与荧光黄绿。
  * 大留白、大字号、极弱边框、克制用色；强调绿用于 CTA、激活态与关键状态。
  * 所有页面的颜色、间距、圆角、阴影、动效必须引用这里定义的变量，
  * 避免在各页面重复定义互相冲突的样式。
  */
 :root {
+  color-scheme: light;
   /* ============ 色彩 · 背景（柔和白基底，灰阶建立层次） ============ */
   --nx-bg-base: #f7f8fa;
   --nx-bg-inset: #edeef1;
@@ -13,6 +14,8 @@
   --nx-bg-overlay: #ffffff;
   --nx-bg-hover: #eceef2;
   --nx-bg-active: #e2e5ea;
+  --nx-bg-header: rgba(247, 248, 250, 0.94);
+  --nx-bg-mobile-nav: rgba(255, 255, 255, 0.94);
 
   /* ============ 色彩 · 边框（极弱、克制） ============ */
   --nx-border-subtle: rgba(15, 23, 42, 0.06);
@@ -112,4 +115,52 @@
   --nx-z-mobile-nav: 40;
   --nx-z-menu: 60;
   --nx-z-modal: 100;
+}
+
+/* 媒体查询随系统偏好实时更新，也在首次渲染时直接生效。 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --nx-bg-base: #0b0e11;
+    --nx-bg-inset: #0e1116;
+    --nx-bg-raised: #12161c;
+    --nx-bg-overlay: #171c23;
+    --nx-bg-hover: #1c2129;
+    --nx-bg-active: #232933;
+    --nx-bg-header: rgba(11, 14, 17, 0.94);
+    --nx-bg-mobile-nav: rgba(18, 22, 28, 0.94);
+
+    --nx-border-subtle: #1f242c;
+    --nx-border-default: #2a303a;
+    --nx-border-strong: #3a414d;
+
+    --nx-accent: #c8f542;
+    --nx-accent-strong: #dbff66;
+    --nx-accent-dim: #a9d438;
+    --nx-accent-faint: #161d0b;
+    --nx-accent-subtle: rgba(200, 245, 66, 0.07);
+    --nx-accent-border: #41501e;
+    --nx-accent-glow: 0 6px 20px rgba(200, 245, 66, 0.12);
+    --nx-on-accent: #0b0e11;
+
+    --nx-text-primary: #f2f5f7;
+    --nx-text-secondary: #a9b1ba;
+    --nx-text-tertiary: #87929e;
+    --nx-text-disabled: #4a525c;
+
+    --nx-success: #4cc38a;
+    --nx-success-bg: #101f18;
+    --nx-warning: #d9a648;
+    --nx-warning-bg: #221c0f;
+    --nx-danger: #e05c5c;
+    --nx-danger-bg: #251113;
+    --nx-info: #a9b1ba;
+    --nx-info-bg: #171c23;
+
+    --nx-techbg-char: 174, 204, 135;
+    --nx-techbg-glow: 200, 245, 66;
+    --nx-shadow-menu: 0 12px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.24);
+    --nx-shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.55), 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
 }

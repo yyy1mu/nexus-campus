@@ -12,7 +12,6 @@
 
 html {
   background: var(--nx-bg-base);
-  color-scheme: light;
 }
 
 body {
@@ -61,7 +60,7 @@ svg {
   background: var(--nx-accent);
 }
 
-/* 深色滚动条，弱化存在感 */
+/* 滚动条随主题配色 */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;

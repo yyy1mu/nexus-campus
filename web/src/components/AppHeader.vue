@@ -359,7 +359,7 @@ function logout() {
 .account-menu a:hover, .account-menu > button:hover { color: var(--nx-text-primary); background: var(--nx-bg-hover); }
 .account-menu .menu-logout:hover { color: var(--nx-danger); background: var(--nx-danger-bg); }
 
-/* ============ 认证对话框（暗色弹窗，功能保持不变） ============ */
+/* ============ 认证对话框（跟随主题） ============ */
 .auth-backdrop { position: fixed; inset: 0; z-index: var(--nx-z-modal); padding: 20px; display: grid; place-items: center; background: rgba(4, 4, 6, 0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 .auth-dialog { width: min(420px, 100%); padding: 28px; border: 1px solid var(--nx-border-default); border-radius: var(--nx-radius-xl); background: var(--nx-bg-overlay); box-shadow: var(--nx-shadow-modal); }
 .auth-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; }
@@ -387,8 +387,8 @@ function logout() {
     position: sticky; top: 0; bottom: auto; left: 0; right: 0;
     width: auto; height: var(--nx-header-h-mobile);
     border-right: 0; border-bottom: 1px solid var(--nx-border-subtle);
-    background: rgba(11, 14, 17, 0.9);
-    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    background: var(--nx-bg-header);
+    /* 此处不能使用 backdrop-filter，否则 fixed 底部导航会相对顶栏定位。 */
   }
   .header-inner { flex-direction: row; align-items: center; gap: 10px; height: var(--nx-header-h-mobile); padding: 0 12px; }
   .brand { order: 1; padding: 0; }
@@ -402,7 +402,7 @@ function logout() {
     margin-top: 0;
     padding: 0 4px env(safe-area-inset-bottom);
     border-top: 1px solid var(--nx-border-subtle);
-    background: rgba(17, 18, 23, 0.94);
+    background: var(--nx-bg-mobile-nav);
     backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
   }
   .main-nav a { flex: 1 1 0; min-width: 0; height: auto; flex-direction: column; justify-content: center; gap: 3px; padding: 7px 0 5px; border-radius: 0; font-size: 10px; background: transparent; }
