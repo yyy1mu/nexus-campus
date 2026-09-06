@@ -6,6 +6,7 @@ import lombok.Data;
 @Data @Builder
 public class TokenResponse {
     private String token;
+    private java.time.Instant expiresAt;
     private Integer userId;
     private String username;
 }

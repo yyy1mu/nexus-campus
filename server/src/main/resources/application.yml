@@ -5,6 +5,10 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 
+nexus:
+  auth:
+    token-ttl: ${AUTH_TOKEN_TTL:7d}
+
 server:
   port: ${SERVER_PORT:8081}
 

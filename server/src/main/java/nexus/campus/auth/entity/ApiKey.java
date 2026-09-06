@@ -22,4 +22,7 @@ public class ApiKey {
 
     @Column(name = "created_at")
     private Instant createdAt;
+
+    @Column(name = "expires_at")
+    private Instant expiresAt;
 }
