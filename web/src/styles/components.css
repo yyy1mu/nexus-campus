@@ -1,5 +1,5 @@
 /*
- * Nexus 公共组件样式（Components）—— OKX 风格
+ * Nexus 公共组件样式（Components）
  * 按钮、表单控件、卡片、徽章/状态标签、加载/空数据/错误状态等。
  * 全部来自统一设计变量（tokens.css），供各页面复用，避免重复定义。
  */
@@ -25,7 +25,7 @@
     opacity var(--nx-duration-fast) var(--nx-ease-out);
 }
 
-/* 主按钮：暖橙底 + 深色字（核心操作，OKX 式高对比） */
+/* 主按钮：主题强调色（核心操作） */
 .btn-primary,
 .button.primary {
   color: var(--nx-on-accent);
@@ -85,7 +85,7 @@
   background: var(--nx-danger-bg);
 }
 
-/* 胶囊按钮（OKX 式大圆角，用于 CTA / 标签页） */
+/* 胶囊按钮（大圆角，用于 CTA / 标签页） */
 .btn-pill {
   border-radius: var(--nx-radius-full);
 }
@@ -197,7 +197,7 @@ label > span {
   cursor: pointer;
 }
 
-/* ============ 卡片 / 面板（OKX 式极简卡片） ============ */
+/* ============ 卡片 / 面板（极简卡片） ============ */
 .card {
   background: var(--nx-bg-raised);
   border: 1px solid var(--nx-border-subtle);

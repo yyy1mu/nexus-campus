@@ -12,18 +12,28 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
  * - 淡绿白字符（呼应荧光绿主题），单行透明度 0.08~0.30，整体克制不干扰阅读
  * - 各行以不同速度向左漂移形成视差；同行双绘实现无缝循环铺满
  * - 鼠标跟随淡绿辉光，鼠标水平位移加速字符流动（带缓动插值）
- * - 左右边缘渐隐淡出；prefers-reduced-motion 降级为静态一帧
+ * - 左右边缘渐隐淡出（CSS mask，由合成器处理，不占绘制帧）
+ * - prefers-reduced-motion 降级为静态一帧
  * - pointer-events: none，不拦截任何交互；fixed 定位铺满视口
+ *
+ * 性能设计：
+ * - 每行字符在初始化/换主题时预渲染到离屏 canvas，帧内只做 drawImage
+ * - 鼠标辉光用预渲染的径向渐变精灵图，避免每帧 createRadialGradient + 全屏填充
+ * - 限制 30fps（环境氛围层无需 60fps），DPR 上限 1.5
  */
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
 const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789{}[]()<>/\\=+*$#@%&:;._-'
 const LINE_HEIGHT = 20
 const FONT = '500 14px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace'
+const FRAME_MS = 1000 / 30
+const MAX_DPR = 1.5
+const GLOW_SPRITE_SIZE = 256
 let CHAR_RGB = '84, 110, 52'
 let GLOW_RGB = '101, 163, 13'
 
 interface FlowLine {
+  strip: HTMLCanvasElement
   text: string
   x: number
   y: number
@@ -35,15 +45,19 @@ interface FlowLine {
 let raf = 0
 let running = false
 let reduced = false
-let colorScheme: MediaQueryList | null = null
+let themeObserver: MutationObserver | null = null
 let lines: FlowLine[] = []
 let ctx: CanvasRenderingContext2D | null = null
+let glowSprite: HTMLCanvasElement | null = null
+let dpr = 1
 let W = 0
 let H = 0
 let speedMul = 0.85
 let targetMul = 0.85
 let mouseX = -10000
 let mouseY = -10000
+let lastFrame = 0
+let resizeTimer = 0
 
 function buildText(cols: number): string {
   let s = ''
@@ -51,6 +65,39 @@ function buildText(cols: number): string {
     s += Math.random() < 0.13 ? ' ' : CHARS[(Math.random() * CHARS.length) | 0]
   }
   return s
+}
+
+/** 将一行字符光栅化到离屏画布，后续帧内仅 drawImage。 */
+function buildStrip(text: string, tw: number): HTMLCanvasElement {
+  const strip = document.createElement('canvas')
+  strip.width = Math.ceil(tw * dpr)
+  strip.height = Math.ceil(LINE_HEIGHT * dpr)
+  const sctx = strip.getContext('2d')
+  if (sctx) {
+    sctx.scale(dpr, dpr)
+    sctx.font = FONT
+    sctx.fillStyle = 'rgb(' + CHAR_RGB + ')'
+    sctx.fillText(text, 0, 15)
+  }
+  return strip
+}
+
+/** 鼠标辉光精灵图：预渲染径向渐变，帧内缩放 drawImage 到鼠标位置。 */
+function buildGlowSprite(): HTMLCanvasElement {
+  const sprite = document.createElement('canvas')
+  sprite.width = GLOW_SPRITE_SIZE
+  sprite.height = GLOW_SPRITE_SIZE
+  const sctx = sprite.getContext('2d')
+  if (sctx) {
+    const half = GLOW_SPRITE_SIZE / 2
+    const g = sctx.createRadialGradient(half, half, 0, half, half, half)
+    g.addColorStop(0, 'rgba(' + GLOW_RGB + ', 0.09)')
+    g.addColorStop(0.5, 'rgba(' + GLOW_RGB + ', 0.035)')
+    g.addColorStop(1, 'rgba(' + GLOW_RGB + ', 0)')
+    sctx.fillStyle = g
+    sctx.fillRect(0, 0, GLOW_SPRITE_SIZE, GLOW_SPRITE_SIZE)
+  }
+  return sprite
 }
 
 function initLines() {
@@ -62,10 +109,12 @@ function initLines() {
   const count = Math.ceil(H / LINE_HEIGHT) + 1
   lines = []
   for (let i = 0; i < count; i++) {
+    const text = buildText(cols)
     lines.push({
-      text: buildText(cols),
+      strip: buildStrip(text, tw),
+      text,
       x: -Math.random() * tw,
-      y: i * LINE_HEIGHT + 15,
+      y: i * LINE_HEIGHT,
       speed: 0.30 + Math.random() * 0.39,
       alpha: 0.08 + Math.random() * 0.22,
       tw,
@@ -76,7 +125,7 @@ function initLines() {
 function resize() {
   const canvas = canvasRef.value
   if (!canvas) return
-  const dpr = Math.min(window.devicePixelRatio || 1, 2)
+  dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR)
   W = window.innerWidth
   H = window.innerHeight
   canvas.width = Math.floor(W * dpr)
@@ -86,51 +135,47 @@ function resize() {
   ctx = canvas.getContext('2d')
   if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   initLines()
+  if (!running) render()
+}
+
+function onResize() {
+  // 窗口拖动期间防抖，避免频繁重建离屏字符条。
+  window.clearTimeout(resizeTimer)
+  resizeTimer = window.setTimeout(resize, 150)
 }
 
 function render() {
   if (!ctx) return
   ctx.clearRect(0, 0, W, H)
-  ctx.font = FONT
   speedMul += (targetMul - speedMul) * 0.055
   for (const line of lines) {
     if (!reduced) {
       line.x -= line.speed * speedMul
       if (line.x <= -line.tw) line.x += line.tw
     }
-    ctx.fillStyle = 'rgba(' + CHAR_RGB + ', ' + line.alpha.toFixed(3) + ')'
-    ctx.fillText(line.text, line.x, line.y)
-    ctx.fillText(line.text, line.x + line.tw, line.y)
+    ctx.globalAlpha = line.alpha
+    ctx.drawImage(line.strip, line.x, line.y, line.tw, LINE_HEIGHT)
+    ctx.drawImage(line.strip, line.x + line.tw, line.y, line.tw, LINE_HEIGHT)
   }
-  if (mouseX > -9000) {
+  ctx.globalAlpha = 1
+  if (mouseX > -9000 && glowSprite) {
     const r = Math.max(W, H) * 0.34
-    const g = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, r)
-    g.addColorStop(0, 'rgba(' + GLOW_RGB + ', 0.09)')
-    g.addColorStop(0.5, 'rgba(' + GLOW_RGB + ', 0.035)')
-    g.addColorStop(1, 'rgba(' + GLOW_RGB + ', 0)')
-    ctx.fillStyle = g
-    ctx.fillRect(0, 0, W, H)
+    ctx.drawImage(glowSprite, mouseX - r, mouseY - r, r * 2, r * 2)
   }
-  const fade = Math.max(W * 0.1, 72)
-  const mask = ctx.createLinearGradient(0, 0, W, 0)
-  mask.addColorStop(0, 'rgba(0,0,0,0)')
-  mask.addColorStop(fade / W, 'rgba(0,0,0,1)')
-  mask.addColorStop(1 - fade / W, 'rgba(0,0,0,1)')
-  mask.addColorStop(1, 'rgba(0,0,0,0)')
-  ctx.globalCompositeOperation = 'destination-in'
-  ctx.fillStyle = mask
-  ctx.fillRect(0, 0, W, H)
-  ctx.globalCompositeOperation = 'source-over'
 }
 
-function loop() {
-  render()
+function loop(now: number) {
+  if (now - lastFrame >= FRAME_MS) {
+    lastFrame = now
+    render()
+  }
   raf = requestAnimationFrame(loop)
 }
 
 function start() {
   if (running || reduced) return
   running = true
+  lastFrame = 0
   raf = requestAnimationFrame(loop)
 }
 
@@ -163,19 +208,25 @@ function syncTheme() {
   const glowToken = cs.getPropertyValue('--nx-techbg-glow').trim()
   if (charToken) CHAR_RGB = charToken
   if (glowToken) GLOW_RGB = glowToken
+  // 主题色变化后重建离屏字符条与辉光精灵图。
+  glowSprite = buildGlowSprite()
+  for (const line of lines) {
+    line.strip = buildStrip(line.text, line.tw)
+  }
   // 减少动态效果时没有动画循环，需要立即重绘静态背景。
   if (!running) render()
 }
 
 onMounted(() => {
-  colorScheme = window.matchMedia('(prefers-color-scheme: dark)')
-  colorScheme.addEventListener('change', syncTheme)
+  themeObserver = new MutationObserver(syncTheme)
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+  glowSprite = buildGlowSprite()
   syncTheme()
   reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   resize()
   if (reduced) render()
   else start()
-  window.addEventListener('resize', resize)
+  window.addEventListener('resize', onResize)
   window.addEventListener('mousemove', onMouseMove)
   document.documentElement.addEventListener('mouseleave', onMouseLeave)
   document.addEventListener('visibilitychange', onVisibility)
@@ -183,8 +234,9 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   stop()
-  colorScheme?.removeEventListener('change', syncTheme)
-  window.removeEventListener('resize', resize)
+  window.clearTimeout(resizeTimer)
+  themeObserver?.disconnect()
+  window.removeEventListener('resize', onResize)
   window.removeEventListener('mousemove', onMouseMove)
   document.documentElement.removeEventListener('mouseleave', onMouseLeave)
   document.removeEventListener('visibilitychange', onVisibility)
@@ -198,5 +250,8 @@ onBeforeUnmount(() => {
   z-index: 0;
   pointer-events: none;
   opacity: 0.8;
+  /* 左右边缘渐隐：由合成器处理，替代原先每帧一次的全屏 destination-in 合成 */
+  mask-image: linear-gradient(to right, transparent, black max(10vw, 72px), black calc(100% - max(10vw, 72px)), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black max(10vw, 72px), black calc(100% - max(10vw, 72px)), transparent);
 }
 </style>

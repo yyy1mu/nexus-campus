@@ -12,11 +12,15 @@ export const useHelpStore = defineStore('help', () => {
   const requests = ref<any[]>([])
   const workItems = ref<any[]>([])
   const loading = ref(false)
+  const error = ref('')
+  let loadSequence = 0
 
   async function loadRequests(status?: string) {
-    loading.value = true
-    try { requests.value = await fetchHelpRequests(status) }
-    finally { loading.value = false }
+    const sequence = ++loadSequence
+    loading.value = true; error.value = ''
+    try { const result = await fetchHelpRequests(status); if (sequence === loadSequence) requests.value = result }
+    catch { if (sequence === loadSequence) error.value = '请检查网络连接，稍后重试。' }
+    finally { if (sequence === loadSequence) loading.value = false }
   }
 
   async function create(req: Record<string, unknown>) {
@@ -36,7 +40,7 @@ export const useHelpStore = defineStore('help', () => {
     workItems.value = await fetchWorkItems()
   }
 
-  return { requests, workItems, loading, loadRequests, create, update, loadWorkItems }
+  return { requests, workItems, loading, error, loadRequests, create, update, loadWorkItems }
 })
 
 export const useDispatchStore = defineStore('dispatch', () => {

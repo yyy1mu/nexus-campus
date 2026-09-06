@@ -2,29 +2,24 @@
   <div class="help-page">
     <AppHeader />
     <main class="page">
-    <header>
-      <h1>求助广场</h1>
-      <button v-if="auth.isLoggedIn" @click="showForm = !showForm" class="btn btn-primary">
-        {{ showForm ? '取消' : '发布求助' }}
-      </button>
-    </header>
+    <PageIntro title="求助广场" eyebrow="COMMUNITY / HELP" description="把需求说清楚，连接愿意伸出援手的人。"><button @click="auth.isLoggedIn ? showForm = !showForm : requestLogin()" class="btn btn-primary">{{ showForm ? '收起表单' : '发布求助' }}</button></PageIntro>
 
     <!-- Create Form -->
     <section v-if="showForm" class="card">
       <h2>发布求助</h2>
       <form @submit.prevent="submitRequest">
-        <input v-model="form.title" placeholder="标题 *" class="input" required />
-        <textarea v-model="form.summary" placeholder="简要描述 *" class="input textarea" rows="3" required />
-        <textarea v-model="form.content" placeholder="详细内容" class="input textarea" rows="4" />
+        <input v-model="form.title" aria-label="求助标题" placeholder="标题 *" class="input" required />
+        <textarea v-model="form.summary" aria-label="一句话需求" placeholder="简要描述 *" class="input textarea" rows="3" required />
+        <textarea v-model="form.content" aria-label="详细内容" placeholder="详细内容" class="input textarea" rows="4" />
         <div class="row">
-          <input v-model="form.categoryLabel" placeholder="分类标签" class="input" />
+          <input v-model="form.categoryLabel" aria-label="分类标签" placeholder="分类标签" class="input" />
           <select v-model="form.urgency" class="input">
             <option value="normal">普通</option>
             <option value="urgent">紧急</option>
             <option value="relaxed">不急</option>
           </select>
         </div>
-        <input v-model="form.locationHint" placeholder="大致地点（如：图书馆一楼）" class="input" />
+        <input v-model="form.locationHint" aria-label="大致地点" placeholder="大致地点（如：图书馆一楼）" class="input" />
         <label class="checkbox"><input type="checkbox" v-model="confirmed" /> 我确认发布此求助信息</label>
         <button type="submit" class="btn btn-primary" :disabled="!confirmed || submitting">
           {{ submitting ? '发布中...' : '发布求助' }}
@@ -42,9 +37,8 @@
     </div>
 
     <!-- List -->
-    <div v-if="help.loading" class="loading">加载中...</div>
-    <div v-else-if="!filteredRequests.length" class="empty">暂无求助</div>
-    <div v-for="req in filteredRequests" :key="req.id" class="card request-card" @click="select(req)">
+    <StatePanel v-if="help.loading" tone="loading" title="正在加载求助" /><StatePanel v-else-if="help.error" tone="error" title="暂时无法加载求助" :description="help.error"><button class="btn btn-secondary" @click="help.loadRequests(filter || undefined)">重新加载</button></StatePanel><StatePanel v-else-if="!filteredRequests.length" title="暂时没有符合条件的求助" description="试试其他状态，或发布你的第一个需求。" />
+    <div v-for="req in filteredRequests" :key="req.id" class="card request-card" tabindex="0" @keydown.enter.self="select(req)" @keydown.space.self.prevent="select(req)" @click="select(req)">
       <div class="req-header">
         <span class="status-tag" :class="req.status">{{ req.status }}</span>
         <span class="urgency" v-if="req.urgency !== 'normal'">{{ req.urgency }}</span>
@@ -171,6 +165,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import AppHeader from '@/components/AppHeader.vue'
+import PageIntro from '@/components/PageIntro.vue'
+import StatePanel from '@/components/StatePanel.vue'
+import { requestLogin } from '@/utils/authUi'
 import { useAuthStore } from '@/stores/auth'
 import { useHelpStore, useDispatchStore } from '@/stores/help'
 import {
@@ -336,7 +333,7 @@ function formatDate(d: string) {
 <style scoped>
 /* 按钮、输入框、卡片、状态标签、加载/空/错误等复用 styles/components.css 全局样式 */
 .help-page { min-height: 100vh; background: transparent; }
-.page { max-width: 900px; margin: 0 auto; padding: 28px 20px 72px; }
+.page { max-width: 1100px; margin: 0 auto; padding: 40px 36px 90px; }
 header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--nx-space-5); }
 h1 { color: var(--nx-text-primary); font-size: var(--nx-fs-28); font-weight: 800; letter-spacing: -0.02em; }
 /* 卡片间距与可点击请求卡（基础外观来自全局 .card） */
@@ -384,5 +381,5 @@ form .input { margin-bottom: 10px; }
 .memory-option span { color: var(--nx-text-secondary); font-size: var(--nx-fs-11); line-height: 1.4; }
 .memory-option strong { display: block; color: var(--nx-text-primary); font-size: var(--nx-fs-12); }
 .muted { color: var(--nx-text-tertiary); font-size: var(--nx-fs-11); }
-@media (max-width: 720px) { .help-page { padding-bottom: 68px; } .page { padding: 20px 12px 40px; } }
+@media (max-width: 720px) { .help-page { padding-bottom: 68px; } .page { padding: 28px 16px 40px; } }
 </style>

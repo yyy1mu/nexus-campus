@@ -4,8 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#f7f8fa" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0b0e11" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f3f6fa" />
+    <script>
+      // 在样式和应用加载前恢复外观，避免手动选择的主题在刷新时闪烁。
+      (() => {
+        let preference = 'system'
+        try {
+          const saved = localStorage.getItem('nexus_theme')
+          if (saved === 'light' || saved === 'dark') preference = saved
+        } catch {}
+        const theme = preference === 'system'
+          ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : preference
+        document.documentElement.dataset.themePreference = preference
+        document.documentElement.dataset.theme = theme
+        document.documentElement.style.colorScheme = theme
+        document.querySelector('meta[name="theme-color"]').content = theme === 'dark' ? '#080e18' : '#f3f6fa'
+      })()
+    </script>
     <title>Nexus Campus</title>
   </head>
   <body>

@@ -2,30 +2,16 @@
   <div class="memory-shell">
     <AppHeader />
     <main class="memory-page">
-      <header class="page-header">
-        <div>
-          <h1>长期记忆</h1>
-          <p>管理 Agent 在长期任务中可以召回的用户上下文。</p>
-        </div>
-        <button
-          class="button primary create-button"
-          type="button"
-          aria-label="新建记忆"
-          title="新建记忆"
-          @click="startCreate"
-        >
-          <Plus :size="17" /> <span>新建记忆</span>
-        </button>
-      </header>
-
-      <section class="summary-strip" aria-label="记忆统计">
+      <PageIntro title="长期记忆" eyebrow="PERSONAL / MEMORY" description="保存长期有用的背景、偏好与项目上下文。"><button class="button primary" @click="startCreate"><Plus :size="16" />新建记忆</button></PageIntro>
+      <StatePanel v-if="!auth.isLoggedIn" title="为你的下一次任务，保存上下文" description="登录后管理个人记忆，按需要确认共享范围。"><button class="btn btn-primary" @click="requestLogin">登录</button></StatePanel>
+      <section v-if="auth.isLoggedIn" class="summary-strip" aria-label="记忆统计">
         <div><strong>{{ memories.length }}</strong><span>当前结果</span></div>
         <div><strong>{{ pinnedCount }}</strong><span>已置顶</span></div>
         <div><strong>{{ shareableCount }}</strong><span>可确认共享</span></div>
         <p><ShieldCheck :size="16" /> 默认仅用户与其 Agent 可见</p>
       </section>
 
-      <div class="workspace" :class="{ 'editor-visible': editorOpen }">
+      <div v-if="auth.isLoggedIn" class="workspace" :class="{ 'editor-visible': editorOpen }">
         <section class="memory-browser">
           <div class="toolbar">
             <label class="search-field">
@@ -51,7 +37,7 @@
           </div>
 
           <div v-if="loading" class="state">正在载入记忆...</div>
-          <div v-else-if="error" class="state error">{{ error }}</div>
+          <StatePanel v-else-if="error" tone="error" title="记忆暂时无法加载" :description="error"><button class="btn btn-secondary" @click="load">重新加载</button></StatePanel>
           <div v-else-if="!memories.length" class="state empty">
             <Brain :size="30" />
             <strong>没有符合条件的记忆</strong>
@@ -64,6 +50,9 @@
               :key="memory.id"
               class="memory-row"
               :class="{ selected: editingId === memory.id }"
+              tabindex="0"
+              @keydown.enter.self="startEdit(memory)"
+              @keydown.space.self.prevent="startEdit(memory)"
               @click="startEdit(memory)"
             >
               <div class="memory-main">
@@ -197,6 +186,9 @@
 import { computed, ref, watch } from 'vue'
 import { Archive, Brain, Pin, Plus, Save, Search, ShieldCheck, Trash2, X } from '@lucide/vue'
 import AppHeader from '@/components/AppHeader.vue'
+import PageIntro from '@/components/PageIntro.vue'
+import StatePanel from '@/components/StatePanel.vue'
+import { requestLogin } from '@/utils/authUi'
 import { useAuthStore } from '@/stores/auth'
 import {
   createMemory,
@@ -258,6 +250,7 @@ watch([query, kind, status], () => {
 watch(() => auth.token, load, { immediate: true })
 
 async function load() {
+  if (!auth.isLoggedIn) { memories.value = []; editorOpen.value = false; error.value = ''; return }
   loading.value = true
   error.value = ''
   try {
@@ -275,6 +268,7 @@ async function load() {
 }
 
 function startCreate() {
+  if (!auth.isLoggedIn) { requestLogin(); return }
   editingId.value = null
   form.value = emptyForm()
   saveError.value = ''
@@ -377,7 +371,7 @@ function apiError(exception: any, fallback: string) {
 <style scoped>
 /* 按钮、输入框、select/textarea、状态等复用 styles/components.css 全局样式 */
 .memory-shell { min-height: 100vh; color: var(--nx-text-secondary); background: transparent; }
-.memory-page { width: min(1240px, calc(100% - 40px)); margin: 0 auto; padding: 28px 0 72px; }
+.memory-page { width: min(1240px, calc(100% - 72px)); margin: 0 auto; padding: 40px 0 90px; }
 .page-header { display: flex; align-items: center; justify-content: space-between; gap: var(--nx-space-5); margin-bottom: 18px; }
 .page-header h1 { color: var(--nx-text-primary); font-size: var(--nx-fs-28); font-weight: 800; letter-spacing: -0.02em; }
 .page-header p { margin-top: 5px; color: var(--nx-text-tertiary); font-size: var(--nx-fs-13); }

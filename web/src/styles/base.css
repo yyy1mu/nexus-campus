@@ -19,7 +19,7 @@ body {
   color: var(--nx-text-secondary);
   font-family: var(--nx-font-sans);
   background: var(--nx-bg-base);
-  font-size: var(--nx-fs-13);
+  font-size: var(--nx-fs-14);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -103,3 +103,7 @@ textarea {
 @media (min-width: 721px) {
   body { padding-left: var(--nx-sidebar-w); }
 }
+
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button:disabled { cursor: not-allowed; }
+@media(prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }

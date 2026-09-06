@@ -1,20 +1,14 @@
-/*
- * Nexus 设计令牌（Design Tokens）—— 跟随系统的明暗主题
- * 默认柔和白底与青柠绿；系统深色模式使用黑灰底与荧光黄绿。
- * 大留白、大字号、极弱边框、克制用色；强调绿用于 CTA、激活态与关键状态。
- * 所有页面的颜色、间距、圆角、阴影、动效必须引用这里定义的变量，
- * 避免在各页面重复定义互相冲突的样式。
- */
+/* Shared light/dark design tokens: graphite surfaces, cyan signals, violet accents. */
 :root {
   color-scheme: light;
   /* ============ 色彩 · 背景（柔和白基底，灰阶建立层次） ============ */
-  --nx-bg-base: #f7f8fa;
-  --nx-bg-inset: #edeef1;
+  --nx-bg-base: #f3f6fa;
+  --nx-bg-inset: #eaf0f5;
   --nx-bg-raised: #ffffff;
   --nx-bg-overlay: #ffffff;
-  --nx-bg-hover: #eceef2;
-  --nx-bg-active: #e2e5ea;
-  --nx-bg-header: rgba(247, 248, 250, 0.94);
+  --nx-bg-hover: #edf3f8;
+  --nx-bg-active: #dde9f1;
+  --nx-bg-header: rgba(243, 246, 250, 0.96);
   --nx-bg-mobile-nav: rgba(255, 255, 255, 0.94);
 
   /* ============ 色彩 · 边框（极弱、克制） ============ */
@@ -22,21 +16,25 @@
   --nx-border-default: rgba(15, 23, 42, 0.1);
   --nx-border-strong: rgba(15, 23, 42, 0.16);
 
-  /* ============ 色彩 · 强调色（可读青柠绿，白底清晰） ============ */
-  --nx-accent: #65a30d;
-  --nx-accent-strong: #76b917;
-  --nx-accent-dim: #4f830a;
-  --nx-accent-faint: rgba(101, 163, 13, 0.14);
-  --nx-accent-subtle: rgba(101, 163, 13, 0.07);
-  --nx-accent-border: rgba(101, 163, 13, 0.35);
-  --nx-accent-glow: 0 6px 20px rgba(101, 163, 13, 0.18);
-  --nx-on-accent: #101503;
+  /* ============ 色彩 · 强调色（青色强调，白底清晰） ============ */
+  --nx-accent: #087d8a;
+  --nx-accent-strong: #096b76;
+  --nx-accent-dim: #075965;
+  --nx-accent-faint: rgba(8, 125, 138, 0.14);
+  --nx-accent-subtle: rgba(8, 125, 138, 0.07);
+  --nx-accent-border: rgba(8, 125, 138, 0.35);
+  --nx-accent-glow: 0 6px 20px rgba(8, 125, 138, 0.18);
+  --nx-on-accent: #ffffff;
 
   /* ============ 色彩 · 文本（深字白底，高对比分层） ============ */
-  --nx-text-primary: #17181c;
-  --nx-text-secondary: #5b6472;
-  --nx-text-tertiary: #8b93a1;
-  --nx-text-disabled: #b6bdc7;
+  --nx-text-primary: #142235;
+  --nx-text-secondary: #465971;
+  --nx-text-tertiary: #62758c;
+  --nx-text-disabled: #a0afbf;
+  --nx-secondary: #7865c8;
+  --nx-secondary-bg: rgba(120,101,200,.09);
+  --nx-hero-bg: linear-gradient(115deg, #e8f4f8, #f3f2fc);
+  --nx-grid: rgba(8,125,138,.05);
 
   /* ============ 色彩 · 语义状态（浅底可读深度） ============ */
   --nx-success: #15803d;
@@ -51,7 +49,7 @@
   /* ============ 背景动效（流动字符）专用色 ============ */
   /* 字符为深橄榄绿（白底可见），辉光为强调绿；均为 RGB 三元组。 */
   --nx-techbg-char: 84, 110, 52;
-  --nx-techbg-glow: 101, 163, 13;
+  --nx-techbg-glow: 8, 125, 138;
 
   /* ============ 间距（8px 网格） ============ */
   --nx-space-1: 4px;
@@ -76,7 +74,7 @@
   --nx-header-h-mobile: 56px;
   --nx-tabbar-h: 60px;
   --nx-sidebar-w: 236px;
-  --nx-control-h: 40px;
+  --nx-control-h: 44px;
   --nx-control-h-lg: 48px;
   --nx-container-w: 1280px;
   --nx-container-narrow: 880px;
@@ -85,6 +83,7 @@
   --nx-fs-11: 11px;
   --nx-fs-12: 12px;
   --nx-fs-13: 13px;
+  --nx-fs-15: 15px;
   --nx-fs-14: 14px;
   --nx-fs-16: 16px;
   --nx-fs-18: 18px;
@@ -117,50 +116,52 @@
   --nx-z-modal: 100;
 }
 
-/* 媒体查询随系统偏好实时更新，也在首次渲染时直接生效。 */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
+/* data-theme 由主题设置解析，手动选择优先于系统偏好。 */
+:root[data-theme='dark'] {
+  color-scheme: dark;
 
-    --nx-bg-base: #0b0e11;
-    --nx-bg-inset: #0e1116;
-    --nx-bg-raised: #12161c;
-    --nx-bg-overlay: #171c23;
-    --nx-bg-hover: #1c2129;
-    --nx-bg-active: #232933;
-    --nx-bg-header: rgba(11, 14, 17, 0.94);
-    --nx-bg-mobile-nav: rgba(18, 22, 28, 0.94);
+  --nx-bg-base: #080e18;
+  --nx-bg-inset: #0b1320;
+  --nx-bg-raised: #101a29;
+  --nx-bg-overlay: #152235;
+  --nx-bg-hover: #18283b;
+  --nx-bg-active: #1c3046;
+  --nx-bg-header: rgba(8, 14, 24, 0.96);
+  --nx-bg-mobile-nav: rgba(16, 26, 41, 0.97);
 
-    --nx-border-subtle: #1f242c;
-    --nx-border-default: #2a303a;
-    --nx-border-strong: #3a414d;
+  --nx-border-subtle: #1c2b3d;
+  --nx-border-default: #273a50;
+  --nx-border-strong: #3b5670;
 
-    --nx-accent: #c8f542;
-    --nx-accent-strong: #dbff66;
-    --nx-accent-dim: #a9d438;
-    --nx-accent-faint: #161d0b;
-    --nx-accent-subtle: rgba(200, 245, 66, 0.07);
-    --nx-accent-border: #41501e;
-    --nx-accent-glow: 0 6px 20px rgba(200, 245, 66, 0.12);
-    --nx-on-accent: #0b0e11;
+  --nx-accent: #66e3f0;
+  --nx-accent-strong: #9aedf5;
+  --nx-accent-dim: #45c5d4;
+  --nx-accent-faint: #102b38;
+  --nx-accent-subtle: rgba(102, 227, 240, 0.07);
+  --nx-accent-border: #245d70;
+  --nx-accent-glow: 0 6px 20px rgba(102, 227, 240, 0.12);
+  --nx-on-accent: #06242f;
 
-    --nx-text-primary: #f2f5f7;
-    --nx-text-secondary: #a9b1ba;
-    --nx-text-tertiary: #87929e;
-    --nx-text-disabled: #4a525c;
+  --nx-text-primary: #edf5ff;
+  --nx-text-secondary: #b0c1d4;
+  --nx-text-tertiary: #879fb9;
+  --nx-text-disabled: #52657c;
+  --nx-secondary: #b2a0ff;
+  --nx-secondary-bg: rgba(178,160,255,.10);
+  --nx-hero-bg: radial-gradient(ellipse at 85% 50%, #173548 0%, #101c30 42%, #0e1726 78%);
+  --nx-grid: rgba(102,227,240,.045);
 
-    --nx-success: #4cc38a;
-    --nx-success-bg: #101f18;
-    --nx-warning: #d9a648;
-    --nx-warning-bg: #221c0f;
-    --nx-danger: #e05c5c;
-    --nx-danger-bg: #251113;
-    --nx-info: #a9b1ba;
-    --nx-info-bg: #171c23;
+  --nx-success: #4cc38a;
+  --nx-success-bg: #101f18;
+  --nx-warning: #d9a648;
+  --nx-warning-bg: #221c0f;
+  --nx-danger: #e05c5c;
+  --nx-danger-bg: #251113;
+  --nx-info: #b0c1d4;
+  --nx-info-bg: #152235;
 
-    --nx-techbg-char: 174, 204, 135;
-    --nx-techbg-glow: 200, 245, 66;
-    --nx-shadow-menu: 0 12px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.24);
-    --nx-shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.55), 0 4px 16px rgba(0, 0, 0, 0.3);
-  }
+  --nx-techbg-char: 174, 204, 135;
+  --nx-techbg-glow: 102, 227, 240;
+  --nx-shadow-menu: 0 12px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.24);
+  --nx-shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.55), 0 4px 16px rgba(0, 0, 0, 0.3);
 }

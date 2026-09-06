@@ -2,31 +2,10 @@
   <div class="profile-page">
     <AppHeader />
     <main class="page">
-    <header>
-      <h1>Agent 配置</h1>
-      <RouterLink to="/" class="btn btn-secondary">返回</RouterLink>
-    </header>
-
-    <!-- Profile -->
-    <section class="card">
-      <h2>个人信息</h2>
-      <form @submit.prevent="saveProfile">
-        <label class="field">
-          <span>Agent 名称</span>
-          <input v-model="profile.agentName" class="input" maxlength="120" />
-        </label>
-        <label class="field">
-          <span>Soul.md 提示词</span>
-          <textarea v-model="profile.soulMd" class="input textarea" rows="6" maxlength="12000"
-            placeholder="为本地 Agent 提供性格和偏好描述..." />
-        </label>
-        <button type="submit" class="btn btn-primary" :disabled="saving">
-          {{ saving ? '保存中...' : '保存' }}
-        </button>
-        <p v-if="profileError" class="error">{{ profileError }}</p>
-      </form>
-    </section>
-
+    <PageIntro title="协作设置" eyebrow="PERSONAL / PREFERENCES" description="管理协作授权与能力标签，让每次连接都符合你的意愿。" />
+    <StatePanel v-if="!auth.isLoggedIn" title="登录后管理协作偏好" description="授权开关和能力标签仅对你本人开放。"><button class="btn btn-primary" @click="requestLogin">登录</button></StatePanel>
+    <template v-else>
+    <p v-if="error" class="error" role="alert">{{ error }}</p>
     <!-- Permissions -->
     <section class="card">
       <h2>权限开关</h2>
@@ -54,51 +33,26 @@
       </div>
     </section>
 
-    <!-- LLM Settings -->
-    <section class="card">
-      <h2>LLM 设置（可选）</h2>
-      <p class="hint">配置本地 Agent 使用的 LLM 提供商。</p>
-      <label class="field">
-        <span>提供商</span>
-        <select v-model="llm.provider" class="input">
-          <option value="builtin">内置</option>
-          <option value="openai-compatible">OpenAI 兼容</option>
-          <option value="openai-responses-compatible">OpenAI Responses 兼容</option>
-        </select>
-      </label>
-      <template v-if="llm.provider !== 'builtin'">
-        <label class="field">
-          <span>Base URL</span>
-          <input v-model="llm.baseUrl" class="input" placeholder="https://api.openai.com/v1" />
-        </label>
-        <label class="field">
-          <span>Chat Model</span>
-          <input v-model="llm.chatModel" class="input" placeholder="gpt-4o-mini" />
-        </label>
-        <label class="field">
-          <span>API Key</span>
-          <input v-model="llm.apiKey" type="password" class="input" placeholder="sk-..." />
-        </label>
-      </template>
-      <button @click="saveLlm" class="btn btn-primary">保存 LLM 设置</button>
-    </section>
+    </template>
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
-import { fetchAgentProfile, updateAgentProfile, fetchLlmSettings, updateLlmSettings,
+import PageIntro from '@/components/PageIntro.vue'
+import StatePanel from '@/components/StatePanel.vue'
+import { requestLogin } from '@/utils/authUi'
+import { useAuthStore } from '@/stores/auth'
+import { fetchAgentProfile, updateAgentProfile,
          fetchMyCapabilities, updateMyCapabilities } from '@/api/endpoints'
 
-const profile = ref<any>({ agentName: '', soulMd: '' })
+const auth = useAuthStore()
 const caps = ref<any[]>([])
 const newLabel = ref('')
-const llm = ref<any>({ provider: 'builtin', baseUrl: '', chatModel: '', apiKey: '' })
-const saving = ref(false)
-const profileError = ref('')
+const error = ref('')
 
 const permissions = ref([
   { key: 'allowAgentPosting', label: '允许 Agent 发帖', desc: 'Agent 可以代表你在论坛发帖', value: false },
@@ -107,34 +61,20 @@ const permissions = ref([
   { key: 'allowLocationMatching', label: '允许位置匹配', desc: '允许基于位置的数据匹配（可选）', value: false },
 ])
 
-onMounted(async () => {
+watch(() => auth.token, async () => {
+  if (!auth.isLoggedIn) { caps.value = []; return }
   try {
     const p = await fetchAgentProfile()
-    profile.value = p
     permissions.value.forEach(perm => { perm.value = p.permissions?.[perm.key] ?? false })
   } catch {}
   try { caps.value = await fetchMyCapabilities() } catch {}
-  try { llm.value = await fetchLlmSettings() } catch {}
-})
-
-async function saveProfile() {
-  saving.value = true
-  profileError.value = ''
-  try {
-    await updateAgentProfile({
-      agentName: profile.value.agentName,
-      soulMd: profile.value.soulMd,
-      userConfirmed: true,
-    })
-  } catch (e: any) {
-    profileError.value = e.response?.data?.errors?.[0]?.detail || '保存失败'
-  } finally { saving.value = false }
-}
+}, { immediate: true })
 
 async function savePermissions() {
   const p: Record<string, boolean> = {}
   permissions.value.forEach(perm => { p[perm.key] = perm.value })
-  await updateAgentProfile({ permissions: p, userConfirmed: true })
+  try { await updateAgentProfile({ permissions: p, userConfirmed: true }); error.value = '' }
+  catch { error.value = '权限保存失败，请登录后重试。' }
 }
 
 async function addCap() {
@@ -146,19 +86,17 @@ async function addCap() {
   } else {
     caps.value.push({ label, name: label, summary: '', isActive: true })
   }
-  await updateMyCapabilities(caps.value)
+  try { await updateMyCapabilities(caps.value); error.value = '' }
+  catch { error.value = '标签保存失败，请重试。'; return }
   newLabel.value = ''
 }
 
-async function saveLlm() {
-  await updateLlmSettings({ ...llm.value, userConfirmed: true })
-}
 </script>
 
 <style scoped>
 /* 按钮、输入框、卡片、字段、错误/提示等复用 styles/components.css 全局样式 */
 .profile-page { min-height: 100vh; background: transparent; }
-.page { max-width: 760px; margin: 0 auto; padding: 28px 20px 72px; }
+.page { max-width: 900px; margin: 0 auto; padding: 40px 36px 90px; }
 header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--nx-space-5); }
 h1 { color: var(--nx-text-primary); font-size: var(--nx-fs-28); font-weight: 800; letter-spacing: -0.02em; }
 .card { margin-bottom: var(--nx-space-4); }
@@ -175,5 +113,5 @@ h2 { color: var(--nx-text-primary); font-size: var(--nx-fs-16); font-weight: 700
 .cap-tag { padding: 5px 14px; background: var(--nx-accent-faint); color: var(--nx-accent); border: 1px solid var(--nx-accent-border); border-radius: var(--nx-radius-full); font-size: var(--nx-fs-12); font-weight: 700; }
 .add-cap { display: flex; gap: var(--nx-space-2); }
 .add-cap .input { flex: 1; margin-bottom: 0; }
-@media (max-width: 720px) { .profile-page { padding-bottom: 68px; } .page { padding: 20px 12px 40px; } }
+@media (max-width: 720px) { .profile-page { padding-bottom: 68px; } .page { padding: 28px 16px 40px; } }
 </style>

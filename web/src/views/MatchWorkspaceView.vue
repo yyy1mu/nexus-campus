@@ -2,8 +2,8 @@
   <div class="workspace-page">
     <AppHeader />
     <main class="page">
-      <div v-if="loading" class="loading">加载协作工作台...</div>
-      <div v-else-if="loadError" class="state error">{{ loadError }}</div>
+      <StatePanel v-if="loading" tone="loading" title="正在加载协作工作台" />
+      <StatePanel v-else-if="loadError" tone="error" title="暂时无法加载工作台" :description="loadError"><button class="btn btn-secondary" @click="load">重试</button></StatePanel>
       <template v-else-if="ws">
         <!-- 头部：进度与控制 -->
         <header class="ws-header card">
@@ -217,6 +217,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import StatePanel from '@/components/StatePanel.vue'
 import AppHeader from '@/components/AppHeader.vue'
 import { useAuthStore } from '@/stores/auth'
 import {
@@ -553,7 +554,7 @@ function formatTime(value: string) {
 
 <style scoped>
 .workspace-page { min-height: 100vh; background: transparent; }
-.page { max-width: 1080px; margin: 0 auto; padding: 28px 20px 72px; }
+.page { max-width: 1080px; margin: 0 auto; padding: 40px 36px 90px; }
 
 /* ── 头部 ── */
 .ws-header { display: flex; flex-direction: column; gap: var(--nx-space-3); }
@@ -683,7 +684,7 @@ function formatTime(value: string) {
 /* ── 移动端 ── */
 @media (max-width: 720px) {
   .workspace-page { padding-bottom: 68px; }
-  .page { padding: 20px 12px 40px; }
+  .page { padding: 28px 16px 90px; }
   .ws-grid { grid-template-columns: 1fr; }
   .ws-title h1 { font-size: var(--nx-fs-18); }
   .journey-heading { align-items: flex-start; }

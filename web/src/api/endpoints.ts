@@ -1,13 +1,7 @@
-import api from './index'
-import axios from 'axios'
-
-const authAxios = axios.create({
-  baseURL: '/api',
-  headers: { 'Content-Type': 'application/json' },
-})
+import api, { authApi } from './index'
 
 async function authPost(url: string, body: Record<string, unknown>) {
-  const { data } = await authAxios.post(url, body)
+  const { data } = await authApi.post(url, body)
   return data.data
 }
 
@@ -246,11 +240,21 @@ export async function fetchWorkItems() {
 
 // ── Forum ──
 
+export async function fetchForumTags() {
+  const { data } = await api.get('/forum/tags')
+  return data.data ?? []
+}
+
 export async function fetchForumDiscussions(q?: string, limit = 20, offset = 0) {
   const params: Record<string, unknown> = { limit: String(limit), offset: String(offset) }
   if (q) params.q = q
   const { data } = await api.get('/forum/discussions', { params })
   return data.data ?? []
+}
+
+export async function fetchForumDiscussion(id: string | number) {
+  const { data } = await api.get(`/forum/discussions/${id}`)
+  return data.data
 }
 
 export async function createForumDiscussion(attrs: Record<string, unknown>) {
