@@ -11,13 +11,14 @@
 --     < scripts/seed-demo.sql
 --
 -- 幂等：可重复执行。开头先按固定 ID 段 / 演示用户名删除旧演示数据再插入。
---   演示用户固定 ID 9001-9005（username 后缀 _demo，统一密码 demo-password-1，
+--   演示用户固定 ID 9000-9005（9000 为资源属主 nexus_resources_demo；
+--   9001-9005 为 *_demo 演示账号，统一密码 demo-password-1，
 --   BCrypt 哈希，与 users 表现有行的 $2a$ 格式一致）。
 --   其他固定 ID 段：capabilities 9001-9015、discussions 9101-9108、
 --   posts 9201-9224、help_requests 9301-9305、matches 9401-9402、
 --   match_messages 9501-9502、match_tasks 9601-9603、match_decisions 9701、
---   match_events 9901-9908、agent_memories 9801-9807。
---   注意：不会触碰已有用户 nexus_resources_demo（id 8）等非本段数据。
+--   match_events 9901-9908、agent_memories 9801-9807、catalog_resources 9351-9362。
+--   会接管此前 API 脚本灌入的 nexus_resources_demo 及其资源（按用户名清理）。
 -- =====================================================================
 
 SET NAMES utf8mb4;
@@ -48,8 +49,12 @@ DELETE FROM discussions  WHERE id BETWEEN 9101 AND 9108
 DELETE FROM nexus_agent_memories     WHERE user_id IN (9001, 9002, 9003, 9004, 9005);
 DELETE FROM nexus_user_capabilities  WHERE user_id IN (9001, 9002, 9003, 9004, 9005);
 DELETE FROM nexus_agent_profiles     WHERE user_id IN (9001, 9002, 9003, 9004, 9005);
-DELETE FROM users WHERE id BETWEEN 9001 AND 9005
-    OR username IN ('linzhou_demo', 'shenyu_vision_demo', 'chenyu_algo_demo',
+DELETE FROM nexus_catalog_favorites  WHERE resource_id BETWEEN 9351 AND 9362
+    OR user_id IN (SELECT id FROM users WHERE username = 'nexus_resources_demo');
+DELETE FROM nexus_catalog_resources  WHERE id BETWEEN 9351 AND 9362
+    OR owner_id IN (SELECT id FROM users WHERE username = 'nexus_resources_demo');
+DELETE FROM users WHERE id BETWEEN 9000 AND 9005
+    OR username IN ('nexus_resources_demo', 'linzhou_demo', 'shenyu_vision_demo', 'chenyu_algo_demo',
                     'qianyun_sys_demo', 'moli_design_demo');
 
 -- ---------------------------------------------------------------------
@@ -71,6 +76,7 @@ INSERT INTO tags (id, name, slug, color, description, discussion_count, is_hidde
 -- ---------------------------------------------------------------------
 
 INSERT INTO users (id, username, email, password, is_email_confirmed, joined_at) VALUES
+(9000, 'nexus_resources_demo', 'nexus-resources-demo@demo.test', '$2a$10$q32sOx.bQEukMjE6ceKf0.EkBnfYqQzSIB2xdHqo6CCMUD.LiugU.', 1, NOW() - INTERVAL 7 DAY),
 (9001, 'linzhou_demo',       'linzhou_demo@demo.test',       '$2a$10$q32sOx.bQEukMjE6ceKf0.EkBnfYqQzSIB2xdHqo6CCMUD.LiugU.', 1, NOW() - INTERVAL 7 DAY),
 (9002, 'shenyu_vision_demo', 'shenyu_vision_demo@demo.test', '$2a$10$q32sOx.bQEukMjE6ceKf0.EkBnfYqQzSIB2xdHqo6CCMUD.LiugU.', 1, NOW() - INTERVAL 7 DAY),
 (9003, 'chenyu_algo_demo',   'chenyu_algo_demo@demo.test',   '$2a$10$q32sOx.bQEukMjE6ceKf0.EkBnfYqQzSIB2xdHqo6CCMUD.LiugU.', 1, NOW() - INTERVAL 7 DAY),
@@ -333,7 +339,63 @@ INSERT INTO nexus_agent_memories
  NOW() - INTERVAL 3 DAY, NOW() - INTERVAL 3 DAY);
 
 -- ---------------------------------------------------------------------
--- 9. 验证输出
+-- 9. Skill / MCP 资源库（owner 9000 nexus_resources_demo；文案同 fixtures/resource-demo.json）
+--    description 带【MOCK 演示数据】前缀，前端会显示 DEMO 角标。
+-- ---------------------------------------------------------------------
+
+INSERT INTO nexus_catalog_resources
+(id, kind, name, category, summary, description, source_url, install_command, endpoint, transport, auth_type, owner_id, created_at, updated_at) VALUES
+(9351, 'skill', '代码审查助手 · 演示', '开发工具',
+ '检查变更中的边界条件、异常处理与可维护性，输出按优先级排列的审查建议。',
+ '【MOCK 演示数据】仅用于展示与交互验证，项目地址、服务和命令均为占位示例，不可直接安装或连接。\n\n适用场景：提交前自查、Pull Request 审阅。\n使用步骤：提供变更说明与 diff，梳理功能影响，再按正确性、权限边界和测试覆盖输出建议。',
+ 'https://example.invalid/nexus-demo/skill/code-review', '# 演示安装命令，请替换为真实仓库\n# npx skills add owner/repo --skill code-review', '', '', '', 9000, NOW() - INTERVAL 6 DAY, NOW() - INTERVAL 6 DAY),
+(9352, 'skill', 'Vue 组件设计 · 演示', '开发工具',
+ '从界面需求拆分组件，整理 Props、事件与状态，让页面结构更清晰。',
+ '【MOCK 演示数据】仅用于展示与交互验证，项目地址、服务和命令均为占位示例，不可直接安装或连接。\n\n适用场景：Vue 页面开发和组件拆分。\n交付内容：组件职责表、数据流说明、交互状态清单与可访问性检查项。',
+ 'https://example.invalid/nexus-demo/skill/vue-components', '# 演示安装命令，请替换为真实仓库\n# npx skills add owner/repo --skill vue-components', '', '', '', 9000, NOW() - INTERVAL 6 DAY, NOW() - INTERVAL 6 DAY),
+(9353, 'skill', '界面体验走查 · 演示', '设计体验',
+ '覆盖明暗主题、移动端布局、表单反馈与键盘操作，整理可执行的体验改进清单。',
+ '【MOCK 演示数据】仅用于展示与交互验证，项目地址、服务和命令均为占位示例，不可直接安装或连接。\n\n适用场景：页面上线前验收。\n检查内容：文字层级、颜色对比、空状态、加载与错误提示、320px 小屏幕和键盘焦点。',
+ 'https://example.invalid/nexus-demo/skill/design-review', '# 演示工具包：从项目文档获取 SKILL.md 后放入客户端技能目录。', '', '', '', 9000, NOW() - INTERVAL 5 DAY, NOW() - INTERVAL 5 DAY),
+(9354, 'skill', '数据清洗工作流 · 演示', '数据处理',
+ '识别重复记录、缺失字段与格式差异，生成清洗方案和数据质量报告。',
+ '【MOCK 演示数据】仅用于展示与交互验证，项目地址、服务和命令均为占位示例，不可直接安装或连接。\n\n适用场景：CSV 整理与实验数据预处理。\n使用步骤：先分析字段与缺失分布，再确认清洗规则，最后对比处理前后的记录数。',
+ 'https://example.invalid/nexus-demo/skill/dataset-cleaning', '# 演示安装命令，请替换为真实仓库\n# npx skills add owner/repo --skill dataset-cleaning', '', '', '', 9000, NOW() - INTERVAL 5 DAY, NOW() - INTERVAL 5 DAY),
+(9355, 'skill', '论文阅读笔记 · 演示', '学习研究',
+ '按研究问题、方法、实验结果与局限整理文献，帮助建立可追溯的阅读笔记。',
+ '【MOCK 演示数据】仅用于展示与交互验证，项目地址、服务和命令均为占位示例，不可直接安装或连接。\n\n适用场景：文献阅读和组会准备。\n交付内容：论文摘要、方法图解要点、实验对照、疑问列表与原文页码。',
+ 'https://example.invalid/nexus-demo/skill/paper-reading', '# 演示工具包：从项目文档获取论文阅读模板和 SKILL.md。', '', '', '', 9000, NOW() - INTERVAL 4 DAY, NOW() - INTERVAL 4 DAY),
+(9356, 'skill', '会议行动清单 · 演示', '效率工具',
+ '从会议记录中提取决定、负责人和截止时间，把讨论整理成可以跟进的任务。',
+ '【MOCK 演示数据】仅用于展示与交互验证，项目地址、服务和命令均为占位示例，不可直接安装或连接。\n\n适用场景：项目周会、组会和课程协作。\n使用步骤：提供会议记录，区分明确决定与待确认事项，核对负责人后输出行动清单。',
+ 'https://example.invalid/nexus-demo/skill/meeting-actions', '# 演示安装命令，请替换为真实仓库\n# npx skills add owner/repo --skill meeting-actions', '', '', '', 9000, NOW() - INTERVAL 4 DAY, NOW() - INTERVAL 4 DAY),
+(9357, 'mcp', '校园文献索引 · 演示', '学习研究',
+ '检索文献标题、作者与摘要，为阅读和引用整理提供结构化结果。',
+ '【MOCK 演示数据】仅用于展示与交互验证，项目地址、服务和命令均为占位示例，不可直接安装或连接。\n\n示例工具：search_papers、get_paper_metadata。\n鉴权示例：从服务管理者处获取个人 Token，在客户端首次连接时填写。',
+ 'https://example.invalid/nexus-demo/mcp/campus-library', '', 'https://example.invalid/nexus-demo/campus-library/mcp', 'streamable-http', 'bearer', 9000, NOW() - INTERVAL 3 DAY, NOW() - INTERVAL 3 DAY),
+(9358, 'mcp', '项目仓库工具 · 演示', '开发工具',
+ '展示仓库、Issue 与代码变更的查询场景，方便组织开发协作上下文。',
+ '【MOCK 演示数据】仅用于展示与交互验证，项目地址、服务和命令均为占位示例，不可直接安装或连接。\n\n示例工具：list_repositories、search_issues、get_change_summary。\n鉴权示例：使用只读范围的个人 Token。实际权限由目标服务管理。',
+ 'https://example.invalid/nexus-demo/mcp/project-repository', '', 'https://example.invalid/nexus-demo/project-repository/mcp', 'streamable-http', 'bearer', 9000, NOW() - INTERVAL 3 DAY, NOW() - INTERVAL 3 DAY),
+(9359, 'mcp', '实验数据目录 · 演示', '数据处理',
+ '按实验项目和数据类型检索数据集元信息，查看字段、版本与使用说明。',
+ '【MOCK 演示数据】仅用于展示与交互验证，项目地址、服务和命令均为占位示例，不可直接安装或连接。\n\n示例工具：search_datasets、get_dataset_schema。\n这里演示仅返回数据集目录和元数据的公开只读接口。',
+ 'https://example.invalid/nexus-demo/mcp/dataset-catalog', '', 'https://example.invalid/nexus-demo/dataset-catalog/mcp', 'streamable-http', 'none', 9000, NOW() - INTERVAL 2 DAY, NOW() - INTERVAL 2 DAY),
+(9360, 'mcp', '设计素材检索 · 演示', '设计体验',
+ '统一查询图标、配色与组件规范，给界面设计提供一致的资源入口。',
+ '【MOCK 演示数据】仅用于展示与交互验证，项目地址、服务和命令均为占位示例，不可直接安装或连接。\n\n示例工具：find_icons、get_color_tokens、get_component_spec。\n展示需要 Token 的 SSE 连接方式，便于检查旧版服务接入配置。',
+ 'https://example.invalid/nexus-demo/mcp/design-assets', '', 'https://example.invalid/nexus-demo/design-assets/sse', 'sse', 'bearer', 9000, NOW() - INTERVAL 2 DAY, NOW() - INTERVAL 2 DAY),
+(9361, 'mcp', '本地笔记检索 · 演示', '效率工具',
+ '演示通过本地 stdio 服务检索 Markdown 笔记，适合个人知识库场景。',
+ '【MOCK 演示数据】仅用于展示与交互验证，项目地址、服务和命令均为占位示例，不可直接安装或连接。\n\n示例工具：search_notes、read_note。\n该条目演示本地 stdio 传输；如实际工具需要 API Key，请通过客户端环境变量配置。',
+ 'https://example.invalid/nexus-demo/mcp/local-notes', '# 演示启动方式，请替换为实际可用脚本\n# python /path/to/notes_mcp_server.py', '', 'stdio', 'none', 9000, NOW() - INTERVAL 1 DAY, NOW() - INTERVAL 1 DAY),
+(9362, 'mcp', '校园活动信息 · 演示', '其他',
+ '按时间和主题查询活动信息，展示无需 Token 的公开 MCP 服务接入方式。',
+ '【MOCK 演示数据】仅用于展示与交互验证，项目地址、服务和命令均为占位示例，不可直接安装或连接。\n\n示例工具：list_events、get_event_detail。\n展示公开 SSE 接口的配置形式。实际服务应单独确认数据来源与更新频率。',
+ 'https://example.invalid/nexus-demo/mcp/campus-events', '', 'https://example.invalid/nexus-demo/campus-events/sse', 'sse', 'none', 9000, NOW() - INTERVAL 1 DAY, NOW() - INTERVAL 1 DAY);
+
+-- ---------------------------------------------------------------------
+-- 10. 验证输出
 -- ---------------------------------------------------------------------
 
 SELECT 'discussions'  AS item, COUNT(*) AS demo_rows FROM discussions  WHERE id BETWEEN 9101 AND 9108
@@ -345,5 +407,6 @@ UNION ALL SELECT 'match_messages',  COUNT(*) FROM nexus_help_match_messages WHER
 UNION ALL SELECT 'match_decisions', COUNT(*) FROM nexus_match_decisions WHERE id = 9701
 UNION ALL SELECT 'match_events',    COUNT(*) FROM nexus_match_events  WHERE id BETWEEN 9901 AND 9908
 UNION ALL SELECT 'memories',        COUNT(*) FROM nexus_agent_memories WHERE id BETWEEN 9801 AND 9807
-UNION ALL SELECT 'users',           COUNT(*) FROM users               WHERE id BETWEEN 9001 AND 9005
-UNION ALL SELECT 'capabilities',    COUNT(*) FROM nexus_user_capabilities WHERE id BETWEEN 9001 AND 9015;
+UNION ALL SELECT 'users',           COUNT(*) FROM users               WHERE id BETWEEN 9000 AND 9005
+UNION ALL SELECT 'capabilities',    COUNT(*) FROM nexus_user_capabilities WHERE id BETWEEN 9001 AND 9015
+UNION ALL SELECT 'resources',       COUNT(*) FROM nexus_catalog_resources WHERE id BETWEEN 9351 AND 9362;

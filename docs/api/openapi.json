@@ -2326,6 +2326,26 @@
                 }
             }
         },
+        "/api/nexus/forum/tags": {
+            "get": {
+                "tags": [
+                    "forum-controller"
+                ],
+                "operationId": "tags",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseListMapStringObject"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/nexus/forum/discussions/{id}": {
             "get": {
                 "tags": [
