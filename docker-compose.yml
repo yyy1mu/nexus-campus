@@ -7,22 +7,29 @@ x-logging: &default-logging
     max-file: "3"
 
 services:
-  nginx:
+  caddy:
     image: nexus-campus-web:${IMAGE_TAG:-local}
     build:
       context: .
       dockerfile: deploy/docker/web.Dockerfile
     init: true
     restart: unless-stopped
+    environment:
+      # 绑定域名（如 campus.example.com）后 Caddy 自动签发并续期 HTTPS 证书；
+      # 留空则为 :80 纯 HTTP 本地模式
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
     ports:
-      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${HTTP_PORT:-${NGINX_HTTP_PORT:-80}}:80"
+      - "${HTTPS_PORT:-8443}:443"
+    volumes:
+      # 证书与 ACME 账户数据持久化，容器重建不丢
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       backend:
         condition: service_healthy
     read_only: true
     tmpfs:
-      - /var/cache/nginx
-      - /var/run
       - /tmp
     security_opt:
       - no-new-privileges:true
@@ -43,6 +50,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SERVER_PORT: 8080
+      AUTH_TOKEN_TTL: ${AUTH_TOKEN_TTL:-7d}
       JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/urandom}
       DB_HOST: mysql
       DB_PORT: 3306
@@ -119,9 +127,39 @@ services:
     networks:
       - data
 
+  # 一次性演示数据导入：等后端建表完成后执行 scripts/seed-demo.sql（幂等）。
+  # 仅演示/开发环境使用：docker compose --profile seed up -d
+  seed:
+    image: mysql:8.0
+    profiles: ["seed"]
+    restart: "no"
+    depends_on:
+      backend:
+        condition: service_healthy
+    volumes:
+      - ./scripts/seed-demo.sql:/seed.sql:ro
+    command:
+      - sh
+      - -c
+      - >-
+        mysql -h mysql -P 3306
+        -u "$${MYSQL_USER}" -p"$${MYSQL_PASSWORD}" "$${MYSQL_DATABASE}"
+        < /seed.sql
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-nexus_campus}
+      MYSQL_USER: ${MYSQL_USER:-nexus}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-nexus_pwd}
+    security_opt:
+      - no-new-privileges:true
+    logging: *default-logging
+    networks:
+      - data
+
 volumes:
   mysql_data:
   redis_data:
+  caddy_data:
+  caddy_config:
 
 networks:
   edge:

@@ -24,3 +24,6 @@ Thumbs.db
 .idea/
 *.iml
 .vscode/
+
+# Local demo account credentials
+/.local/

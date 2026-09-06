@@ -1,0 +1,53 @@
+{
+	# 生产环境通过环境变量注入站点地址；本地默认 :80（仅 HTTP）
+	admin off
+}
+
+(common) {
+	root * /usr/share/caddy
+
+	encode zstd gzip
+
+	# 安全响应头（对齐原 nginx 配置）
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# 后端 API 与公开文档反代；Caddy 自动补全 X-Forwarded-For/Proto 并透传 Host
+	# handle 块互斥路由：反代优先于 SPA fallback，避免 try_files 把 API 重写成 index.html
+	@backend path /api /api/* /v3/api-docs /v3/api-docs/* /v3/api-docs.yaml /docs /docs/* /.well-known/* /schemas/* /llms.txt /swagger-ui /swagger-ui/*
+	handle @backend {
+		reverse_proxy backend:8080
+	}
+
+	handle {
+		# 静态资源长缓存（Vite 产物带内容哈希）
+		@immutable path *.css *.js *.gif *.ico *.jpg *.jpeg *.png *.svg *.webp *.woff *.woff2
+		header @immutable Cache-Control "public, max-age=31536000, immutable"
+
+		# 入口页面不缓存，保证发版后立即生效
+		header /index.html Cache-Control "no-store"
+
+		# SPA fallback：未命中的路径回退到 index.html
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+{$SITE_ADDRESS::80} {
+	import common
+}
+
+# 本地/内部 HTTPS：自签证书（tls internal），浏览器会提示不受信任属正常
+localhost:443 {
+	tls internal
+	import common
+}
+
+# 显式声明 HTTP 版 localhost，压制自动 HTTPS 产生的 308 跳转
+http://localhost {
+	import common
+}
