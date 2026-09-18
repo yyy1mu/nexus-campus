@@ -1,7 +1,7 @@
 <template>
   <header class="app-header">
     <div class="header-inner">
-      <RouterLink class="brand" to="/" aria-label="Nexus 首页"><span class="brand-mark"><Network :size="22" /></span><span class="brand-copy"><strong>Nexus<span class="brand-dot">.</span></strong><small>你的协作与资源空间</small></span></RouterLink>
+      <RouterLink class="brand" to="/" aria-label="Nexus 首页"><span class="brand-mark"><img src="/logo.svg" alt="Nexus logo" class="brand-logo" /><img src="/logo-dark.svg" alt="" aria-hidden="true" class="brand-logo brand-logo-dark" /></span><span class="brand-copy"><strong>Nexus<span class="brand-dot">.</span></strong><small>你的协作与资源空间</small></span></RouterLink>
       <label v-if="searchValue !== undefined" class="search-box"><Search :size="16" /><input :value="searchValue" type="search" placeholder="搜索当前页面" aria-label="搜索当前页面" @input="$emit('update:searchValue', ($event.target as HTMLInputElement).value)" /></label>
       <nav class="side-navigation" aria-label="主导航">
         <div v-for="group in groups" :key="group.label" class="nav-group"><span class="nav-section-label">{{ group.label }}</span><RouterLink v-for="item in group.items" :key="item.to" :to="item.to" exact-active-class="active"><component :is="item.icon" :size="18" /><span>{{ item.label }}</span><ChevronRight :size="13" class="nav-arrow" /></RouterLink></div>
@@ -77,7 +77,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import {
-  Network,
   Menu,
   ChevronRight,
   Bell,
@@ -199,6 +198,10 @@ onBeforeUnmount(() => { window.removeEventListener('nexus:request-login', reques
 .header-inner { height: 100%; display: flex; flex-direction: column; padding: 28px 18px 18px; overflow-y: auto; }
 .brand { display: flex; align-items: center; gap: 11px; padding: 0 6px 28px; }
 .brand-mark { display: grid; place-items: center; width: 38px; height: 42px; color: var(--nx-accent); border: 1px solid var(--nx-accent-border); background: var(--nx-accent-subtle); border-radius: 12px 4px 12px 4px; box-shadow: inset 0 0 18px var(--nx-accent-subtle); }
+.brand-logo { width: 26px; height: 26px; display: block; }
+.brand-logo-dark { display: none; }
+:root[data-theme='dark'] .brand-logo { display: none; }
+:root[data-theme='dark'] .brand-logo-dark { display: block; }
 .brand-copy strong { color: var(--nx-text-primary); font-size: 24px; letter-spacing: -.06em; line-height: 1; }.brand-dot { color: var(--nx-accent); }.brand-copy small { display: block; color: var(--nx-text-tertiary); font-size: 10px; margin-top: 7px; }
 .search-box { display: flex; align-items: center; gap: 8px; height: 38px; flex-shrink: 0; margin-top: 16px; padding: 0 10px; color: var(--nx-text-tertiary); background: var(--nx-bg-inset); border: 1px solid var(--nx-border-subtle); border-radius: 8px; }.search-box input { width:100%; min-width:0; border:0; outline:none; background:transparent; font-size:12px; }
 .side-navigation { padding-top: 18px; }.nav-group + .nav-group { margin-top: 18px; }.nav-section-label { display: block; padding: 0 12px 8px; font-size: 10px; color: var(--nx-text-tertiary); letter-spacing: .08em; }
