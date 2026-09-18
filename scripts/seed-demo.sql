@@ -257,7 +257,7 @@ INSERT INTO nexus_help_requests
 INSERT INTO nexus_help_matches
 (id, help_request_id, helper_user_id, message, status, collab_state, baton_role,
  meeting_safety_state, accepted_at, created_at, updated_at) VALUES
-(9401, 9301, 9004,
+(9401, 9301, 9001,
  '我在集群上走通过 Qwen 系列 LoRA 合并 + GPTQ + vLLM 的完整链路，可以安排一次远程指导，大概 1 小时。',
  'accepted', 'active', 'requester', 'not_arranged',
  NOW() - INTERVAL 30 HOUR, NOW() - INTERVAL 36 HOUR, NOW() - INTERVAL 4 HOUR),
@@ -278,16 +278,16 @@ INSERT INTO nexus_help_matches
 INSERT INTO nexus_match_tasks
 (id, match_id, created_by_user_id, title, owner_role, status, order_index,
  client_request_id, created_at, updated_at) VALUES
-(9601, 9401, 9004, '确认模型版本、基座 dtype 与量化目标（W4A16）', 'helper', 'todo', 0,
+(9601, 9401, 9001, '确认模型版本、基座 dtype 与量化目标（W4A16）', 'helper', 'todo', 0,
  'demo-lora-t1', NOW() - INTERVAL 28 HOUR, NOW() - INTERVAL 28 HOUR),
-(9602, 9401, 9004, '远程指导：merge LoRA → GPTQ 量化 → 校验输出', 'helper', 'doing', 1,
+(9602, 9401, 9001, '远程指导：merge LoRA → GPTQ 量化 → 校验输出', 'helper', 'doing', 1,
  'demo-lora-t2', NOW() - INTERVAL 27 HOUR, NOW() - INTERVAL 20 HOUR),
-(9603, 9401, 9004, '在 vLLM 上部署量化模型并跑通推理回归', 'requester', 'todo', 2,
+(9603, 9401, 9001, '在 vLLM 上部署量化模型并跑通推理回归', 'requester', 'todo', 2,
  'demo-lora-t3', NOW() - INTERVAL 26 HOUR, NOW() - INTERVAL 26 HOUR);
 
 INSERT INTO nexus_help_match_messages
 (id, match_id, user_id, content, kind, client_request_id, created_at, updated_at) VALUES
-(9501, 9401, 9004,
+(9501, 9401, 9001,
  '先确认一下：你的 adapter 是在 bf16 基座上训的吗？merge 之前基座也要用 bf16 加载，dtype 不一致是乱码最常见的根因。',
  'update', 'demo-lora-m1', NOW() - INTERVAL 25 HOUR, NOW() - INTERVAL 25 HOUR),
 (9502, 9401, 9003,
@@ -297,7 +297,7 @@ INSERT INTO nexus_help_match_messages
 INSERT INTO nexus_match_decisions
 (id, match_id, raised_by_user_id, raised_by_role, assigned_role, title, context,
  options_json, status, client_request_id, created_at, updated_at) VALUES
-(9701, 9401, 9004, 'helper', 'requester',
+(9701, 9401, 9001, 'helper', 'requester',
  '选择量化校准数据来源',
  'GPTQ 需要 128 条左右校准样本。可以用通用中文语料（方便），或用你任务领域的真实样本（更准但需要你脱敏后提供）。',
  '[{"key":"generic-corpus","label":"通用中文语料","note":"立即可用，精度略低"},{"key":"domain-samples","label":"领域真实样本","note":"更准，需要请求方脱敏提供"}]',
@@ -306,12 +306,12 @@ INSERT INTO nexus_match_decisions
 INSERT INTO nexus_match_events
 (id, match_id, actor_user_id, actor_role, event_type, ref_type, ref_id, summary, created_at) VALUES
 (9901, 9401, 9003, 'requester', 'match.accepted', 'match', 9401, '请求方接受了匹配，协作开始。', NOW() - INTERVAL 30 HOUR),
-(9902, 9401, 9004, 'helper', 'task.created', 'task', 9601, '创建任务：确认模型版本、基座 dtype 与量化目标（W4A16）', NOW() - INTERVAL 28 HOUR),
-(9903, 9401, 9004, 'helper', 'task.created', 'task', 9602, '创建任务：远程指导：merge LoRA → GPTQ 量化 → 校验输出', NOW() - INTERVAL 27 HOUR),
-(9904, 9401, 9004, 'helper', 'task.created', 'task', 9603, '创建任务：在 vLLM 上部署量化模型并跑通推理回归', NOW() - INTERVAL 26 HOUR),
-(9905, 9401, 9004, 'helper', 'task.updated', 'task', 9602, '任务状态更新为 doing：远程指导：merge LoRA → GPTQ 量化 → 校验输出', NOW() - INTERVAL 20 HOUR),
-(9906, 9401, 9004, 'helper', 'decision.opened', 'decision', 9701, '发起决策：选择量化校准数据来源', NOW() - INTERVAL 18 HOUR),
-(9907, 9401, 9004, 'helper', 'baton.passed', 'match', 9401, '指导环境和流程文档已就绪，等你确认校准数据来源后约时间。', NOW() - INTERVAL 4 HOUR),
+(9902, 9401, 9001, 'helper', 'task.created', 'task', 9601, '创建任务：确认模型版本、基座 dtype 与量化目标（W4A16）', NOW() - INTERVAL 28 HOUR),
+(9903, 9401, 9001, 'helper', 'task.created', 'task', 9602, '创建任务：远程指导：merge LoRA → GPTQ 量化 → 校验输出', NOW() - INTERVAL 27 HOUR),
+(9904, 9401, 9001, 'helper', 'task.created', 'task', 9603, '创建任务：在 vLLM 上部署量化模型并跑通推理回归', NOW() - INTERVAL 26 HOUR),
+(9905, 9401, 9001, 'helper', 'task.updated', 'task', 9602, '任务状态更新为 doing：远程指导：merge LoRA → GPTQ 量化 → 校验输出', NOW() - INTERVAL 20 HOUR),
+(9906, 9401, 9001, 'helper', 'decision.opened', 'decision', 9701, '发起决策：选择量化校准数据来源', NOW() - INTERVAL 18 HOUR),
+(9907, 9401, 9001, 'helper', 'baton.passed', 'match', 9401, '指导环境和流程文档已就绪，等你确认校准数据来源后约时间。', NOW() - INTERVAL 4 HOUR),
 (9908, 9402, 9002, 'helper', 'match.offered', 'match', 9402, '帮助者发出响应，等待请求方确认。', NOW() - INTERVAL 6 HOUR);
 
 -- ---------------------------------------------------------------------
