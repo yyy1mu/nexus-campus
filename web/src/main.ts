@@ -15,8 +15,8 @@ useThemeStore(pinia)
 onUnauthorized(token => useAuthStore(pinia).clearSession(token))
 app.use(router)
 
-// 演示环境默认账号：chenyu_algo_demo（seed 数据中的 LoRA 协作求助方）
-const DEMO_IDENTIFICATION = 'chenyu_algo_demo'
+// 演示环境默认账号：linzhou_demo（seed 数据中边缘视觉芯片协作的求助方）
+const DEMO_IDENTIFICATION = 'linzhou_demo'
 const DEMO_PASSWORD = 'demo-password-1'
 
 async function bootstrap() {

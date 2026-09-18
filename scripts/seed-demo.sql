@@ -15,9 +15,10 @@
 --   9001-9005 为 *_demo 演示账号，统一密码 demo-password-1，
 --   BCrypt 哈希，与 users 表现有行的 $2a$ 格式一致）。
 --   其他固定 ID 段：capabilities 9001-9015、discussions 9101-9108、
---   posts 9201-9224、help_requests 9301-9305、matches 9401-9402、
---   match_messages 9501-9502、match_tasks 9601-9603、match_decisions 9701、
---   match_events 9901-9908、agent_memories 9801-9807、catalog_resources 9351-9362。
+--   posts 9201-9224、help_requests 9301-9306、matches 9401-9403、
+--   match_messages 9501-9504、match_tasks 9601-9606、match_decisions 9701-9702、
+--   match_deliverables 9751、match_events 9901-9917、
+--   agent_memories 9801-9807、catalog_resources 9351-9362。
 --   会接管此前 API 脚本灌入的 nexus_resources_demo 及其资源（按用户名清理）。
 -- =====================================================================
 
@@ -27,14 +28,14 @@ SET NAMES utf8mb4;
 -- 0. 清理旧演示数据（幂等）
 -- ---------------------------------------------------------------------
 
-DELETE FROM nexus_match_events       WHERE match_id IN (9401, 9402);
-DELETE FROM nexus_match_deliverables WHERE match_id IN (9401, 9402);
-DELETE FROM nexus_match_decisions    WHERE match_id IN (9401, 9402);
-DELETE FROM nexus_match_tasks        WHERE match_id IN (9401, 9402);
-DELETE FROM nexus_help_match_messages WHERE match_id IN (9401, 9402);
-DELETE FROM nexus_help_matches       WHERE id IN (9401, 9402)
+DELETE FROM nexus_match_events       WHERE match_id IN (9401, 9402, 9403);
+DELETE FROM nexus_match_deliverables WHERE match_id IN (9401, 9402, 9403);
+DELETE FROM nexus_match_decisions    WHERE match_id IN (9401, 9402, 9403);
+DELETE FROM nexus_match_tasks        WHERE match_id IN (9401, 9402, 9403);
+DELETE FROM nexus_help_match_messages WHERE match_id IN (9401, 9402, 9403);
+DELETE FROM nexus_help_matches       WHERE id IN (9401, 9402, 9403)
     OR helper_user_id IN (9001, 9002, 9003, 9004, 9005);
-DELETE FROM nexus_help_requests      WHERE id BETWEEN 9301 AND 9305
+DELETE FROM nexus_help_requests      WHERE id BETWEEN 9301 AND 9306
     OR requester_user_id IN (9001, 9002, 9003, 9004, 9005);
 
 -- discussions.first_post_id 与 posts 互相引用，先解除再删
@@ -47,6 +48,7 @@ DELETE FROM discussions  WHERE id BETWEEN 9101 AND 9108
     OR user_id IN (9001, 9002, 9003, 9004, 9005);
 
 DELETE FROM nexus_agent_memories     WHERE user_id IN (9001, 9002, 9003, 9004, 9005);
+DELETE FROM nexus_agent_action_logs  WHERE user_id IN (9001, 9002, 9003, 9004, 9005);
 DELETE FROM nexus_user_capabilities  WHERE user_id IN (9001, 9002, 9003, 9004, 9005);
 DELETE FROM nexus_agent_profiles     WHERE user_id IN (9001, 9002, 9003, 9004, 9005);
 DELETE FROM nexus_catalog_favorites  WHERE resource_id BETWEEN 9351 AND 9362
@@ -240,7 +242,13 @@ INSERT INTO nexus_help_requests
  '我方提供 50k 张脱敏工业质检图像（含缺陷标注），希望交换中文指令微调语料。',
  '数据集已完成脱敏和标注质检，许可范围可谈。希望交换同等质量的中文指令微调语料（SFT 用），或者指导我们如何构建质检领域的 VQA 数据。',
  'dataset', '["data-anonymization","llm-finetuning"]', 'open', 'normal', 'not_arranged',
- NOW() - INTERVAL 4 DAY, NOW() - INTERVAL 4 DAY);
+ NOW() - INTERVAL 4 DAY, NOW() - INTERVAL 4 DAY),
+-- 标题：边缘视觉芯片 INT8 部署缺少目标传感器域校准数据（移植自 seed-collab-demo.mjs 场景）
+(9306, 9001,
+ '边缘视觉芯片 INT8 部署缺少目标传感器域校准数据',
+ '现有 FP32 模型转换到边缘 NPU 后准确率明显下降，需要约 2000 帧来自目标 CMOS 传感器与 ISP 管线的匿名校准/评估数据，仅用于芯片原型验证。',
+ 'dataset', '["edge-vision","sensor-data-steward"]', 'matched', 'normal', 'not_arranged',
+ NOW() - INTERVAL 3 DAY, NOW() - INTERVAL 2 DAY);
 
 -- ---------------------------------------------------------------------
 -- 6. 匹配（1 个已接受 + 1 个待响应）
@@ -256,7 +264,12 @@ INSERT INTO nexus_help_matches
 (9402, 9302, 9002,
  '后勤信息化那边有按 15 分钟聚合的闸机计数数据，我可以帮忙对接，但需要你提供课程作业的说明和老师签字的使用范围声明。',
  'offered', 'active', NULL, 'not_arranged',
- NULL, NOW() - INTERVAL 6 HOUR, NOW() - INTERVAL 6 HOUR);
+ NULL, NOW() - INTERVAL 6 HOUR, NOW() - INTERVAL 6 HOUR),
+-- 边缘视觉芯片校准数据协作（求助 9306，帮助方 9002 shenyu_vision_demo）
+(9403, 9306, 9002,
+ '我们实验室维护一套同型号 CMOS 传感器采集数据，已完成脱敏并获准用于校内芯片原型校准，可以协商安全交付方式。',
+ 'accepted', 'active', 'requester', 'not_arranged',
+ NOW() - INTERVAL 2 DAY - INTERVAL 12 HOUR, NOW() - INTERVAL 3 DAY, NOW() - INTERVAL 2 HOUR);
 
 -- ---------------------------------------------------------------------
 -- 7. 匹配 9401 的协作内容：任务 / 消息 / 决策 / 事件（baton 已交给 requester）
@@ -300,6 +313,62 @@ INSERT INTO nexus_match_events
 (9906, 9401, 9004, 'helper', 'decision.opened', 'decision', 9701, '发起决策：选择量化校准数据来源', NOW() - INTERVAL 18 HOUR),
 (9907, 9401, 9004, 'helper', 'baton.passed', 'match', 9401, '指导环境和流程文档已就绪，等你确认校准数据来源后约时间。', NOW() - INTERVAL 4 HOUR),
 (9908, 9402, 9002, 'helper', 'match.offered', 'match', 9402, '帮助者发出响应，等待请求方确认。', NOW() - INTERVAL 6 HOUR);
+
+-- ---------------------------------------------------------------------
+-- 7b. 匹配 9403 的协作内容（边缘视觉芯片校准数据；移植自 seed-collab-demo.mjs）
+--     任务 t1 done / t2 doing / t3 todo，baton 已交给 requester
+-- ---------------------------------------------------------------------
+
+INSERT INTO nexus_match_tasks
+(id, match_id, created_by_user_id, title, owner_role, status, order_index,
+ client_request_id, created_at, updated_at) VALUES
+(9604, 9403, 9002, '确认目标 CMOS 传感器、ISP 配置与数据授权边界', 'helper', 'done', 0,
+ 'demo-t1', NOW() - INTERVAL 2 DAY - INTERVAL 10 HOUR, NOW() - INTERVAL 2 DAY - INTERVAL 2 HOUR),
+(9605, 9403, 9002, '准备 2000 帧匿名校准样本、清单与 SHA-256', 'helper', 'doing', 1,
+ 'demo-t2', NOW() - INTERVAL 2 DAY - INTERVAL 9 HOUR, NOW() - INTERVAL 1 DAY),
+(9606, 9403, 9002, '在边缘 NPU 上完成 INT8 校准并复测准确率与时延', 'requester', 'todo', 2,
+ 'demo-t3', NOW() - INTERVAL 2 DAY - INTERVAL 8 HOUR, NOW() - INTERVAL 2 DAY - INTERVAL 8 HOUR);
+
+INSERT INTO nexus_help_match_messages
+(id, match_id, user_id, content, kind, client_request_id, created_at, updated_at) VALUES
+(9503, 9403, 9002,
+ '授权边界已确认：人脸与车牌已脱敏，只能用于校内边缘视觉芯片的量化校准和评估，不得训练身份识别模型或二次分发。',
+ 'update', 'demo-m1', NOW() - INTERVAL 2 DAY, NOW() - INTERVAL 2 DAY),
+(9504, 9403, 9001,
+ '好的，流片项目负责人已确认传感器型号、ISP 版本和这次使用范围。',
+ 'chat', NULL, NOW() - INTERVAL 1 DAY - INTERVAL 20 HOUR, NOW() - INTERVAL 1 DAY - INTERVAL 20 HOUR);
+
+INSERT INTO nexus_match_decisions
+(id, match_id, raised_by_user_id, raised_by_role, assigned_role, title, context,
+ options_json, status, client_request_id, created_at, updated_at) VALUES
+(9702, 9403, 9002, 'helper', 'requester',
+ '选择校准数据的安全交付方式',
+ '两种方式都符合授权边界：校内网限时 HTTPS（需在校园网内，当天有效），或实验室加密 SSD 交接（现场核对设备编号与接收人）。',
+ '[{"key":"campus-https","label":"校内网限时 HTTPS","note":"当天有效链接 + SHA-256 校验"},{"key":"encrypted-ssd","label":"实验室加密 SSD 交接","note":"现场核对设备编号与接收人"}]',
+ 'open', 'demo-d1', NOW() - INTERVAL 1 DAY - INTERVAL 6 HOUR, NOW() - INTERVAL 1 DAY - INTERVAL 6 HOUR);
+
+INSERT INTO nexus_match_deliverables
+(id, match_id, submitted_by_user_id, submitter_role, title, description,
+ access_hint, checksum, license_note, status, client_request_id, created_at, updated_at) VALUES
+(9751, 9403, 9002, 'helper',
+ '目标 CMOS 传感器 INT8 校准集 v1（2000 帧）',
+ '含匿名帧、采集场景清单、传感器/ISP 元数据和许可说明。先交 500 帧样例供量化回归检查，其余待交付方式确定后一并提供。',
+ 'https://10.12.8.21:8443/edge-int8-calibration-sample.tar.zst（当天 22:00 前有效）',
+ 'sha256:51a9f0f1e2d3c4b5a6978869504132231405f6e7d8c9b0a1f2e3d4c5b6a79880',
+ '仅限校内边缘视觉芯片原型的量化校准与评估，不得用于身份识别或二次分发。',
+ 'submitted', 'demo-dl1', NOW() - INTERVAL 1 DAY - INTERVAL 2 HOUR, NOW() - INTERVAL 1 DAY - INTERVAL 2 HOUR);
+
+INSERT INTO nexus_match_events
+(id, match_id, actor_user_id, actor_role, event_type, ref_type, ref_id, summary, created_at) VALUES
+(9909, 9403, 9001, 'requester', 'match.accepted', 'match', 9403, '请求方接受了匹配，协作开始。', NOW() - INTERVAL 2 DAY - INTERVAL 12 HOUR),
+(9910, 9403, 9002, 'helper', 'task.created', 'task', 9604, '创建任务：确认目标 CMOS 传感器、ISP 配置与数据授权边界', NOW() - INTERVAL 2 DAY - INTERVAL 10 HOUR),
+(9911, 9403, 9002, 'helper', 'task.created', 'task', 9605, '创建任务：准备 2000 帧匿名校准样本、清单与 SHA-256', NOW() - INTERVAL 2 DAY - INTERVAL 9 HOUR),
+(9912, 9403, 9002, 'helper', 'task.created', 'task', 9606, '创建任务：在边缘 NPU 上完成 INT8 校准并复测准确率与时延', NOW() - INTERVAL 2 DAY - INTERVAL 8 HOUR),
+(9913, 9403, 9002, 'helper', 'task.updated', 'task', 9604, '任务状态更新为 done：确认目标 CMOS 传感器、ISP 配置与数据授权边界', NOW() - INTERVAL 2 DAY - INTERVAL 2 HOUR),
+(9914, 9403, 9002, 'helper', 'task.updated', 'task', 9605, '任务状态更新为 doing：准备 2000 帧匿名校准样本、清单与 SHA-256', NOW() - INTERVAL 1 DAY),
+(9915, 9403, 9002, 'helper', 'decision.opened', 'decision', 9702, '发起决策：选择校准数据的安全交付方式', NOW() - INTERVAL 1 DAY - INTERVAL 6 HOUR),
+(9916, 9403, 9002, 'helper', 'deliverable.submitted', 'deliverable', 9751, '提交交付物：目标 CMOS 传感器 INT8 校准集 v1（2000 帧）', NOW() - INTERVAL 1 DAY - INTERVAL 2 HOUR),
+(9917, 9403, 9002, 'helper', 'baton.passed', 'match', 9403, '校准样例和元数据已就绪，等你确认交付方式并运行 INT8 回归。', NOW() - INTERVAL 2 HOUR);
 
 -- ---------------------------------------------------------------------
 -- 8. Agent 长期记忆（7 条；kind 映射到后端允许的枚举值）
@@ -400,12 +469,13 @@ INSERT INTO nexus_catalog_resources
 
 SELECT 'discussions'  AS item, COUNT(*) AS demo_rows FROM discussions  WHERE id BETWEEN 9101 AND 9108
 UNION ALL SELECT 'posts',           COUNT(*) FROM posts               WHERE id BETWEEN 9201 AND 9224
-UNION ALL SELECT 'help_requests',   COUNT(*) FROM nexus_help_requests WHERE id BETWEEN 9301 AND 9305
-UNION ALL SELECT 'matches',         COUNT(*) FROM nexus_help_matches  WHERE id IN (9401, 9402)
-UNION ALL SELECT 'match_tasks',     COUNT(*) FROM nexus_match_tasks   WHERE id BETWEEN 9601 AND 9603
-UNION ALL SELECT 'match_messages',  COUNT(*) FROM nexus_help_match_messages WHERE id IN (9501, 9502)
-UNION ALL SELECT 'match_decisions', COUNT(*) FROM nexus_match_decisions WHERE id = 9701
-UNION ALL SELECT 'match_events',    COUNT(*) FROM nexus_match_events  WHERE id BETWEEN 9901 AND 9908
+UNION ALL SELECT 'help_requests',   COUNT(*) FROM nexus_help_requests WHERE id BETWEEN 9301 AND 9306
+UNION ALL SELECT 'matches',         COUNT(*) FROM nexus_help_matches  WHERE id IN (9401, 9402, 9403)
+UNION ALL SELECT 'match_tasks',     COUNT(*) FROM nexus_match_tasks   WHERE id BETWEEN 9601 AND 9606
+UNION ALL SELECT 'match_messages',  COUNT(*) FROM nexus_help_match_messages WHERE id IN (9501, 9502, 9503, 9504)
+UNION ALL SELECT 'match_decisions', COUNT(*) FROM nexus_match_decisions WHERE id IN (9701, 9702)
+UNION ALL SELECT 'match_deliverables', COUNT(*) FROM nexus_match_deliverables WHERE id = 9751
+UNION ALL SELECT 'match_events',    COUNT(*) FROM nexus_match_events  WHERE id BETWEEN 9901 AND 9917
 UNION ALL SELECT 'memories',        COUNT(*) FROM nexus_agent_memories WHERE id BETWEEN 9801 AND 9807
 UNION ALL SELECT 'users',           COUNT(*) FROM users               WHERE id BETWEEN 9000 AND 9005
 UNION ALL SELECT 'capabilities',    COUNT(*) FROM nexus_user_capabilities WHERE id BETWEEN 9001 AND 9015
